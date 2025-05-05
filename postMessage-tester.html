@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SeatMap Combined Payload Test</title>
+  <style>
+    body { font-family: sans-serif; padding: 2rem; background: #f4f4f4; }
+    pre { background: #eee; padding: 1rem; border-radius: 5px; max-height: 200px; overflow: auto; }
+    iframe { width: 100%; height: 800px; border: 1px solid #ccc; margin-top: 2rem; }
+    label { font-weight: bold; }
+    select, button { padding: 5px 10px; margin-left: 10px; }
+  </style>
+</head>
+<body>
+
+<h1> ✈️ SeatMap Test 🪑 </h1>
+
+<div>
+  <label for="cabinClassSelect">Выберите класс:</label>
+  <select id="cabinClassSelect">
+    <option value="E" selected>Economy (Y)</option>
+    <option value="P">Premium Economy (S)</option>
+    <option value="B" >Business (C)</option>
+    <option value="F">First (F)</option>
+    <option value="A">All cabins (A)</option>
+  </select>
+  <button onclick="sendSeatMap()">Отправить в iframe</button>
+</div>
+
+<pre id="sentData"></pre>
+
+<iframe id="seatmapFrame" src="https://quicket.io/react-proxy-app/" title="SeatMap"></iframe>
+
+<script>
+  const iframe = document.getElementById('seatmapFrame');
+
+  function sendSeatMap() {
+    const cabinClass = document.getElementById('cabinClassSelect').value;
+
+    const message = {
+      type: "seatMaps",
+      config: JSON.stringify( {
+      width: 400,
+      lang: 'EN',
+      horizontal: false,
+      rightToLeft: false,
+      visibleFuselage: cabinClass === 'A',
+      visibleWings: true,
+      builtInDeckSelector: true,
+      singleDeckMode: true,
+      builtInTooltip: true,
+      externalPassengerManagement: false,
+      tooltipOnHover: false,
+      colorTheme: {
+        deckLabelTitleColor: 'white',
+        deckHeightSpacing: 100,
+        wingsWidth: 50,
+        deckSeparation: 0,
+        floorColor: 'rgb(30,60,90)',
+        seatLabelColor: 'white',
+        seatStrokeColor: 'rgb(237, 237, 237)',
+        seatStrokeWidth: 1,
+        seatArmrestColor: '#cccccc',
+        notAvailableSeatsColor: 'lightgray',
+        bulkBaseColor: 'dimgrey',
+        bulkCutColor: 'lightgrey',
+        bulkIconColor: 'darkslategray',
+        defaultPassengerBadgeColor: 'darkred',
+        fontFamily: 'Montserrat, sans-serif',
+        tooltipBackgroundColor: 'rgb(255,255,255)',
+        tooltipHeaderColor: '#4f6f8f',
+        tooltipBorderColor: 'rgb(255,255,255)',
+        tooltipFontColor: '#4f6f8f',
+        tooltipIconColor: '#4f6f8f',
+        tooltipIconBorderColor: '#4f6f8f',
+        tooltipIconBackgroundColor: '#fff',
+        tooltipSelectButtonTextColor: '#fff',
+        tooltipSelectButtonBackgroundColor: 'rgb(42, 85, 128)',
+        tooltipCancelButtonTextColor: '#fff',
+        tooltipCancelButtonBackgroundColor: 'rgb(55, 55, 55)',
+        deckSelectorStrokeColor: '#fff',
+        deckSelectorFillColor: 'rgba(55, 55, 55, 0.5)',
+        deckSelectorSize: 25,
+        fuselageStrokeWidth: 16,
+        fuselageFillColor: 'lightgrey',
+        fuselageStrokeColor: 'darkgrey',
+        fuselageWindowsColor: 'darkgrey',
+        fuselageWingsColor: 'rgba(55, 55, 55, 0.5)',
+        exitIconUrlLeft: 'https://panorama.quicket.io/icons/exit-left.svg',
+        exitIconUrlRight: 'https://panorama.quicket.io/icons/exit-right.svg',
+      }}),
+      flight: JSON.stringify({
+        id: "111",
+        airlineCode: "EK",
+        flightNo: "50",
+        departureDate: "2025-07-19",
+        departure: "MUC",
+        arrival: "DXB",
+        cabinClass: cabinClass,
+        passengerType: "ADT"
+      }),
+      availability: JSON.stringify([
+        {
+          currency: "USD",
+          label: "20A",
+          price: 33,
+          onlyForPassengerType: ["ADT", "CHD", "INF"],
+          additionalProps: [
+            { label: "Clear air", icon: null },
+            { label: "USB plug", icon: "power" }
+          ],
+          color: "green"
+        },
+        {
+          currency: "USD",
+          label: "20E",
+          price: 33,
+          onlyForPassengerType: ["ADT"],
+          additionalProps: [
+            { label: "Wi-Fi", icon: "wifi" }
+          ],
+          color: "red"
+        }
+      ]),
+      passengers: JSON.stringify([
+        {
+          id: "1",
+          passengerType: "ADT",
+          seat: null,
+          passengerLabel: "John Smith",
+          passengerColor: "blue"
+        },
+        {
+          id: "2",
+          passengerType: "CHD",
+          seat: { seatLabel: "20E", price: 33 },
+          passengerLabel: "Child Smith",
+          passengerColor: "orange"
+        }
+      ]),
+      currentDeckIndex: "0"
+    };
+
+    // Отправка сообщения
+    iframe.contentWindow.postMessage(message, "*"); // отправка
+    document.getElementById('sentData').textContent = JSON.stringify(message, null, 2); // для лога
+    console.log("✅ Sent message to iframe:", message);
+  }
+
+  // Ответ от iframe
+  window.addEventListener("message", (event) => {
+    console.log("📨 Received message from iframe:", event.data);
+  });
+</script>
+
+</body>
+</html>

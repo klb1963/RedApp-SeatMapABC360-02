@@ -7,7 +7,6 @@ import { Option } from 'sabre-ngv-UIComponents/advancedDropdown/interfaces/Optio
 import { getService } from '../Context';
 import { loadPnrDetailsFromSabre } from '../services/loadPnrDetailsFromSabre';
 import { loadSeatMapFromSabre } from '../services/loadSeatMapFromSabre';
-import { PublicModalsService } from 'sabre-ngv-modals/services/PublicModalService';
 import { XmlViewer } from '../utils/XmlViewer';
 import { PassengerOption, SegmentOption } from '../utils/parcePnrData';
 
