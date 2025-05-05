@@ -11,20 +11,22 @@ interface SeatMapComponentShoppingProps {
 }
 
 const SeatMapComponentShopping: React.FC<SeatMapComponentShoppingProps> = ({ config, data }) => {
-  const flightSegments = data.flightSegments || [];
+  const flightSegments = Array.isArray(data?.flightSegments) ? data.flightSegments : [];
 
-  const [cabinClass, setCabinClass] = useState<'Y' | 'S' | 'C' | 'F' | 'A'>('Y'); // Sabre: Economy
+  const [cabinClass, setCabinClass] = useState<'Y' | 'S' | 'C' | 'F' | 'A'>('Y');
   const [segmentIndex, setSegmentIndex] = useState(0);
 
-  const currentSegment = flightSegments?.[segmentIndex];
+  const currentSegment = flightSegments[segmentIndex] || {};
+
+  // Прямая проверка типа оборудования (если есть вложенный EncodeDecodeElement)
   const equipment =
-    typeof currentSegment?.equipment === 'object'
+    typeof currentSegment.equipment === 'object'
       ? currentSegment.equipment?.EncodeDecodeElement?.SimplyDecoded
-      : currentSegment?.equipment || 'неизвестно';
+      : currentSegment.equipment || 'неизвестно';
 
   return (
     <div style={{ padding: '1rem' }}>
-      
+      {/* 🔁 Селектор сегмента и отображение типа самолёта */}
       <div
         style={{
           display: 'flex',
@@ -42,14 +44,14 @@ const SeatMapComponentShopping: React.FC<SeatMapComponentShoppingProps> = ({ con
           >
             {flightSegments.map((seg: any, idx: number) => (
               <option key={idx} value={idx}>
-                {seg.origin} → {seg.destination}, рейс {seg.flightNumber}
+                {seg.origin || '???'} → {seg.destination || '???'}, рейс {seg.flightNumber || '---'}
               </option>
             ))}
           </select>
         </div>
 
         <div style={{ fontSize: '1.5rem', color: '#555' }}>
-          ✈️ <strong>Самолёт:</strong> {equipment || 'неизвестно'}
+          ✈️ <strong>Самолёт:</strong> {equipment}
         </div>
       </div>
 
@@ -76,7 +78,11 @@ const SeatMapComponentShopping: React.FC<SeatMapComponentShoppingProps> = ({ con
         cabinClass={cabinClass}
         generateFlightData={(segment, index, cabin) =>
           generateFlightData(
-            { ...segment, cabinClass: cabin, equipment: segment.equipment },
+            {
+              ...segment,
+              cabinClass: cabin,
+              equipment: segment.equipment,
+            },
             index
           )
         }

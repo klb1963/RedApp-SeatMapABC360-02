@@ -119,16 +119,15 @@ export class Main extends Module {
   }
 
   //============= открываем SeatMap ABC 360 =====
-  
   openSeatMapABC360(): void {
     const publicModalsService = getService(PublicModalsService);
-  
+
     publicModalsService.closeReactModal(); // ✅ Закрываем любые старые окна
-  
+
     (async () => {
       try {
         const { parsedData: pnrData } = await loadPnrDetailsFromSabre();
-  
+
         if (!pnrData || !pnrData.segments || pnrData.segments.length === 0) {
           publicModalsService.showReactModal({
             header: 'SeatMap ABC 360',
@@ -142,31 +141,32 @@ export class Main extends Module {
           return;
         }
 
-        // ✅ Берем первый сегмент
-        const rawFlight = pnrData.segments[0];
-
-        // ✅ Формируем объект flight в ожидаемом формате для библиотеки карты мест
-        const flight = {
-          ...rawFlight,
-          flightNo: rawFlight.marketingFlightNumber || '000',
-          flightNumber: rawFlight.marketingFlightNumber || '000',
-          airlineCode: rawFlight.marketingCarrier || 'XX',
-          origin: rawFlight.origin || 'XXX',
-          destination: rawFlight.destination || 'YYY',
-          departureDate: rawFlight.departureDate || '2025-01-01',
-          cabinClass: rawFlight.bookingClass || 'Y',
-          equipment: rawFlight.equipment || 'unknown',
-          passengerType: 'ADT' // фиксированное значение, можно адаптировать
-        };
+        // ✅ Преобразуем все сегменты в нужный формат
+        const flightSegments = pnrData.segments.map((seg: any) => ({
+          ...seg,
+          flightNo: seg.marketingFlightNumber || '000',
+          flightNumber: seg.marketingFlightNumber || '000',
+          airlineCode: seg.marketingCarrier || 'XX',
+          origin: seg.origin || 'XXX',
+          destination: seg.destination || 'YYY',
+          departureDate: seg.departureDate || '2025-01-01',
+          cabinClass: seg.bookingClass || 'Y',
+          equipment: seg.equipment || 'unknown',
+          passengerType: 'ADT'
+        }));
 
         // ✅ Пассажиры из PNR
         const passengers = pnrData.passengers || [];
 
-        // 🆕 Загружаем availability через EnhancedSeatMapRQ
-        const { availability } = await loadSeatMapFromSabre(flight, passengers);
+        // 🪑 Выбираем сегмент по умолчанию — первый
+        const selectedSegmentIndex = 0;
+        const activeFlight = flightSegments[selectedSegmentIndex];
+
+        // 🆕 Загружаем availability по выбранному сегменту
+        const { availability } = await loadSeatMapFromSabre(activeFlight, passengers);
 
         // ✅ Логи
-        console.log('✈️ flight:', flight);
+        console.log('✈️ flightSegments:', flightSegments);
         console.log('🧑‍✈️ passengers:', passengers);
         console.log('🪑 availability:', availability);
 
@@ -177,7 +177,8 @@ export class Main extends Module {
             require('./components/seatMap/SeatMapComponentPnr').default,
             {
               config: quicketConfig,
-              flight,
+              flightSegments,
+              selectedSegmentIndex,
               availability,
               passengers
             }
@@ -200,7 +201,6 @@ export class Main extends Module {
       }
     })();
   }
-
 
   //============= getEnhancedSeatMapRQ ==========
   private getEnhancedSeatMapRQ(): void {
@@ -259,7 +259,7 @@ export class Main extends Module {
 
   //============== Widgets ====================
 
-  // AvailabilityTile
+  // ========= AvailabilityTile ===============
   private registerSeatMapAvailTile(): void {
     const airAvailabilityService = getService(PublicAirAvailabilityService);
 
@@ -285,12 +285,10 @@ export class Main extends Module {
     );
   }
 
-    // Shopping & Pricing Tile 
+    //========= Shopping & Pricing Tile =============
     private registerSeatMapShoppingTile(): void {
         // определяем config shoppingDrawerConfig для Shopping
-        
         console.log("registerSeatMapShoppingTile");
-
         const shoppingDrawerConfig = new LargeWidgetDrawerConfig(SeatMapShoppingTile, SeatMapShoppingView, {
             title: 'Shopping Tile Widget' // заголовок окна
         });

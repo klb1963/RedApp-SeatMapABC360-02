@@ -1,5 +1,7 @@
 // file: SeatMapComponentPnr.tsx
 
+// file: SeatMapComponentPnr.tsx
+
 import * as React from 'react';
 import { useState } from 'react';
 import SeatMapComponentBase from './SeatMapComponentBase';
@@ -15,7 +17,8 @@ interface Passenger {
 
 interface SeatMapComponentPnrProps {
   config: any;
-  flight?: any;
+  flightSegments: any[];
+  selectedSegmentIndex?: number;
   availability?: any[];
   passengers?: Passenger[];
   showSegmentSelector?: boolean;
@@ -23,52 +26,97 @@ interface SeatMapComponentPnrProps {
 
 const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
   config,
-  flight,
+  flightSegments = [],
+  selectedSegmentIndex = 0,
   availability = [],
   passengers = [],
   showSegmentSelector = true
 }) => {
-  if (!flight || typeof flight !== 'object') {
+  if (!flightSegments.length) {
     return (
       <div style={{ padding: '1rem', color: 'red' }}>
-        ❌ Ошибка: отсутствует информация о сегменте рейса.
+        ❌ Нет доступного сегмента
       </div>
     );
   }
 
-  const cabinClass = flight.cabinClass || 'Y';
+  const [segmentIndex, setSegmentIndex] = useState<number>(selectedSegmentIndex);
+  const [cabinClass, setCabinClass] = useState<'Y' | 'S' | 'C' | 'F' | 'A'>(
+    flightSegments[segmentIndex]?.cabinClass || 'Y'
+  );
+
+  const segment = flightSegments[segmentIndex];
+  const equipment =
+    typeof segment?.equipment === 'object'
+      ? segment.equipment?.EncodeDecodeElement?.SimplyDecoded
+      : segment?.equipment || 'неизвестно';
 
   const [selectedPassengerIds, setSelectedPassengerIds] = useState<string[]>(
-    Array.isArray(passengers) ? passengers.map(p => p.id) : []
+    Array.isArray(passengers) ? passengers.map((p) => p.id) : []
   );
 
   const handleTogglePassenger = (id: string) => {
-    setSelectedPassengerIds(prev =>
-      prev.includes(id)
-        ? prev.filter(pid => pid !== id)
-        : [...prev, id]
+    setSelectedPassengerIds((prev) =>
+      prev.includes(id) ? prev.filter((pid) => pid !== id) : [...prev, id]
     );
   };
 
   const selectedPassengers = (Array.isArray(passengers)
-    ? passengers.filter(p => selectedPassengerIds.includes(p.id))
+    ? passengers.filter((p) => selectedPassengerIds.includes(p.id))
     : []) as Passenger[];
-
-  const flightSegments = [
-    {
-      ...flight,
-      cabinClass
-    }
-  ];
 
   return (
     <div style={{ padding: '1rem' }}>
+      {/* 🔝 Сегмент и Самолёт на одной строке */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '1rem',
+          marginBottom: '1rem',
+          flexWrap: 'wrap'
+        }}
+      >
+        <div>
+          <label style={{ marginRight: '0.5rem' }}>Сегмент:</label>
+          <select value={segmentIndex} onChange={(e) => {
+            setSegmentIndex(Number(e.target.value));
+            setCabinClass('Y'); // сбрасываем класс по умолчанию
+          }}>
+            {flightSegments.map((seg: any, idx: number) => (
+              <option key={idx} value={idx}>
+                {seg.origin} → {seg.destination}, рейс {seg.flightNumber}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div style={{ fontSize: '1.5rem', color: '#555' }}>
+          ✈️ <strong>Самолёт:</strong> {equipment}
+        </div>
+      </div>
+
+      {/* 👔 Класс обслуживания */}
+      <div style={{ marginBottom: '1rem' }}>
+        <label style={{ marginRight: '0.5rem' }}>Класс обслуживания:</label>
+        <select
+          value={cabinClass}
+          onChange={(e) => setCabinClass(e.target.value as 'Y' | 'S' | 'C' | 'F' | 'A')}
+        >
+          <option value="Y">Economy</option>
+          <option value="S">Premium Economy</option>
+          <option value="C">Business</option>
+          <option value="F">First</option>
+          <option value="A">All Cabins</option>
+        </select>
+      </div>
+
       {/* 👤 Селектор пассажиров */}
       {passengers.length > 0 && (
         <div style={{ marginBottom: '1rem' }}>
           <strong>Пассажиры:</strong>
           <div>
-            {passengers.map(p => {
+            {passengers.map((p) => {
               const labelParts = p.label?.split(' ') || [];
               const title = labelParts.length > 1 ? labelParts[1] : '';
               return (
@@ -90,8 +138,8 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
       <SeatMapComponentBase
         config={config}
         flightSegments={flightSegments}
-        initialSegmentIndex={0}
-        showSegmentSelector={showSegmentSelector}
+        initialSegmentIndex={segmentIndex}
+        showSegmentSelector={false}
         cabinClass={cabinClass}
         generateFlightData={(segment, index, cabin) =>
           generateFlightData(segment, index, cabin)

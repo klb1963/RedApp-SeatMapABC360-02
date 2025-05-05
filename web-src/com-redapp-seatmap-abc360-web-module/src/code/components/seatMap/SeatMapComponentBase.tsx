@@ -184,8 +184,8 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
         </div>
       )}
 
-      {/* 
-      🔍 Отладочная информация
+    
+      {/* 🔍 Отладочная информация
       <div style={{ marginBottom: '1rem', fontSize: '0.85rem', color: '#555', background: '#f9f9f9', padding: '0.5rem', border: '1px solid #ccc' }}>
         <strong>Debug info:</strong>
         <div>segmentIndex: {segmentIndex}</div>
@@ -195,13 +195,13 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
         <div>equipment: {flight?.equipment}</div>
       </div>
 
-       ✈️ Полный JSON flight-объекта 
+      * ✈️ Полный JSON flight-объекта  
       <div style={{ marginBottom: '1rem', fontSize: '0.9rem', color: '#333' }}>
         <strong>🛫 Flight info:</strong>
         <pre>{JSON.stringify(flight, null, 2)}</pre>
       </div>
       */}
-
+      
       {/* 👉 iframe с картой салона */}
       <iframe
         ref={iframeRef}

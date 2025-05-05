@@ -41,7 +41,7 @@ export function generateFlightData(segment: FlightSegmentInput, index: number, c
 
   const airlineCode = segment.marketingAirline || segment.marketingCarrier || 'XX';
   const flightNoRaw = segment.flightNumber || segment.marketingFlightNumber || '000';
-  const flightNo = flightNoRaw.replace(/^0+/, '') || '000'; // удаляем лидирующие нули
+  const flightNo = String(flightNoRaw) || '000';
   const rawDate = segment.departureDateTime || segment.departureDate || '';
   const departureDate = rawDate.includes('T') ? rawDate.split('T')[0] : rawDate;
   const departure = segment.origin || segment.departure || '???';
