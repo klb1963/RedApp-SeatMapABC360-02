@@ -170,18 +170,6 @@ export class Main extends Module {
         console.log('🧑‍✈️ passengers:', passengers);
         console.log('🪑 availability:', availability);
 
-        // // ✅ Отладочный блок вместо настоящего компонента
-        // publicModalsService.showReactModal({
-        //   header: 'Seat Map ABC 360',
-        //   component: React.createElement(
-        //     'div',
-        //     { style: { padding: '1rem', fontSize: '1.2rem', color: 'green' } },
-        //     '🧪 Компонент успешно вызван!'
-        //   ),
-        //   modalClassName: 'seatmap-modal-class'
-        // });
-
-        // ✅ Показываем окно с компонентом карты мест
         // ✅ Показываем окно с компонентом карты мест
         publicModalsService.showReactModal({
           header: 'Seat Map ABC 360',

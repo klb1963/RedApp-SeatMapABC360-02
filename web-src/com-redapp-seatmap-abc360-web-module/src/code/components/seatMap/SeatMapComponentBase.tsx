@@ -3,6 +3,8 @@
 import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { mapCabinToCode } from '../../utils/mapCabinToCode';
+import { getService } from '../../Context';
+import { PublicModalsService } from 'sabre-ngv-modals/services/PublicModalService';
 
 interface SeatMapComponentBaseProps {
   config: any;
@@ -23,7 +25,6 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   initialSegmentIndex = 0,
   generateFlightData,
   cabinClass,
-  layoutData,
   availability = [],
   passengers = [],
   showSegmentSelector = true,
@@ -87,6 +88,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
       config: JSON.stringify(config),
       flight: JSON.stringify(flight),
       currentDeckIndex: '0',
+      availability: JSON.stringify(availability), // ✅ вот это — обязательно!
       passengers: JSON.stringify(passengers) // ✅ добавлено
     };
 
@@ -109,6 +111,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
         config: JSON.stringify(config),
         flight: JSON.stringify(flight),
         currentDeckIndex: '0',
+        availability: JSON.stringify(availability), // ✅ вот это — обязательно!
         passengers: JSON.stringify(passengers) // ✅ добавлено
       };
 
@@ -118,6 +121,49 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
 
     return () => clearTimeout(timeout);
   }, [flight]);
+
+    // 👂👂👂 Слушатель сообщений из библиотеки quicket.io (seatSelected)
+  const appMessageListener = (event: MessageEvent) => {
+    const { type, ...rest } = event.data;
+  
+    if (type === 'seatMaps' && rest.onSeatSelected) {
+      const {
+        passengerId,
+        seatLabel,
+        value,
+        currency,
+        label,
+        flightNumber,
+        airlineCode,
+        origin,
+        destination,
+        departureDate
+      } = rest.onSeatSelected;
+  
+      console.log('✅ Выбрано место:', seatLabel, 'для пассажира:', passengerId);
+  
+      const publicModalsService = getService(PublicModalsService);
+      const UpdatePNRComponent = require('../../components/pnrServices/UpdatePNR').UpdatePNR;
+  
+      publicModalsService.showReactModal({
+        header: 'Назначение места',
+        component: React.createElement(UpdatePNRComponent, {
+          passengerRef: passengerId,
+          seatNumber: seatLabel,
+          amount: value,
+          currency,
+          passengerName: label,
+          flightNumber,
+          airlineCode,
+          origin,
+          destination,
+          departureDate
+        }),
+        modalClassName: 'seatmap-modal-class'
+      });
+    }
+  };
+
 
   return (
     <div style={{ padding: '1rem' }}>
@@ -138,7 +184,8 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
         </div>
       )}
 
-      {/* 🔍 Отладочная информация */}
+      {/* 
+      🔍 Отладочная информация
       <div style={{ marginBottom: '1rem', fontSize: '0.85rem', color: '#555', background: '#f9f9f9', padding: '0.5rem', border: '1px solid #ccc' }}>
         <strong>Debug info:</strong>
         <div>segmentIndex: {segmentIndex}</div>
@@ -148,11 +195,12 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
         <div>equipment: {flight?.equipment}</div>
       </div>
 
-      {/* ✈️ Полный JSON flight-объекта */}
+       ✈️ Полный JSON flight-объекта 
       <div style={{ marginBottom: '1rem', fontSize: '0.9rem', color: '#333' }}>
         <strong>🛫 Flight info:</strong>
         <pre>{JSON.stringify(flight, null, 2)}</pre>
       </div>
+      */}
 
       {/* 👉 iframe с картой салона */}
       <iframe
