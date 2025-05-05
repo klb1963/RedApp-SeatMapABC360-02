@@ -1,0 +1,42 @@
+{
+  "name": "com-redapp-seatmap-abc360-web-module-src",
+  "version": "1.0.0",
+  "description": "NGV module",
+  "author": {
+    "name": "Leonid Kleimann"
+  },
+  "contributors": [],
+  "private": true,
+  "license": "LicenseRef-LICENSE",
+  "dependencies": {
+    "sabre-ngv-app": "*",
+    "sabre-ngv-core": "*",
+    "sabre-ngv-xp": "*",
+    "sabre-ngv-redAppSidePanel": "*",
+    "sabre-ngv-airAvailability": "*",
+    "sabre-ngv-modals": "*",
+    "sabre-ngv-custom-forms": "*",
+    "sabre-ngv-UIComponents": "*",
+    "sabre-ngv-pricing": "*",
+    "sabre-ngv-communication": "*"
+  },
+  "devDependencies": {},
+  "optionalDependencies": {},
+  "ngv": {
+    "buildDependencies": {
+      "sabre-ngv-app": "*",
+      "sabre-ngv-core": "*",
+      "sabre-ngv-xp": "*",
+      "sabre-ngv-redAppSidePanel": "*",
+      "sabre-ngv-airAvailability": "*",
+      "sabre-ngv-modals": "*",
+      "sabre-ngv-custom-forms": "*",
+      "sabre-ngv-UIComponents": "*",
+      "sabre-ngv-pricing": "*",
+      "sabre-ngv-communication": "*"
+    },
+    "concierge_version_min": "7.5.18",
+    "runtimeDependencies": {},
+    "testDependencies": {}
+  }
+}
