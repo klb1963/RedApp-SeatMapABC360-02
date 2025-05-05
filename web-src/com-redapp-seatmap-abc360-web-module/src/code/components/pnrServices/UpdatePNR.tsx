@@ -44,18 +44,20 @@ export class UpdatePNR extends React.Component<UpdatePNRProps, { status: 'idle' 
 
   // Метод, вызываемый при нажатии "Назначить"
   assignSeat() {
-    const soap = getService(ISoapApiService); // получаем SOAP API
-
-    // Забираем все данные из пропсов
-    const passengerRef = this.props.passengerRef;
-    const seatNumber = this.props.seatNumber;
-    const flightNumber = this.props.flightNumber || '0000';
-    const airlineCode = this.props.airlineCode || 'XX';
-    const origin = this.props.origin || 'XXX';
-    const destination = this.props.destination || 'YYY';
-    const departureDate = this.props.departureDate || '2025-01-01';
-
-    // Генерация XML для SeatAssignmentRQ
+    const soap = getService(ISoapApiService);
+    const modals = getService(PublicModalsService);
+    const pnrService = getService(PnrPublicService);
+  
+    const {
+      passengerRef,
+      seatNumber,
+      flightNumber = '0000',
+      airlineCode = 'XX',
+      origin = 'XXX',
+      destination = 'YYY',
+      departureDate = '2025-01-01'
+    } = this.props;
+  
     const xml = `
       <SeatAssignmentRQ xmlns="http://services.sabre.com/STL/v01" version="1.0.0">
         <SeatAssignmentInfo>
@@ -73,25 +75,32 @@ export class UpdatePNR extends React.Component<UpdatePNRProps, { status: 'idle' 
           </Seats>
         </SeatAssignmentInfo>
       </SeatAssignmentRQ>`;
-
-    // Отправка SOAP-запроса
+  
     soap.callSws({
       action: 'SeatAssignmentRQ',
       payload: xml,
       authTokenType: 'SESSION'
     })
       .then((res) => {
-        console.log('✅ Seat assignment result (full XML):');
-        console.log(res.value); // XML-ответ от Sabre
-
-        this.setState({ status: 'success' }); // Обновляем состояние
-        getService(PnrPublicService).refreshData(); // Обновляем PNR в UI
+        console.log('✅ Seat assignment result (full XML):', res.value);
+  
+        this.setState({ status: 'success' });
+        pnrService.refreshData();
+  
+        // Через секунду — закрываем всё и показываем alert
+        setTimeout(() => {
+          modals.closeReactModal(); // закрывает UpdatePNR
+          modals.closeReactModal(); // закрывает карту мест
+          alert(`✅ Место ${seatNumber} успешно назначено.`);
+        }, 1000);
       })
       .catch((err) => {
         console.error('❌ Seat assignment error (details):', err);
-        this.setState({ status: 'error' }); // Отображаем ошибку
+        this.setState({ status: 'error' });
       });
   }
+
+  //===================================
 
   // Закрытие модалки
   handleClose() {

@@ -1,10 +1,14 @@
 // file SeatMapComponentBase.tsx
 
+// file: SeatMapComponentBase.tsx
+
 import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { mapCabinToCode } from '../../utils/mapCabinToCode';
 import { getService } from '../../Context';
 import { PublicModalsService } from 'sabre-ngv-modals/services/PublicModalService';
+import { ISoapApiService } from 'sabre-ngv-communication/interfaces/ISoapApiService';
+import { PnrPublicService } from 'sabre-ngv-app/app/services/impl/PnrPublicService';
 
 interface SeatMapComponentBaseProps {
   config: any;
@@ -31,139 +35,142 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   assignedSeats
 }) => {
   const [segmentIndex, setSegmentIndex] = useState(initialSegmentIndex);
-  const [flight, setFlight] = useState<any>(null); // объект, который отправим в библиотеку
-  const iframeRef = useRef<HTMLIFrameElement>(null); // ссылка на iframe
+  const [flight, setFlight] = useState<any>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [selectedSeat, setSelectedSeat] = useState<any>(null); // 🆕 выбранное место
 
   const currentSegment = flightSegments[segmentIndex];
 
-  // 🔄 Генерация flight при изменении сегмента или класса обслуживания
-  useEffect(() => {
-    if (!flightSegments.length || !currentSegment) {
-      console.warn('⛔ Нет сегментов или текущий сегмент не определён');
-      setFlight(null);
-      return;
-    }
+  // 🆕 Обработчики кнопок
+
+  // бронирование выбранного места
+  const handleConfirmSeat = () => {
+    if (!selectedSeat) return;
   
-    const generatedFlight = generateFlightData(currentSegment, segmentIndex, cabinClass);
+    const {
+      passengerId,
+      seatLabel,
+      value,
+      currency,
+      label,
+      flightNumber,
+      airlineCode,
+      origin,
+      destination,
+      departureDate
+    } = selectedSeat;
   
-    if (!generatedFlight || generatedFlight.flightNo === '000' || generatedFlight.airlineCode === 'XX') {
-      console.warn('⛔ generateFlightData: flight некорректен.', generatedFlight);
-      setFlight(null);
-      return;
-    }
+    const publicModalsService = getService(PublicModalsService);
+    const UpdatePNRComponent = require('../../components/pnrServices/UpdatePNR').UpdatePNR;
+  
+    publicModalsService.showReactModal({
+      header: 'Назначение места',
+      component: React.createElement(UpdatePNRComponent, {
+        passengerRef: passengerId,
+        seatNumber: seatLabel,
+        amount: value,
+        currency,
+        passengerName: label,
+        flightNumber,
+        airlineCode,
+        origin,
+        destination,
+        departureDate
+      }),
+      modalClassName: 'seatmap-modal-class'
+    });
+  };
 
-    if (!generatedFlight) {
-      console.warn('⚠️ generateFlightData вернул null или undefined');
-      setFlight(null);
-      return;
-    }
 
-    console.log('🔧 [generateFlightData] результат:', generatedFlight);
+  // обработка отказа от выбранного места
+  const handleResetSeat = () => {
+    setSelectedSeat(null);
 
-    // 🪑 Преобразуем cabinClass для библиотеки визуализации
-    const cabinClassForLib = mapCabinToCode(cabinClass);
-
-    const flightForIframe = {
-      ...generatedFlight,
-      cabinClass: cabinClassForLib,
-      passengerType: 'ADT',
-    };
-
-    console.log('✅ Сформирован flight:', flightForIframe);
-    setFlight(flightForIframe);
-  }, [flightSegments, segmentIndex, cabinClass]);
-
-  // 📤 Отправка сообщения в iframe при обновлении flight
-  useEffect(() => {
-    if (!flight || flight.flightNo === '000' || flight.airlineCode === 'XX') {
-      console.warn('[⏳ SeatMaps] Пропущена отправка: flight ещё не готов или некорректен.', flight);
-      return;
-    }
-
-    const iframe = iframeRef.current;
-    if (!iframe?.contentWindow) return;
+    // 🔁 Повторная отправка сообщения в iframe
+    if (!flight || !iframeRef.current?.contentWindow) return;
 
     const message: Record<string, string> = {
       type: 'seatMaps',
       config: JSON.stringify(config),
       flight: JSON.stringify(flight),
       currentDeckIndex: '0',
-      availability: JSON.stringify(availability), // ✅ вот это — обязательно!
-      passengers: JSON.stringify(passengers) // ✅ добавлено
+      availability: JSON.stringify(availability),
+      passengers: JSON.stringify(passengers)
     };
 
-    console.log('%c📤 [SeatMaps] Итоговое сообщение в библиотеку:', 'color: green; font-weight: bold;');
-    console.log(JSON.stringify(message, null, 2));
+    console.log('🔁 Перерисовка карты мест после сброса выбора');
+    iframeRef.current.contentWindow.postMessage(message, '*');
+  };
 
+  useEffect(() => {
+    // тот же useEffect генерации flight
+    if (!flightSegments.length || !currentSegment) {
+      console.warn('⛔ Нет сегментов или текущий сегмент не определён');
+      setFlight(null);
+      return;
+    }
+    const generatedFlight = generateFlightData(currentSegment, segmentIndex, cabinClass);
+    if (!generatedFlight || generatedFlight.flightNo === '000' || generatedFlight.airlineCode === 'XX') {
+      console.warn('⛔ generateFlightData: flight некорректен.', generatedFlight);
+      setFlight(null);
+      return;
+    }
+
+    const cabinClassForLib = mapCabinToCode(cabinClass);
+    const flightForIframe = {
+      ...generatedFlight,
+      cabinClass: cabinClassForLib,
+      passengerType: 'ADT'
+    };
+
+    setFlight(flightForIframe);
+  }, [flightSegments, segmentIndex, cabinClass]);
+
+  useEffect(() => {
+    if (!flight || flight.flightNo === '000' || flight.airlineCode === 'XX') return;
+    const iframe = iframeRef.current;
+    if (!iframe?.contentWindow) return;
+    const message: Record<string, string> = {
+      type: 'seatMaps',
+      config: JSON.stringify(config),
+      flight: JSON.stringify(flight),
+      currentDeckIndex: '0',
+      availability: JSON.stringify(availability),
+      passengers: JSON.stringify(passengers)
+    };
     iframe.contentWindow.postMessage(message, '*');
   }, [flight]);
 
-  // ⏱ Повторная инициализация через короткий таймер
   useEffect(() => {
     if (!flight) return;
-
     const timeout = setTimeout(() => {
       const iframe = iframeRef.current;
       if (!iframe?.contentWindow) return;
-
       const message: Record<string, string> = {
         type: 'seatMaps',
         config: JSON.stringify(config),
         flight: JSON.stringify(flight),
         currentDeckIndex: '0',
-        availability: JSON.stringify(availability), // ✅ вот это — обязательно!
-        passengers: JSON.stringify(passengers) // ✅ добавлено
+        availability: JSON.stringify(availability),
+        passengers: JSON.stringify(passengers)
       };
-
-      console.log('%c🚀 [SeatMaps] Повторная инициализация через timeout', 'color: orange; font-weight: bold;');
       iframe.contentWindow.postMessage(message, '*');
     }, 300);
-
     return () => clearTimeout(timeout);
   }, [flight]);
 
-    // 👂👂👂 Слушатель сообщений из библиотеки quicket.io (seatSelected)
-  const appMessageListener = (event: MessageEvent) => {
-    const { type, ...rest } = event.data;
-  
-    if (type === 'seatMaps' && rest.onSeatSelected) {
-      const {
-        passengerId,
-        seatLabel,
-        value,
-        currency,
-        label,
-        flightNumber,
-        airlineCode,
-        origin,
-        destination,
-        departureDate
-      } = rest.onSeatSelected;
-  
-      console.log('✅ Выбрано место:', seatLabel, 'для пассажира:', passengerId);
-  
-      const publicModalsService = getService(PublicModalsService);
-      const UpdatePNRComponent = require('../../components/pnrServices/UpdatePNR').UpdatePNR;
-  
-      publicModalsService.showReactModal({
-        header: 'Назначение места',
-        component: React.createElement(UpdatePNRComponent, {
-          passengerRef: passengerId,
-          seatNumber: seatLabel,
-          amount: value,
-          currency,
-          passengerName: label,
-          flightNumber,
-          airlineCode,
-          origin,
-          destination,
-          departureDate
-        }),
-        modalClassName: 'seatmap-modal-class'
-      });
-    }
-  };
-
+  // 👂 Ловим seatSelected
+  useEffect(() => {
+    const appMessageListener = (event: MessageEvent) => {
+      const { type, onSeatSelected } = event.data || {};
+      if (type === 'seatMaps' && onSeatSelected) {
+        console.log('✅ Место выбрано:', onSeatSelected);
+        setSelectedSeat(onSeatSelected);
+      }
+    };
+    window.addEventListener('message', appMessageListener);
+    return () => window.removeEventListener('message', appMessageListener);
+  }, []);
 
   return (
     <div style={{ padding: '1rem' }}>
@@ -184,24 +191,26 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
         </div>
       )}
 
-    
-      {/* 🔍 Отладочная информация
-      <div style={{ marginBottom: '1rem', fontSize: '0.85rem', color: '#555', background: '#f9f9f9', padding: '0.5rem', border: '1px solid #ccc' }}>
-        <strong>Debug info:</strong>
-        <div>segmentIndex: {segmentIndex}</div>
-        <div>cabinClass: {cabinClass}</div>
-        <div>flightNo: {flight?.flightNo}</div>
-        <div>airlineCode: {flight?.airlineCode}</div>
-        <div>equipment: {flight?.equipment}</div>
-      </div>
+      {/* 🆕 Блок подтверждения */}
+      {selectedSeat && (
+        <div
+          style={{
+            background: '#f0f0f0',
+            padding: '1rem',
+            marginBottom: '1rem',
+            border: '1px solid #ccc'
+          }}
+        >
+          <div style={{ marginBottom: '0.5rem' }}>
+            <strong>Вы выбрали место:</strong> {selectedSeat.seatLabel} для {selectedSeat.label}
+          </div>
+          <button onClick={handleConfirmSeat} style={{ marginRight: '0.5rem' }}>
+            ✅ Подтвердить
+          </button>
+          <button onClick={handleResetSeat}>🔁 Сбросить</button>
+        </div>
+      )}
 
-      * ✈️ Полный JSON flight-объекта  
-      <div style={{ marginBottom: '1rem', fontSize: '0.9rem', color: '#333' }}>
-        <strong>🛫 Flight info:</strong>
-        <pre>{JSON.stringify(flight, null, 2)}</pre>
-      </div>
-      */}
-      
       {/* 👉 iframe с картой салона */}
       <iframe
         ref={iframeRef}
