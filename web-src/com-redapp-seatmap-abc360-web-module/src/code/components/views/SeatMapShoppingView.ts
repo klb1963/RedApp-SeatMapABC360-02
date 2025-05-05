@@ -10,8 +10,8 @@ import { quicketConfig } from '../../utils/quicketConfig';
 import { CssClass } from 'sabre-ngv-core/decorators/classes/view/CssClass';
 import { Template } from 'sabre-ngv-core/decorators/classes/view/Template';
 
-@CssClass('com-redapp-seatmapsabc360-01-web-module')
-@Template('com-redapp-seatmapsabc360-01-web-module:ShoppingTileView')
+@CssClass('com-redapp-seatmap-abc360-web-module')
+@Template('com-redapp-seatmap-abc360-web-module:ShoppingTileView')
 export class SeatMapShoppingView extends AbstractView<AbstractModel> {
     private currentSegment: FlightSegment | null = null;
     private flightSegments: any[] = [];

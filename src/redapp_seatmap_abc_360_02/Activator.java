@@ -1,4 +1,4 @@
-package redapp_seatmap_abc_3660_02;
+package redapp_seatmap_abc_360_02;
 
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
@@ -9,7 +9,7 @@ import org.osgi.framework.BundleContext;
 public class Activator extends AbstractUIPlugin {
 
 	// The plug-in ID
-	public static final String PLUGIN_ID = "RedApp-SeatMap-ABC-3660-02"; //$NON-NLS-1$
+	public static final String PLUGIN_ID = "RedApp-SeatMap-ABC-360-02"; //$NON-NLS-1$
 
 	// The shared instance
 	private static Activator plugin;
