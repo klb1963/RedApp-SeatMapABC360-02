@@ -1,5 +1,6 @@
 // файл: code/components/SeatMap/getFlightFromSabreData.ts
 
+
 export const getFlightFromSabreData = (
   data: any,
   segmentIndex: number = 0

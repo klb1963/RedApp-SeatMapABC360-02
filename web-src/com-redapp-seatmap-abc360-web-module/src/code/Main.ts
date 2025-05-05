@@ -33,6 +33,8 @@ import { CreatePNR } from './components/pnrServices/CreatePNR';
 
 import { loadPnrDetailsFromSabre } from './services/loadPnrDetailsFromSabre';
 
+import { loadSeatMapFromSabre } from './services/loadSeatMapFromSabre';
+
 export class Main extends Module {
     init(): void {
         super.init();
@@ -83,12 +85,12 @@ export class Main extends Module {
           false
         ),
 
-        // new RedAppSidePanelButton(
-        //   "SeatMaps ABC 360",
-        //   "btn-secondary side-panel-button",
-        //   () => { this.openSeatMaps(); },
-        //   false
-        // ),
+        new RedAppSidePanelButton(
+          "SeatMaps ABC 360",
+          "btn-secondary side-panel-button",
+          () => { this.openSeatMapABC360(); },
+          false
+        ),
 
         new RedAppSidePanelButton(
           "Get EnhancedSeatMapRQ",
@@ -110,11 +112,107 @@ export class Main extends Module {
 
     } // end of init
 
-  //форма для создания PNR
+  //============= форма для создания PNR =======
   showForm(): void {
     const ls = getService(LayerService);
     ls.showOnLayer(CreatePNR, { display: "areaView", position: 42 });
   }
+
+  //============= открываем SeatMap ABC 360 =====
+  
+  openSeatMapABC360(): void {
+    const publicModalsService = getService(PublicModalsService);
+  
+    publicModalsService.closeReactModal(); // ✅ Закрываем любые старые окна
+  
+    (async () => {
+      try {
+        const { parsedData: pnrData } = await loadPnrDetailsFromSabre();
+  
+        if (!pnrData || !pnrData.segments || pnrData.segments.length === 0) {
+          publicModalsService.showReactModal({
+            header: 'SeatMap ABC 360',
+            component: React.createElement(
+              'div',
+              { style: { padding: '1rem' } },
+              'No active PNR with flight segments.'
+            ),
+            modalClassName: 'seatmap-modal-class'
+          });
+          return;
+        }
+
+        // ✅ Берем первый сегмент
+        const rawFlight = pnrData.segments[0];
+
+        // ✅ Формируем объект flight в ожидаемом формате для библиотеки карты мест
+        const flight = {
+          ...rawFlight,
+          flightNo: rawFlight.marketingFlightNumber || '000',
+          flightNumber: rawFlight.marketingFlightNumber || '000',
+          airlineCode: rawFlight.marketingCarrier || 'XX',
+          origin: rawFlight.origin || 'XXX',
+          destination: rawFlight.destination || 'YYY',
+          departureDate: rawFlight.departureDate || '2025-01-01',
+          cabinClass: rawFlight.bookingClass || 'Y',
+          equipment: rawFlight.equipment || 'unknown',
+          passengerType: 'ADT' // фиксированное значение, можно адаптировать
+        };
+
+        // ✅ Пассажиры из PNR
+        const passengers = pnrData.passengers || [];
+
+        // 🆕 Загружаем availability через EnhancedSeatMapRQ
+        const { availability } = await loadSeatMapFromSabre(flight, passengers);
+
+        // ✅ Логи
+        console.log('✈️ flight:', flight);
+        console.log('🧑‍✈️ passengers:', passengers);
+        console.log('🪑 availability:', availability);
+
+        // // ✅ Отладочный блок вместо настоящего компонента
+        // publicModalsService.showReactModal({
+        //   header: 'Seat Map ABC 360',
+        //   component: React.createElement(
+        //     'div',
+        //     { style: { padding: '1rem', fontSize: '1.2rem', color: 'green' } },
+        //     '🧪 Компонент успешно вызван!'
+        //   ),
+        //   modalClassName: 'seatmap-modal-class'
+        // });
+
+        // ✅ Показываем окно с компонентом карты мест
+        // ✅ Показываем окно с компонентом карты мест
+        publicModalsService.showReactModal({
+          header: 'Seat Map ABC 360',
+          component: React.createElement(
+            require('./components/seatMap/SeatMapComponentPnr').default,
+            {
+              config: quicketConfig,
+              flight,
+              availability,
+              passengers
+            }
+          ),
+          modalClassName: 'seatmap-modal-class'
+        });
+
+      } catch (error) {
+        console.error('❌ Failed to load PNR for seat maps:', error);
+
+        publicModalsService.showReactModal({
+          header: 'SeatMaps Error',
+          component: React.createElement(
+            'div',
+            { style: { padding: '1rem', color: 'red' } },
+            'Failed to load PNR data.'
+          ),
+          modalClassName: 'seatmap-modal-class'
+        });
+      }
+    })();
+  }
+
 
   //============= getEnhancedSeatMapRQ ==========
   private getEnhancedSeatMapRQ(): void {

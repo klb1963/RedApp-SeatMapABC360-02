@@ -37,18 +37,19 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
 
   // 🔄 Генерация flight при изменении сегмента или класса обслуживания
   useEffect(() => {
-    if (
-      !flightSegments.length ||
-      !currentSegment ||
-      !currentSegment.marketingAirline ||
-      !currentSegment.flightNumber
-    ) {
-      console.warn('⛔ Невозможно сгенерировать flight: сегмент некорректен.', currentSegment);
+    if (!flightSegments.length || !currentSegment) {
+      console.warn('⛔ Нет сегментов или текущий сегмент не определён');
       setFlight(null);
       return;
     }
-
+  
     const generatedFlight = generateFlightData(currentSegment, segmentIndex, cabinClass);
+  
+    if (!generatedFlight || generatedFlight.flightNo === '000' || generatedFlight.airlineCode === 'XX') {
+      console.warn('⛔ generateFlightData: flight некорректен.', generatedFlight);
+      setFlight(null);
+      return;
+    }
 
     if (!generatedFlight) {
       console.warn('⚠️ generateFlightData вернул null или undefined');
@@ -86,6 +87,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
       config: JSON.stringify(config),
       flight: JSON.stringify(flight),
       currentDeckIndex: '0',
+      passengers: JSON.stringify(passengers) // ✅ добавлено
     };
 
     console.log('%c📤 [SeatMaps] Итоговое сообщение в библиотеку:', 'color: green; font-weight: bold;');
@@ -106,7 +108,8 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
         type: 'seatMaps',
         config: JSON.stringify(config),
         flight: JSON.stringify(flight),
-        currentDeckIndex: '0'
+        currentDeckIndex: '0',
+        passengers: JSON.stringify(passengers) // ✅ добавлено
       };
 
       console.log('%c🚀 [SeatMaps] Повторная инициализация через timeout', 'color: orange; font-weight: bold;');
