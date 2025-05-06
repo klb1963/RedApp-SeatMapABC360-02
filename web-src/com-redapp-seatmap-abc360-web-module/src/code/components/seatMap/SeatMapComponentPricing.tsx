@@ -42,7 +42,7 @@ const SeatMapComponentPricing: React.FC<SeatMapComponentPricingProps> = ({
             {segment?.origin} → {segment?.destination}, рейс {segment?.flightNumber}
           </span>
         </div>
-        <div style={{ fontSize: '1.2rem', color: '#555' }}>
+        <div style={{ fontSize: '1.5rem', color: '#555' }}>
           ✈️ <strong>Самолёт:</strong> {equipment}
         </div>
       </div>

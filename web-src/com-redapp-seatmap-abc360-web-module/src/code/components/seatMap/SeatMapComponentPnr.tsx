@@ -117,16 +117,29 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
           <strong>Пассажиры:</strong>
           <div>
             {passengers.map((p) => {
-              const labelParts = p.label?.split(' ') || [];
-              const title = labelParts.length > 1 ? labelParts[1] : '';
+              const [surname, rawGivenNameAndTitle] = (p.label || '').split('/');
+              const titleMatch = rawGivenNameAndTitle?.match(/(MR|MRS|MS|DR)$/);
+              const title = titleMatch ? titleMatch[0] : '';
+              const givenName = p.givenName || rawGivenNameAndTitle?.replace(title, '').trim();
+
+              const display = `${surname} ${givenName}/${title}`;
+
               return (
                 <label key={p.id} style={{ marginRight: '1rem' }}>
                   <input
                     type="checkbox"
-                    checked={selectedPassengerIds.includes(p.id)}
-                    onChange={() => handleTogglePassenger(p.id)}
+                    name="passenger"
+                    value={p.id}
+                    checked={selectedPassengerIds.includes(p.id)} // Можно выбрать несколько пассажиров
+                    onChange={() =>
+                      setSelectedPassengerIds((prev) =>
+                        prev.includes(p.id)
+                          ? prev.filter((id) => id !== p.id) // Удаляем, если уже выбран
+                          : [...prev, p.id] // Добавляем нового пассажира
+                      )
+                    }
                   />
-                  {title} {p.givenName} {p.surname}
+                  {display}
                 </label>
               );
             })}

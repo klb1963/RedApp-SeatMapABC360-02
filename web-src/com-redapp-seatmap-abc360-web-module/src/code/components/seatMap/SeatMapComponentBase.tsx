@@ -1,14 +1,10 @@
 // file SeatMapComponentBase.tsx
 
-// file: SeatMapComponentBase.tsx
-
 import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { mapCabinToCode } from '../../utils/mapCabinToCode';
 import { getService } from '../../Context';
 import { PublicModalsService } from 'sabre-ngv-modals/services/PublicModalService';
-import { ISoapApiService } from 'sabre-ngv-communication/interfaces/ISoapApiService';
-import { PnrPublicService } from 'sabre-ngv-app/app/services/impl/PnrPublicService';
 
 interface SeatMapComponentBaseProps {
   config: any;
@@ -81,7 +77,6 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     });
   };
 
-
   // обработка отказа от выбранного места
   const handleResetSeat = () => {
     setSelectedSeat(null);
@@ -126,26 +121,15 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     setFlight(flightForIframe);
   }, [flightSegments, segmentIndex, cabinClass]);
 
-  useEffect(() => {
-    if (!flight || flight.flightNo === '000' || flight.airlineCode === 'XX') return;
-    const iframe = iframeRef.current;
-    if (!iframe?.contentWindow) return;
-    const message: Record<string, string> = {
-      type: 'seatMaps',
-      config: JSON.stringify(config),
-      flight: JSON.stringify(flight),
-      currentDeckIndex: '0',
-      availability: JSON.stringify(availability),
-      passengers: JSON.stringify(passengers)
-    };
-    iframe.contentWindow.postMessage(message, '*');
-  }, [flight]);
+  // ============= отправка данных в библиотеку ==============
 
   useEffect(() => {
-    if (!flight) return;
-    const timeout = setTimeout(() => {
-      const iframe = iframeRef.current;
-      if (!iframe?.contentWindow) return;
+    const iframe = iframeRef.current;
+    if (!iframe) return;
+  
+    const handleLoad = () => {
+      if (!flight || flight.flightNo === '000' || flight.airlineCode === 'XX') return;
+  
       const message: Record<string, string> = {
         type: 'seatMaps',
         config: JSON.stringify(config),
@@ -154,10 +138,21 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
         availability: JSON.stringify(availability),
         passengers: JSON.stringify(passengers)
       };
-      iframe.contentWindow.postMessage(message, '*');
-    }, 300);
-    return () => clearTimeout(timeout);
-  }, [flight]);
+  
+      console.log('📨 Отправка данных в iframe после загрузки');
+      iframe.contentWindow?.postMessage(message, '*');
+    };
+  
+    // Подписка на onload iframe
+    iframe.addEventListener('load', handleLoad);
+  
+    // Очистка при размонтировании
+    return () => {
+      iframe.removeEventListener('load', handleLoad);
+    };
+  }, [flight, config, availability, passengers]);
+
+  // ====================================================
 
   // 👂 Ловим seatSelected
   useEffect(() => {
@@ -172,6 +167,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     return () => window.removeEventListener('message', appMessageListener);
   }, []);
 
+  // =============== отображаем в окне ================
   return (
     <div style={{ padding: '1rem' }}>
       {/* 👇 Селектор сегмента (если включён) */}
@@ -201,9 +197,11 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
             border: '1px solid #ccc'
           }}
         >
-          <div style={{ marginBottom: '0.5rem' }}>
-            <strong>Вы выбрали место:</strong> {selectedSeat.seatLabel} для {selectedSeat.label}
-          </div>
+              <div style={{ marginBottom: '0.5rem' }}>
+                <strong>Вы выбрали место:</strong>{' '}
+                {/* <span style={{ color: '#007bff' }}>{selectedSeat.seatLabel}</span>{' '}
+                для <span style={{ color: '#28a745' }}>{selectedSeat.label || 'пассажира'}</span> */}
+              </div>
           <button onClick={handleConfirmSeat} style={{ marginRight: '0.5rem' }}>
             ✅ Подтвердить
           </button>
