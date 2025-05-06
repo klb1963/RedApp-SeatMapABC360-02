@@ -101,6 +101,7 @@ const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, d
     <SeatMapComponentBase
       config={config}
       flightSegments={[normalizedSegments[segmentIndex]]}
+      initialSegmentIndex={0} // ✅ добавляем
       cabinClass={sabreCabinClass}
       generateFlightData={(segment, index, cabin) => {
         const enrichedSegment = {

@@ -1,175 +1,171 @@
 // file SeatMapComponentBase.tsx
 
-// file: SeatMapComponentBase.tsx
-
 import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
-import { mapCabinToCode } from '../../utils/mapCabinToCode';
-import { getService } from '../../Context';
-import { PublicModalsService } from 'sabre-ngv-modals/services/PublicModalService';
+import { FlightData } from '../../utils/generateFlightData';
 import SeatMapModalLayout from './SeatMapModalLayout';
+
+interface Passenger {
+  id: string;
+  givenName: string;
+  surname: string;
+  seatAssignment?: string;
+  label?: string;
+}
+
+interface SelectedSeat {
+  passengerId: string;
+  seatLabel: string;
+}
 
 interface SeatMapComponentBaseProps {
   config: any;
   flightSegments: any[];
-  initialSegmentIndex?: number;
-  generateFlightData: (segment: any, segmentIndex: number, cabinClass?: string) => any;
-  cabinClass: 'F' | 'C' | 'S' | 'Y' | 'A' | 'P' | 'B';
-  layoutData?: any;
-  availability?: any[];
-  passengers?: any[];
+  initialSegmentIndex: number;
   showSegmentSelector?: boolean;
-  assignedSeats?: { passengerId: string; seat: string }[];
-
-   // 🆕 Добавить эти строки:
-  selectedSeats?: any[];
-  onSeatChange?: (updatedSeats: any[]) => void;
+  cabinClass: string;
+  availability: any[];
+  passengers: Passenger[];
+  generateFlightData: (segment: any, index: number, cabin: string) => FlightData;
+  onSeatChange?: (seats: SelectedSeat[]) => void;
+  passengerPanel?: React.ReactNode;
+  selectedSeats?: SelectedSeat[];
 }
 
 const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   config,
   flightSegments,
-  initialSegmentIndex = 0,
-  generateFlightData,
+  initialSegmentIndex,
+  showSegmentSelector = false,
   cabinClass,
-  availability = [],
-  passengers = [],
-  showSegmentSelector = true,
-  assignedSeats,
-  onSeatChange // ✅ получаем из пропсов
+  availability,
+  passengers,
+  generateFlightData,
+  onSeatChange,
+  passengerPanel
 }) => {
-  const [segmentIndex, setSegmentIndex] = useState(initialSegmentIndex);
-  const [flight, setFlight] = useState<any>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const [selectedSeats, setSelectedSeats] = useState<any[]>([]); // ✅ массив всех выбранных мест
 
-  const currentSegment = flightSegments[segmentIndex];
+  // ✅ Храним выбранные места
+  const [selectedSeats, setSelectedSeats] = useState<SelectedSeat[]>([]);
 
-  const handleResetSeat = () => {
-    setSelectedSeats([]);
-    if (!flight || !iframeRef.current?.contentWindow) return;
+  // ✅ Активный пассажир
+  const [selectedPassengerId, setSelectedPassengerId] = useState<string | null>(
+    passengers?.[0]?.id || null
+  );
 
-    const message: Record<string, string> = {
-      type: 'seatMaps',
-      config: JSON.stringify(config),
-      flight: JSON.stringify(flight),
-      currentDeckIndex: '0',
-      availability: JSON.stringify(availability),
-      passengers: JSON.stringify(passengers)
-    };
+  // ✅ Определяем сегмент и самолет
+  const segment = flightSegments[initialSegmentIndex];
+  const equipment =
+    typeof segment?.equipment === 'object'
+      ? segment.equipment?.EncodeDecodeElement?.SimplyDecoded
+      : segment?.equipment || 'неизвестно';
 
-    iframeRef.current.contentWindow.postMessage(message, '*');
-  };
-
+  // ⏫ Обработка событий от iframe (выбор места)
   useEffect(() => {
-    if (!flightSegments.length || !currentSegment) {
-      setFlight(null);
-      return;
-    }
-    const generatedFlight = generateFlightData(currentSegment, segmentIndex, cabinClass);
-    if (!generatedFlight || generatedFlight.flightNo === '000' || generatedFlight.airlineCode === 'XX') {
-      setFlight(null);
-      return;
-    }
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'seatSelected') {
+        const { seatLabel } = event.data;
+        if (!selectedPassengerId || !seatLabel) return;
 
-    const cabinClassForLib = mapCabinToCode(cabinClass);
-    const flightForIframe = {
-      ...generatedFlight,
-      cabinClass: cabinClassForLib,
-      passengerType: 'ADT'
-    };
+        const updatedSeats = [
+          ...selectedSeats.filter(s => s.passengerId !== selectedPassengerId),
+          { passengerId: selectedPassengerId, seatLabel }
+        ];
 
-    setFlight(flightForIframe);
-  }, [flightSegments, segmentIndex, cabinClass]);
-
-  useEffect(() => {
-    const iframe = iframeRef.current;
-    if (!iframe) return;
-
-    const handleLoad = () => {
-      if (!flight || flight.flightNo === '000' || flight.airlineCode === 'XX') return;
-
-      const message: Record<string, string> = {
-        type: 'seatMaps',
-        config: JSON.stringify(config),
-        flight: JSON.stringify(flight),
-        currentDeckIndex: '0',
-        availability: JSON.stringify(availability),
-        passengers: JSON.stringify(passengers)
-      };
-
-      iframe.contentWindow?.postMessage(message, '*');
-    };
-
-    iframe.addEventListener('load', handleLoad);
-    return () => {
-      iframe.removeEventListener('load', handleLoad);
-    };
-  }, [flight, config, availability, passengers]);
-
-  // 👂 Обработка выбора места
-  useEffect(() => {
-    const appMessageListener = (event: MessageEvent) => {
-      const { type, onSeatSelected } = event.data || {};
-      if (type === 'seatMaps' && onSeatSelected) {
-        console.log('✅ Место выбрано:', onSeatSelected);
-
-        // 🔁 обновляем массив выбранных мест
-        setSelectedSeats((prev) => {
-          const updated = [...prev.filter(s => s.passengerId !== onSeatSelected.passengerId), onSeatSelected];
-          // 👉 вызываем внешний обработчик, если есть
-          onSeatChange?.(updated);
-          return updated;
-        });
+        setSelectedSeats(updatedSeats);
+        onSeatChange?.(updatedSeats);
       }
     };
 
-    window.addEventListener('message', appMessageListener);
-    return () => window.removeEventListener('message', appMessageListener);
-  }, [onSeatChange]);
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [selectedPassengerId, selectedSeats, onSeatChange]);
+
+  // ⏫ Отправляем данные в iframe
+  useEffect(() => {
+    if (!iframeRef.current) return;
+
+    const flightData = generateFlightData(segment, initialSegmentIndex, cabinClass);
+    const payload = {
+      config,
+      flight: flightData,
+      availability,
+      passengers: passengers.map((p) => ({
+        id: p.id,
+        label: p.label || `${p.givenName} ${p.surname}`,
+        seat: selectedSeats.find((s) => s.passengerId === p.id)?.seatLabel || null
+      }))
+    };
+
+    const iframeWindow = iframeRef.current.contentWindow;
+    iframeWindow?.postMessage(payload, '*');
+  }, [config, flightSegments, initialSegmentIndex, cabinClass, availability, passengers, selectedSeats, generateFlightData]);
+
+  // ⏹ Сброс всех мест
+  const handleResetSeat = () => {
+    setSelectedSeats([]);
+    onSeatChange?.([]);
+  };
 
   return (
     <SeatMapModalLayout
       flightInfo={
         <div>
-          <h4>{flight?.airlineCode} {flight?.flightNo}</h4>
-          <p>{flight?.origin} → {flight?.destination}</p>
-          <p>Дата вылета: {flight?.departureDate}</p>
-          <p>Самолёт: {flight?.equipmentType || 'неизвестен'}</p>
-          <p>Класс: {cabinClass}</p>
+          <div><strong>{segment?.airlineCode} {segment?.flightNumber}</strong></div>
+          <div>{segment?.origin} → {segment?.destination}</div>
+          <div>Дата вылета: {segment?.departureDate}</div>
+          <div>Самолёт: {equipment}</div>
+          <div>Класс: {segment?.cabinClass}</div>
+          <hr />
+          <div><strong>Обозначения:</strong></div>
+          <ul style={{ paddingLeft: '1rem' }}>
+            <li>🟩 — свободно</li>
+            <li>⬛ — занято</li>
+            <li>🔲 — недоступно</li>
+            <li>🪑 — выбрано</li>
+          </ul>
         </div>
       }
       passengerPanel={
         <div>
-          <strong>Пассажиры:</strong>
-          <div style={{ margin: '0.5rem 0' }}>
+          <strong>Passenger(s)</strong>
+          <div style={{ margin: '1rem 0' }}>
             {passengers.map((p) => {
               const seat = selectedSeats.find((s) => s.passengerId === p.id);
+              const isActive = p.id === selectedPassengerId;
               return (
-                <div key={p.id} style={{ marginBottom: '0.5rem' }}>
-                  <div>{p.label}</div>
-                  {seat && <div>🪑 Выбрано: {seat.seatLabel}</div>}
+                <div key={p.id} style={{ marginBottom: '1rem' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <input
+                      type="radio"
+                      name="activePassenger"
+                      value={p.id}
+                      checked={isActive}
+                      onChange={() => setSelectedPassengerId(p.id)}
+                    />
+                    {p.label || `${p.givenName} ${p.surname}`}
+                  </label>
+                  <div>
+                    Seat: <strong>{seat?.seatLabel || '—'}</strong>
+                  </div>
                 </div>
               );
             })}
           </div>
-          <hr />
-          <div>
-            <button onClick={handleResetSeat}>🔁 Сбросить все</button>
-          </div>
+          <button onClick={handleResetSeat}>🔁 Сбросить все</button>
         </div>
       }
     >
       <iframe
         ref={iframeRef}
-        src="https://quicket.io/react-proxy-app/"
-        width="100%"
-        height="100%"
-        style={{ border: 'none' }}
-        title="SeatMapIframe"
+        title="Seat Map"
+        src="https://quicket.io/react-proxy-app"
+        style={{ width: '100%', height: '100%', border: 'none' }}
       />
     </SeatMapModalLayout>
   );
+
 };
 
 export default SeatMapComponentBase;

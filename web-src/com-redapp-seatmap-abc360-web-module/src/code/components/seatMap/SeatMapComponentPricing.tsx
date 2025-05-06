@@ -73,6 +73,7 @@ const SeatMapComponentPricing: React.FC<SeatMapComponentPricingProps> = ({
             index
           )
         }
+        availability={[]} // ✅ добавлен для устранения ошибки
         passengers={[]} // можно передать, если есть
         showSegmentSelector={false}
       />

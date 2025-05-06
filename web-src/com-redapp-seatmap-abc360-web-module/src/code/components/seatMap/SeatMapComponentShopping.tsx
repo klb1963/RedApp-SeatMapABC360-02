@@ -86,6 +86,8 @@ const SeatMapComponentShopping: React.FC<SeatMapComponentShoppingProps> = ({ con
             index
           )
         }
+        availability={[]}          // ✅ добавляем
+        passengers={[]}            // ✅ добавляем
         showSegmentSelector={false}
       />
     </div>
