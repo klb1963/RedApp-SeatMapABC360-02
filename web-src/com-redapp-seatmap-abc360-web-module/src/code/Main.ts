@@ -183,7 +183,7 @@ export class Main extends Module {
               passengers
             }
           ),
-          modalClassName: 'seatmap-modal-class'
+          modalClassName: 'seatmap-modal-wide'
         });
 
       } catch (error) {

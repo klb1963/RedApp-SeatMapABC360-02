@@ -111,7 +111,7 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
         </select>
       </div>
 
-      {/* 👤 Селектор пассажиров */}
+      {/* 👤 Селектор пассажиров
       {passengers.length > 0 && (
         <div style={{ marginBottom: '1rem' }}>
           <strong>Пассажиры:</strong>
@@ -145,7 +145,7 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
             })}
           </div>
         </div>
-      )}
+      )} */}
 
       {/* 🧩 Карта мест */}
       <SeatMapComponentBase
