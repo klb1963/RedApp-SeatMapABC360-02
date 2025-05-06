@@ -35,6 +35,9 @@ import { loadPnrDetailsFromSabre } from './services/loadPnrDetailsFromSabre';
 
 import { loadSeatMapFromSabre } from './services/loadSeatMapFromSabre';
 
+import { actions } from './components/seatMap/actions';
+import { handleSaveSeats } from './components/seatMap/handleSaveSeats';
+
 export class Main extends Module {
     init(): void {
         super.init();
@@ -121,9 +124,9 @@ export class Main extends Module {
   //============= открываем SeatMap ABC 360 =====
   openSeatMapABC360(): void {
     const publicModalsService = getService(PublicModalsService);
-
     publicModalsService.closeReactModal(); // ✅ Закрываем любые старые окна
 
+    // берем данные из PNR
     (async () => {
       try {
         const { parsedData: pnrData } = await loadPnrDetailsFromSabre();
@@ -170,7 +173,14 @@ export class Main extends Module {
         console.log('🧑‍✈️ passengers:', passengers);
         console.log('🪑 availability:', availability);
 
-        // ✅ Показываем окно с компонентом карты мест
+        // =========== кнопки для модального окна =====
+        const onClickCancel = () => {
+          getService(PublicModalsService).closeReactModal();
+        };
+
+        const store = this.localStore.store;
+
+        // ✅ Открываем модальное окно с компонентом карты мест
         publicModalsService.showReactModal({
           header: 'Seat Map ABC 360',
           component: React.createElement(
@@ -183,7 +193,10 @@ export class Main extends Module {
               passengers
             }
           ),
-          modalClassName: 'seatmap-modal-wide'
+          onSubmit: () => handleSaveSeats(this.localStore.store.getState().selectedSeats),
+          actions: actions(() => handleSaveSeats(this.localStore.store.getState().selectedSeats), this.onClickCancel),
+          modalClassName: 'seatmap-modal-wide',
+
         });
 
       } catch (error) {
@@ -202,7 +215,24 @@ export class Main extends Module {
     })();
   }
 
-  //============= getEnhancedSeatMapRQ ==========
+  // ===============================================
+
+    // ✅ Внутри класса Main
+    localStore = {
+      store: {
+        getState: () => {
+          return {
+            selectedSeats: (window as any).selectedSeats || []
+          };
+        }
+      }
+    };
+  
+    private onClickCancel = () => {
+      getService(PublicModalsService).closeReactModal();
+    };
+
+  //============= Кнопка getEnhancedSeatMapRQ ==========
   private getEnhancedSeatMapRQ(): void {
     const publicModalsService = getService(PublicModalsService);
 
@@ -213,7 +243,7 @@ export class Main extends Module {
     });
   }
 
-  // =========== showPnrInfo ==================
+  // =========== Кнопка showPnrInfo ==================
   showPnrInfo(): void {
     const publicModalsService = getService(PublicModalsService);
 
@@ -285,24 +315,24 @@ export class Main extends Module {
     );
   }
 
-    //========= Shopping & Pricing Tile =============
-    private registerSeatMapShoppingTile(): void {
-        // определяем config shoppingDrawerConfig для Shopping
-        console.log("registerSeatMapShoppingTile");
-        const shoppingDrawerConfig = new LargeWidgetDrawerConfig(SeatMapShoppingTile, SeatMapShoppingView, {
-            title: 'Shopping Tile Widget' // заголовок окна
-        });
-        // вызвываем сервис с этим config shoppingDrawerConfig
-        getService(DrawerService).addConfig(['shopping-flight-segment'], shoppingDrawerConfig);
+  //========= Shopping & Pricing Tile =============
+  private registerSeatMapShoppingTile(): void {
+    // определяем config shoppingDrawerConfig для Shopping
+    console.log("registerSeatMapShoppingTile");
+    const shoppingDrawerConfig = new LargeWidgetDrawerConfig(SeatMapShoppingTile, SeatMapShoppingView, {
+      title: 'Shopping Tile Widget' // заголовок окна
+    });
+    // вызвываем сервис с этим config shoppingDrawerConfig
+    getService(DrawerService).addConfig(['shopping-flight-segment'], shoppingDrawerConfig);
 
-        // Pricing Tile
-        const showPricingModal = this.createShowModalAction(PricingView, 'Pricing data');
-        getService(IAirPricingService).createPricingTile(PricingTile, showPricingModal, 'ABC Seat Map');
+    // Pricing Tile
+    const showPricingModal = this.createShowModalAction(PricingView, 'Pricing data');
+    getService(IAirPricingService).createPricingTile(PricingTile, showPricingModal, 'ABC Seat Map');
 
-    }
+  }
 
     // ===============================================
-    // приватный метод для показа модального окна
+    // приватный метод для показа модального окна в сценарии Pricing
     private createShowModalAction(view: React.FunctionComponent<any>, header: string): (data: any) => void {
         return ((data) => {
     

@@ -24,7 +24,7 @@ const SeatMapModalLayout: React.FC<SeatMapModalLayoutProps> = ({
     }}>
       {/* Левая колонка — информация о рейсе */}
       <div style={{
-        width: '20%',
+        width: '25%',
         minWidth: '180px',
         background: '#f8f8f8',
         padding: '1rem',

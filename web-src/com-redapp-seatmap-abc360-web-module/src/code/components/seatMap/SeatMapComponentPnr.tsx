@@ -1,12 +1,11 @@
 // file: SeatMapComponentPnr.tsx
 
-// file: SeatMapComponentPnr.tsx
-
 import * as React from 'react';
 import { useState } from 'react';
 import SeatMapComponentBase from './SeatMapComponentBase';
 import { generateFlightData } from '../../utils/generateFlightData';
 
+// Интерфейс пассажира
 interface Passenger {
   id: string;
   givenName: string;
@@ -15,6 +14,7 @@ interface Passenger {
   label?: string;
 }
 
+// Интерфейс пропсов
 interface SeatMapComponentPnrProps {
   config: any;
   flightSegments: any[];
@@ -40,6 +40,7 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
     );
   }
 
+  // состояние: выбранный сегмент и класс обслуживания
   const [segmentIndex, setSegmentIndex] = useState<number>(selectedSegmentIndex);
   const [cabinClass, setCabinClass] = useState<'Y' | 'S' | 'C' | 'F' | 'A'>(
     flightSegments[segmentIndex]?.cabinClass || 'Y'
@@ -51,9 +52,15 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
       ? segment.equipment?.EncodeDecodeElement?.SimplyDecoded
       : segment?.equipment || 'неизвестно';
 
+  // состояние: выбранные ID пассажиров
   const [selectedPassengerIds, setSelectedPassengerIds] = useState<string[]>(
     Array.isArray(passengers) ? passengers.map((p) => p.id) : []
   );
+
+  // состояние: выбранные места для всех пассажиров
+  const [selectedSeats, setSelectedSeats] = useState<
+    { passengerId: string; seatLabel: string }[]
+  >([]); // 🆕 добавлен массив мест
 
   const handleTogglePassenger = (id: string) => {
     setSelectedPassengerIds((prev) =>
@@ -81,7 +88,7 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
           <label style={{ marginRight: '0.5rem' }}>Сегмент:</label>
           <select value={segmentIndex} onChange={(e) => {
             setSegmentIndex(Number(e.target.value));
-            setCabinClass('Y'); // сбрасываем класс по умолчанию
+            setCabinClass('Y');
           }}>
             {flightSegments.map((seg: any, idx: number) => (
               <option key={idx} value={idx}>
@@ -111,42 +118,6 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
         </select>
       </div>
 
-      {/* 👤 Селектор пассажиров
-      {passengers.length > 0 && (
-        <div style={{ marginBottom: '1rem' }}>
-          <strong>Пассажиры:</strong>
-          <div>
-            {passengers.map((p) => {
-              const [surname, rawGivenNameAndTitle] = (p.label || '').split('/');
-              const titleMatch = rawGivenNameAndTitle?.match(/(MR|MRS|MS|DR)$/);
-              const title = titleMatch ? titleMatch[0] : '';
-              const givenName = p.givenName || rawGivenNameAndTitle?.replace(title, '').trim();
-
-              const display = `${surname} ${givenName}/${title}`;
-
-              return (
-                <label key={p.id} style={{ marginRight: '1rem' }}>
-                  <input
-                    type="checkbox"
-                    name="passenger"
-                    value={p.id}
-                    checked={selectedPassengerIds.includes(p.id)} // Можно выбрать несколько пассажиров
-                    onChange={() =>
-                      setSelectedPassengerIds((prev) =>
-                        prev.includes(p.id)
-                          ? prev.filter((id) => id !== p.id) // Удаляем, если уже выбран
-                          : [...prev, p.id] // Добавляем нового пассажира
-                      )
-                    }
-                  />
-                  {display}
-                </label>
-              );
-            })}
-          </div>
-        </div>
-      )} */}
-
       {/* 🧩 Карта мест */}
       <SeatMapComponentBase
         config={config}
@@ -159,6 +130,9 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
         }
         availability={Array.isArray(availability) ? availability : []}
         passengers={selectedPassengers}
+        // 🆕 Передаём setSelectedSeats и selectedSeats в дочерний компонент
+        onSeatChange={(updatedSeats) => setSelectedSeats(updatedSeats)}
+        selectedSeats={selectedSeats}
       />
     </div>
   );
