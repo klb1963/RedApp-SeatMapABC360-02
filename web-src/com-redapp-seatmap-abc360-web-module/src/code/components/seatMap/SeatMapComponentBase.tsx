@@ -117,15 +117,20 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
       console.log('✅ iframe загружен, отправка:', message);
       iframe.contentWindow?.postMessage(message, targetOrigin);
     };
-  
+
+    // 👉 отправка при загрузке iframe
     iframe.addEventListener('load', handleIframeLoad);
-    if (iframe.contentDocument?.readyState === 'complete') {
-      handleIframeLoad();
+
+    // 👉 если уже загружен — отправить сразу
+    if (iframe.contentWindow) {
+      console.log('📤 iframe уже загружен, отправка данных напрямую:', message);
+      iframe.contentWindow.postMessage(message, targetOrigin);
     }
-  
+
+    // 🔄 очистка при размонтировании
     return () => {
       iframe.removeEventListener('load', handleIframeLoad);
-    };
+};
   }, [config, flightSegments, initialSegmentIndex, cabinClass, passengers, selectedSeats, selectedPassengerId]);
 
   // ============= message send =========================
@@ -207,3 +212,12 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
 };
 
 export default SeatMapComponentBase;
+
+    // iframe.addEventListener('load', handleIframeLoad);
+    // if (iframe.contentDocument?.readyState === 'complete') {
+    //   handleIframeLoad();
+    // }
+  
+    // return () => {
+    //   iframe.removeEventListener('load', handleIframeLoad);
+    // };
