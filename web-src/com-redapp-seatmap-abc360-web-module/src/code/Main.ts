@@ -196,7 +196,6 @@ export class Main extends Module {
           onSubmit: () => handleSaveSeats(this.localStore.store.getState().selectedSeats),
           actions: actions(() => handleSaveSeats(this.localStore.store.getState().selectedSeats), this.onClickCancel),
           modalClassName: 'seatmap-modal-wide',
-
         });
 
       } catch (error) {
@@ -303,7 +302,7 @@ export class Main extends Module {
           config: quicketConfig,
           data: data
         }),
-        modalClassName: 'react-tile-modal-class'
+        modalClassName: 'react-tile-modal-class seatmap-modal-wide'
       };
       getService(PublicModalsService).showReactModal(modalOptions);
     };
@@ -319,8 +318,10 @@ export class Main extends Module {
   private registerSeatMapShoppingTile(): void {
     // определяем config shoppingDrawerConfig для Shopping
     console.log("registerSeatMapShoppingTile");
+    
     const shoppingDrawerConfig = new LargeWidgetDrawerConfig(SeatMapShoppingTile, SeatMapShoppingView, {
-      title: 'Shopping Tile Widget' // заголовок окна
+      title: 'Shopping Tile Widget', // заголовок окна
+      
     });
     // вызвываем сервис с этим config shoppingDrawerConfig
     getService(DrawerService).addConfig(['shopping-flight-segment'], shoppingDrawerConfig);
@@ -336,7 +337,7 @@ export class Main extends Module {
     private createShowModalAction(view: React.FunctionComponent<any>, header: string): (data: any) => void {
         return ((data) => {
     
-            console.log('📥 [Pricing] Received:', JSON.stringify(data, null, 2));
+          console.log('📥 [Pricing] Received:', JSON.stringify(data, null, 2));
     
           const ngvModalOptions: ReactModalOptions = {
             header,
@@ -344,10 +345,18 @@ export class Main extends Module {
               view,
               data
             ),
-            modalClassName: 'react-tile-modal-class'
+            modalClassName: 'react-tile-modal-class seatmap-modal-wide'
           }
           getService(PublicModalsService).showReactModal(ngvModalOptions);
-        })
+
+           // ✅ Добавляем класс вручную, если modalClassName не сработал
+          setTimeout(() => {
+            document.querySelectorAll('.react-modal.modal-dialog').forEach(el => {
+              el.classList.add('seatmap-modal-wide');
+            });
+          }, 100);
+
+        });
       }
 
 }
