@@ -38,6 +38,31 @@ const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, d
   const segment = normalizedSegments[segmentIndex];
   console.log('📡 Segment before generateFlightData:', segment);
 
+  const enrichedSegment = {
+    ...segment,
+    cabinClass: cabinClass,
+    equipment: segment.equipment
+  };
+  
+  const flightInfo = (
+    <div>
+      <div><strong>{segment?.marketingAirline} {segment?.flightNumber}</strong></div>
+      <div>{segment?.origin} → {segment?.destination}</div>
+      <div>📅 Дата вылета: {segment?.departureDateTime?.split('T')[0] || 'не указана'}</div>
+      <div>✈️ Самолёт: {segment?.equipment || 'неизвестен'}</div>
+      <div>🪑 Класс: {cabinClass || 'не указан'}</div>
+      <hr />
+      <div><strong>Обозначения:</strong></div>
+      <ul style={{ paddingLeft: '1rem' }}>
+        <li>🟩 — свободно</li>
+        <li>⬛ — занято</li>
+        <li>🔲 — недоступно</li>
+        <li>🪑 — выбрано</li>
+      </ul>
+    </div>
+  );
+
+
   return (
     <div style={{ padding: '1rem' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -73,22 +98,15 @@ const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, d
       <br /><br />
 
       <SeatMapComponentBase
-        config={config}
-        flightSegments={[segment]}
-        initialSegmentIndex={0}
-        cabinClass={cabinClass}
-        generateFlightData={(segment, index, cabin) => {
-          const enrichedSegment = {
-            ...segment,
-            cabinClass: cabin,
-            equipment: segment.equipment
-          };
-          console.log('🛫 enrichedSegment for generateFlightData:', enrichedSegment);
-          return getFlightFromSabreData({ flightSegments: [enrichedSegment] }, 0);
-        }}
-        availability={availability}
-        passengers={passengers}
-        showSegmentSelector={false}
+          config={config}
+          flightSegments={[normalizedSegments[segmentIndex]]}
+          initialSegmentIndex={0}
+          cabinClass={cabinClass}
+          generateFlightData={() => getFlightFromSabreData({ flightSegments: [enrichedSegment] }, 0)}
+          availability={availability}
+          passengers={passengers}
+          showSegmentSelector={false}
+          flightInfo={flightInfo}
       />
     </div>
   );

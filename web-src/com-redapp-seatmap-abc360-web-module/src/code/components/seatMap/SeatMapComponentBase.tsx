@@ -1,4 +1,4 @@
-// file SeatMapComponentBase.tsx
+// file: SeatMapComponentBase.tsx
 
 import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
@@ -31,6 +31,7 @@ interface SeatMapComponentBaseProps {
   onSeatChange?: (seats: SelectedSeat[]) => void;
   passengerPanel?: React.ReactNode;
   selectedSeats?: SelectedSeat[];
+  flightInfo?: React.ReactNode;
 }
 
 const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
@@ -43,7 +44,8 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   passengers,
   generateFlightData,
   onSeatChange,
-  passengerPanel
+  passengerPanel,
+  flightInfo // ✅ Добавлено
 }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
@@ -143,7 +145,8 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
 
   return (
     <SeatMapModalLayout
-      flightInfo={
+    flightInfo={
+      flightInfo ?? (
         <div>
           <div><strong>{segment?.airlineCode} {segment?.flightNumber}</strong></div>
           <div>{segment?.origin} → {segment?.destination}</div>
@@ -159,7 +162,8 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
             <li>🪑 — выбрано</li>
           </ul>
         </div>
-      }
+      )
+    }
       passengerPanel={
         <div>
           <strong>Passenger(s)</strong>
@@ -212,12 +216,3 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
 };
 
 export default SeatMapComponentBase;
-
-    // iframe.addEventListener('load', handleIframeLoad);
-    // if (iframe.contentDocument?.readyState === 'complete') {
-    //   handleIframeLoad();
-    // }
-  
-    // return () => {
-    //   iframe.removeEventListener('load', handleIframeLoad);
-    // };
