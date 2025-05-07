@@ -11,6 +11,7 @@ interface Passenger {
   surname: string;
   seatAssignment?: string;
   label?: string;
+  initials?: string;
 }
 
 interface SelectedSeat {
@@ -49,10 +50,15 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   // ✅ Храним выбранные места
   const [selectedSeats, setSelectedSeats] = useState<SelectedSeat[]>([]);
 
-  // ✅ Активный пассажир
-  const [selectedPassengerId, setSelectedPassengerId] = useState<string | null>(
-    passengers?.[0]?.id || null
-  );
+  // ✅ Активный пассажир — выбираем первого по умолчанию
+  const [selectedPassengerId, setSelectedPassengerId] = useState<string>(
+    passengers.length > 0 ? passengers[0].id : ''
+  );  
+
+  // 🧮 Количество выбранных мест
+  const selectedCount = passengers.filter(p =>
+    selectedSeats.some(s => s.passengerId === p.id)
+  ).length;
 
   // ✅ Определяем сегмент и самолет
   const segment = flightSegments[initialSegmentIndex];
@@ -61,46 +67,68 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
       ? segment.equipment?.EncodeDecodeElement?.SimplyDecoded
       : segment?.equipment || 'неизвестно';
 
-  // ⏫ Обработка событий от iframe (выбор места)
+  // ======== ⏫ message for quicket.io preparation ==================
+  
   useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data?.type === 'seatSelected') {
-        const { seatLabel } = event.data;
-        if (!selectedPassengerId || !seatLabel) return;
-
-        const updatedSeats = [
-          ...selectedSeats.filter(s => s.passengerId !== selectedPassengerId),
-          { passengerId: selectedPassengerId, seatLabel }
-        ];
-
-        setSelectedSeats(updatedSeats);
-        onSeatChange?.(updatedSeats);
-      }
+    const iframe = iframeRef.current;
+    if (!iframe) return;
+  
+    // ==== flight =======
+    const flight = generateFlightData(segment, initialSegmentIndex, cabinClass);
+  
+    // ==== availability =======
+    const availabilityData = availability || [];
+  
+    // ============ passengers =======================
+    // 🎨 colors
+    const colorPalette = ['blue', 'orange', 'green', 'purple', 'teal', 'red'];
+  
+    // 🔤 initials
+    const getInitials = (p: Passenger) => {
+      return `${p.givenName?.[0] || ''}${p.surname?.[0] || ''}`.toUpperCase(); // ✅ KG
+    };    
+  
+    const passengerList = passengers.map((p, index) => ({
+      id: p.id || index.toString(), // ✅ Используем индекс, если id отсутствует
+      passengerType: 'ADT',
+      seat: selectedSeats.find((s) => s.passengerId === p.id) || null,
+      passengerLabel: p.label || `${p.givenName} ${p.surname}`,
+      passengerColor: colorPalette[index % colorPalette.length],
+      initials: p.initials || getInitials(p), // ✅ Используем предоставленные Sabre initials
+      readOnly: p.id !== selectedPassengerId 
+    }));
+    
+  
+    console.log('🎫 Пассажиры в библиотеку:', passengerList);
+    console.log('👤 Активный:', selectedPassengerId);
+  
+    const message = {
+      type: 'seatMaps',
+      config: JSON.stringify(config),
+      flight: JSON.stringify(flight),
+      availability: JSON.stringify(availabilityData),
+      passengers: JSON.stringify(passengerList),
+      currentDeckIndex: "0"
     };
-
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, [selectedPassengerId, selectedSeats, onSeatChange]);
-
-  // ⏫ Отправляем данные в iframe
-  useEffect(() => {
-    if (!iframeRef.current) return;
-
-    const flightData = generateFlightData(segment, initialSegmentIndex, cabinClass);
-    const payload = {
-      config,
-      flight: flightData,
-      availability,
-      passengers: passengers.map((p) => ({
-        id: p.id,
-        label: p.label || `${p.givenName} ${p.surname}`,
-        seat: selectedSeats.find((s) => s.passengerId === p.id)?.seatLabel || null
-      }))
+  
+    const targetOrigin = "https://quicket.io";
+  
+    const handleIframeLoad = () => {
+      console.log('✅ iframe загружен, отправка:', message);
+      iframe.contentWindow?.postMessage(message, targetOrigin);
     };
+  
+    iframe.addEventListener('load', handleIframeLoad);
+    if (iframe.contentDocument?.readyState === 'complete') {
+      handleIframeLoad();
+    }
+  
+    return () => {
+      iframe.removeEventListener('load', handleIframeLoad);
+    };
+  }, [config, flightSegments, initialSegmentIndex, cabinClass, passengers, selectedSeats, selectedPassengerId]);
 
-    const iframeWindow = iframeRef.current.contentWindow;
-    iframeWindow?.postMessage(payload, '*');
-  }, [config, flightSegments, initialSegmentIndex, cabinClass, availability, passengers, selectedSeats, generateFlightData]);
+  // ============= message send =========================
 
   // ⏹ Сброс всех мест
   const handleResetSeat = () => {
@@ -153,7 +181,18 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
               );
             })}
           </div>
-          <button onClick={handleResetSeat}>🔁 Сбросить все</button>
+      
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div>
+              ✅ Выбрано мест:{' '}
+              {
+                passengers.filter((p) =>
+                  selectedSeats.some((s) => s.passengerId === p.id)
+                ).length
+              } из {passengers.length}
+            </div>
+            <button onClick={handleResetSeat}>🔁 Сбросить все</button>
+          </div>
         </div>
       }
     >
@@ -165,7 +204,6 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
       />
     </SeatMapModalLayout>
   );
-
 };
 
 export default SeatMapComponentBase;

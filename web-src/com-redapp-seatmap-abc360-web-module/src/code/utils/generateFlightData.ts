@@ -33,6 +33,7 @@ export interface FlightData {
   cabinClass: string;
   equipment: string;
   marketingCarrier?: string;
+  passengerType: string; // 🔥 добавлено
 }
 
 export function generateFlightData(segment: FlightSegmentInput, index: number, cabinClassOverride?: string): FlightData {
@@ -64,7 +65,8 @@ export function generateFlightData(segment: FlightSegmentInput, index: number, c
     arrival,
     cabinClass: mappedCabin,
     equipment: rawEquipment,
-    marketingCarrier: airlineCode
+    marketingCarrier: airlineCode,
+    passengerType: 'ADT'
   };
 
   console.log('[✅ FlightData Ready]', result);
