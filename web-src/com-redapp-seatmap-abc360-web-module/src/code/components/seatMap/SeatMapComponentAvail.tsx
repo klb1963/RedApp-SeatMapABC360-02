@@ -1,12 +1,10 @@
 // file: SeatMapComponentAvail.tsx
 
-// Финализированный компонент SeatMapComponentAvail
-
 import * as React from 'react';
 import SeatMapComponentBase from './SeatMapComponentBase';
 import { getFlightFromSabreData } from './getFlightFromSabreData';
 
-type CabinClassForLibrary = 'E' | 'P' | 'B' | 'F';
+type CabinClassForLibrary = 'E' | 'P' | 'B' | 'F' | 'ALL';
 
 interface SeatMapComponentAvailProps {
   config: any;
@@ -93,6 +91,7 @@ const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, d
         <option value="P">Premium Economy</option>
         <option value="B">Business</option>
         <option value="F">First</option>
+        <option value="ALL">All Cabins</option>
       </select>
 
       <br /><br />
@@ -102,7 +101,14 @@ const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, d
           flightSegments={[normalizedSegments[segmentIndex]]}
           initialSegmentIndex={0}
           cabinClass={cabinClass}
-          generateFlightData={() => getFlightFromSabreData({ flightSegments: [enrichedSegment] }, 0)}
+          generateFlightData={() => {
+            const enrichedSegment = {
+              ...segment,
+              cabinClass: cabinClass === 'ALL' ? undefined : cabinClass,
+              equipment: segment.equipment
+            };
+            return getFlightFromSabreData({ flightSegments: [enrichedSegment] }, 0);
+          }}
           availability={availability}
           passengers={passengers}
           showSegmentSelector={false}

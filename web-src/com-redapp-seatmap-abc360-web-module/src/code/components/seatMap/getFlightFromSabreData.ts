@@ -1,6 +1,5 @@
 // файл: code/components/SeatMap/getFlightFromSabreData.ts
 
-
 export const getFlightFromSabreData = (
   data: any,
   segmentIndex: number = 0
@@ -63,7 +62,7 @@ export const getFlightFromSabreData = (
     departureDate,
     departure: origin,
     arrival: destination,
-    cabinClass: cabinClass === 'A' ? undefined : cabinClass,
+    cabinClass: cabinClass,
     passengerType: 'ADT',
     equipment
   };
