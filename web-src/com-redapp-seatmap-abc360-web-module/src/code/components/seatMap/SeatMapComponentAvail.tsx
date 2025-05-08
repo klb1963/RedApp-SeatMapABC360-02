@@ -63,17 +63,19 @@ const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, d
 
   return (
     <div style={{ padding: '1rem' }}>
+
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-        <div>
-          <label>Сегмент:</label>
-          <select value={segmentIndex} onChange={handleSegmentChange}>
-            {rawSegments.map((seg: any, idx: number) => (
-              <option key={idx} value={idx}>
-                {seg.origin} → {seg.destination}, рейс {seg.FlightNumber || seg.marketingFlightNumber}
-              </option>
-            ))}
-          </select>
-        </div>
+
+      <div>
+        <label>Сегмент:</label>
+        <select value={segmentIndex} onChange={handleSegmentChange}>
+          {normalizedSegments.map((seg: any, idx: number) => (
+            <option key={idx} value={idx}>
+              {seg.origin} → {seg.destination}, рейс {seg.flightNumber}
+            </option>
+          ))}
+        </select>
+      </div>
 
         <div style={{ fontSize: '1.5rem', color: '#555' }}>
           ✈️ <strong>Самолёт:</strong> {normalizedSegments?.[segmentIndex]?.equipment || 'неизвестно'}
