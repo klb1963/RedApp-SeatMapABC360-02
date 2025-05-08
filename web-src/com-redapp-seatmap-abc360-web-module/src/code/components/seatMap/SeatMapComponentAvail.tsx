@@ -3,7 +3,6 @@
 import * as React from 'react';
 import SeatMapComponentBase from './SeatMapComponentBase';
 import { getFlightFromSabreData } from './getFlightFromSabreData';
-import SeatLegend from './SeatLegend';
 
 type CabinClassForLibrary = 'E' | 'P' | 'B' | 'F' | 'ALL';
 
@@ -49,7 +48,7 @@ const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, d
       <div>{segment?.origin} → {segment?.destination}</div>
       <div>📅 Дата вылета: {segment?.departureDateTime?.split('T')[0] || 'не указана'}</div>
       <div>✈️ Самолёт: {segment?.equipment || 'неизвестен'}</div>
-      <div>🪑 Класс: {cabinClass || 'не указан'}</div>
+      <div>💺 Класс: {cabinClass || 'не указан'}</div>
       <hr />
       <div>
         <strong>Обозначения:</strong>

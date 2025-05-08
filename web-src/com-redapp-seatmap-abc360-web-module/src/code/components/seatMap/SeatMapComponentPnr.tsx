@@ -40,14 +40,24 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
     );
   }
 
-  // flightInfo
+  // состояние: выбранный сегмент и класс обслуживания
+  const [segmentIndex, setSegmentIndex] = useState<number>(selectedSegmentIndex);
+  const [cabinClass, setCabinClass] = useState<'Y' | 'S' | 'C' | 'F' | 'A'>(
+    flightSegments[segmentIndex]?.cabinClass || 'Y'
+  );
+
+  const segment = flightSegments[segmentIndex];
+
   const flightInfo = (
     <div>
       <div><strong>Информация о рейсе</strong></div>
-      <div>MUC → JFK</div>
-      <div>📅 Дата вылета: 2025-06-19</div>
-      <div>✈️ Самолёт: AIRBUS A380</div>
-      <div>🪑 Класс: Business</div>
+      <div>{segment.origin} → {segment.destination}</div>
+      <div>📅 Дата вылета: {segment.departureDateTime?.split?.('T')[0] || 'не указана'}</div>
+      <div>✈️ Самолёт: {typeof segment.equipment === 'object'
+        ? segment.equipment?.EncodeDecodeElement?.SimplyDecoded
+        : segment.equipment || 'неизвестно'}
+      </div>
+      <div>💺 Класс: {cabinClass}</div>
       <hr />
       <strong>Обозначения:</strong>
       <ul style={{ paddingLeft: '1rem' }}>
@@ -59,13 +69,6 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
     </div>
   );
 
-  // состояние: выбранный сегмент и класс обслуживания
-  const [segmentIndex, setSegmentIndex] = useState<number>(selectedSegmentIndex);
-  const [cabinClass, setCabinClass] = useState<'Y' | 'S' | 'C' | 'F' | 'A'>(
-    flightSegments[segmentIndex]?.cabinClass || 'Y'
-  );
-
-  const segment = flightSegments[segmentIndex];
   const equipment =
     typeof segment?.equipment === 'object'
       ? segment.equipment?.EncodeDecodeElement?.SimplyDecoded

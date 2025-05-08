@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { FlightData } from '../../utils/generateFlightData';
 import SeatMapModalLayout from './SeatMapModalLayout';
 
+// 🧑 Интерфейс одного пассажира
 interface Passenger {
   id: string;
   givenName: string;
@@ -14,11 +15,14 @@ interface Passenger {
   initials?: string;
 }
 
+
+// 💺 Интерфейс для выбранного места
 interface SelectedSeat {
   passengerId: string;
   seatLabel: string;
 }
 
+// 📦 Интерфейс для пропсов компонента
 interface SeatMapComponentBaseProps {
   config: any;
   flightSegments: any[];
@@ -34,6 +38,7 @@ interface SeatMapComponentBaseProps {
   flightInfo?: React.ReactNode; // ?????
 }
 
+// 🛠 Основной компонент
 const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   config,
   flightSegments,
@@ -60,15 +65,15 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     selectedSeats.some(s => s.passengerId === p.id)
   ).length;
 
-  // ✅ Определяем сегмент и самолет
+  // ✅ Определяем текущий сегмент и самолет
   const segment = flightSegments[initialSegmentIndex];
   const equipment =
     typeof segment?.equipment === 'object'
       ? segment.equipment?.EncodeDecodeElement?.SimplyDecoded
       : segment?.equipment || 'неизвестно';
 
+  // 📡 Отправка данных в iframe при монтировании или обновлении страницы
   // ======== ⏫ message for quicket.io preparation ==================
-  
   useEffect(() => {
     const iframe = iframeRef.current;
     if (!iframe) return;
@@ -83,24 +88,33 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     // 🎨 colors
     const colorPalette = ['blue', 'orange', 'green', 'purple', 'teal', 'red'];
   
-    // 🔤 initials
+    // 🔤 Генерация инициалов: фамилия + имя
     const getInitials = (p: Passenger) => {
-      return `${p.givenName?.[0] || ''}${p.surname?.[0] || ''}`.toUpperCase(); // ✅ KG
+      const surnameInitial = p.surname?.[0]?.toUpperCase() || '';
+      const givenInitial = p.givenName?.[0]?.toUpperCase() || '';
+      return `${surnameInitial}${givenInitial}`; // например: K + G = KG
     };    
   
-    const passengerList = passengers.map((p, index) => ({
-      id: p.id || index.toString(), // ✅ Используем индекс, если id отсутствует
-      passengerType: 'ADT',
-      seat: selectedSeats.find((s) => s.passengerId === p.id) || null,
-      passengerLabel: p.label || `${p.givenName} ${p.surname}`,
-      passengerColor: colorPalette[index % colorPalette.length],
-      initials: p.initials || getInitials(p), // ✅ Используем предоставленные Sabre initials
-      readOnly: p.id !== selectedPassengerId 
-    }));
+    // 🧑‍🤝‍🧑 Формируем список пассажиров для библиотеки
+    const passengerList = passengers.map((p, index) => {
+      const seatInfo = selectedSeats.find((s) => s.passengerId === p.id);
+      const hasValidSeat = seatInfo?.seatLabel?.trim();
+
+      return {
+        id: p.id || index.toString(),
+        passengerType: 'ADT',
+        seat: hasValidSeat ? seatInfo : null, // ✅ только если seatLabel указан
+        passengerLabel: p.label || `${p.givenName} ${p.surname}`,
+        passengerColor: colorPalette[index % colorPalette.length],
+        initials: p.initials || getInitials(p),
+        readOnly: p.id !== selectedPassengerId,
+      };
+    });
   
     console.log('🎫 Пассажиры в библиотеку:', passengerList);
     console.log('👤 Активный:', selectedPassengerId);
   
+    // ✉️ собираем message
     const message = {
       type: 'seatMaps',
       config: JSON.stringify(config),
@@ -117,16 +131,16 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
       iframe.contentWindow?.postMessage(message, targetOrigin);
     };
 
-    // 👉 отправка при загрузке iframe
+    // 📤 Отправка данных при загрузке ifram
     iframe.addEventListener('load', handleIframeLoad);
 
-    // 👉 если уже загружен — отправить сразу
+    // 📤 Если уже загружен — отправляем сразу
     if (iframe.contentWindow) {
       console.log('📤 iframe уже загружен, отправка данных напрямую:', message);
       iframe.contentWindow.postMessage(message, targetOrigin);
     }
 
-    // 🔄 очистка при размонтировании
+    //  🧹 Удаляем обработчик при размонтировании
     return () => {
       iframe.removeEventListener('load', handleIframeLoad);
 };
@@ -134,12 +148,14 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
 
   // ============= message send =========================
 
-  // ⏹ Сброс всех мест
+  // 🔁 Сброс мест
   const handleResetSeat = () => {
     setSelectedSeats([]);
     onSeatChange?.([]);
   };
 
+  // 🧱 Финальный JSX с макетом: левая (flightInfo), центральная (iframe), правая (пассажиры)
+  
   return (
     <SeatMapModalLayout
       flightInfo={flightInfo}
@@ -172,14 +188,14 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
-              ✅ Выбрано мест:{' '}
+              ✅ Seats assigned:{' '}
               {
                 passengers.filter((p) =>
                   selectedSeats.some((s) => s.passengerId === p.id)
                 ).length
-              } из {passengers.length}
+              } of {passengers.length}
             </div>
-            <button onClick={handleResetSeat}>🔁 Сбросить все</button>
+            <button onClick={handleResetSeat}>🔁 Reset all</button>
           </div>
         </div>
       }
