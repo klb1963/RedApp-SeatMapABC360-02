@@ -40,6 +40,25 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
     );
   }
 
+  // flightInfo
+  const flightInfo = (
+    <div>
+      <div><strong>Информация о рейсе</strong></div>
+      <div>MUC → JFK</div>
+      <div>📅 Дата вылета: 2025-06-19</div>
+      <div>✈️ Самолёт: AIRBUS A380</div>
+      <div>🪑 Класс: Business</div>
+      <hr />
+      <strong>Обозначения:</strong>
+      <ul style={{ paddingLeft: '1rem' }}>
+        <li>🟩 — свободно</li>
+        <li>🟧 — свободно за плату</li>
+        <li>❌ — недоступно</li>
+        <li>☑️ — выбрано</li>
+      </ul>
+    </div>
+  );
+
   // состояние: выбранный сегмент и класс обслуживания
   const [segmentIndex, setSegmentIndex] = useState<number>(selectedSegmentIndex);
   const [cabinClass, setCabinClass] = useState<'Y' | 'S' | 'C' | 'F' | 'A'>(
@@ -133,6 +152,7 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
         // 🆕 Передаём setSelectedSeats и selectedSeats в дочерний компонент
         onSeatChange={(updatedSeats) => setSelectedSeats(updatedSeats)}
         selectedSeats={selectedSeats}
+        flightInfo = {flightInfo}
       />
     </div>
   );

@@ -31,20 +31,18 @@ interface SeatMapComponentBaseProps {
   onSeatChange?: (seats: SelectedSeat[]) => void;
   passengerPanel?: React.ReactNode;
   selectedSeats?: SelectedSeat[];
-  flightInfo?: React.ReactNode;
+  flightInfo?: React.ReactNode; // ?????
 }
 
 const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   config,
   flightSegments,
   initialSegmentIndex,
-  showSegmentSelector = false,
   cabinClass,
   availability,
   passengers,
   generateFlightData,
   onSeatChange,
-  passengerPanel,
   flightInfo // ✅ Добавлено
 }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -99,7 +97,6 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
       initials: p.initials || getInitials(p), // ✅ Используем предоставленные Sabre initials
       readOnly: p.id !== selectedPassengerId 
     }));
-    
   
     console.log('🎫 Пассажиры в библиотеку:', passengerList);
     console.log('👤 Активный:', selectedPassengerId);
@@ -145,25 +142,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
 
   return (
     <SeatMapModalLayout
-    flightInfo={
-      flightInfo ?? (
-        <div>
-          <div><strong>{segment?.airlineCode} {segment?.flightNumber}</strong></div>
-          <div>{segment?.origin} → {segment?.destination}</div>
-          <div>Дата вылета: {segment?.departureDate}</div>
-          <div>Самолёт: {equipment}</div>
-          <div>Класс: {segment?.cabinClass}</div>
-          <hr />
-          <div><strong>Обозначения:</strong></div>
-          <ul style={{ paddingLeft: '1rem' }}>
-            <li>🟩 — свободно</li>
-            <li>⬛ — занято</li>
-            <li>🔲 — недоступно</li>
-            <li>🪑 — выбрано</li>
-          </ul>
-        </div>
-      )
-    }
+      flightInfo={flightInfo}
       passengerPanel={
         <div>
           <strong>Passenger(s)</strong>
@@ -190,7 +169,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
               );
             })}
           </div>
-      
+  
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
               ✅ Выбрано мест:{' '}
@@ -213,6 +192,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
       />
     </SeatMapModalLayout>
   );
+  
 };
 
 export default SeatMapComponentBase;

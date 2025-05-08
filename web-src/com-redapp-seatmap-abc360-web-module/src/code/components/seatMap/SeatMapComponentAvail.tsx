@@ -3,6 +3,7 @@
 import * as React from 'react';
 import SeatMapComponentBase from './SeatMapComponentBase';
 import { getFlightFromSabreData } from './getFlightFromSabreData';
+import SeatLegend from './SeatLegend';
 
 type CabinClassForLibrary = 'E' | 'P' | 'B' | 'F' | 'ALL';
 
@@ -50,13 +51,15 @@ const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, d
       <div>✈️ Самолёт: {segment?.equipment || 'неизвестен'}</div>
       <div>🪑 Класс: {cabinClass || 'не указан'}</div>
       <hr />
-      <div><strong>Обозначения:</strong></div>
-      <ul style={{ paddingLeft: '1rem' }}>
-        <li>🟩 — свободно</li>
-        <li>⬛ — занято</li>
-        <li>🔲 — недоступно</li>
-        <li>🪑 — выбрано</li>
-      </ul>
+      <div>
+        <strong>Обозначения:</strong>
+        <ul style={{ paddingLeft: '1rem' }}>
+          <li>🟩 — свободно</li>
+          <li>🟧 — свободно за плату</li>
+          <li>❌ — недоступно</li>
+          <li>☑️ — выбрано</li>
+        </ul>
+      </div>
     </div>
   );
 
