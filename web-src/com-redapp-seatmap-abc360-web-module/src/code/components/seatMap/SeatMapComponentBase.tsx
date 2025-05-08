@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { FlightData } from '../../utils/generateFlightData';
 import SeatMapModalLayout from './SeatMapModalLayout';
 
+// 🧑 Passenger interface
 interface Passenger {
   id: string;
   givenName: string;
@@ -14,11 +15,13 @@ interface Passenger {
   initials?: string;
 }
 
+// 💺 Selected seat
 interface SelectedSeat {
   passengerId: string;
   seatLabel: string;
 }
 
+// 📦 Component props
 interface SeatMapComponentBaseProps {
   config: any;
   flightSegments: any[];
@@ -46,6 +49,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   flightInfo
 }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
+
   const [selectedSeats, setSelectedSeats] = useState<SelectedSeat[]>([]);
   const [selectedPassengerId, setSelectedPassengerId] = useState<string>(
     passengers.length > 0 ? passengers[0].id : ''
@@ -53,7 +57,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
 
   const segment = flightSegments[initialSegmentIndex];
 
-// 🔁 Send message to iframe when dependencies change
+  // 📡 Send message to iframe when dependencies change
   useEffect(() => {
     const iframe = iframeRef.current;
     if (!iframe) return;
@@ -63,25 +67,22 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
 
     const colorPalette = ['blue', 'orange', 'green', 'purple', 'teal', 'red'];
 
-// ✂️ Generate initials from given name and surname
     const getInitials = (p: Passenger) => {
       const g = p.givenName?.charAt(0) || '';
       const s = p.surname?.charAt(0) || '';
       return `${g}${s}`.toUpperCase();
     };
 
-// 👥 Prepare passenger list with readOnly flags
     const passengerList = passengers.map((p, index) => ({
       id: p.id || index.toString(),
       passengerType: 'ADT',
       seat: selectedSeats.find((s) => s.passengerId === p.id) || null,
-      passengerLabel: p.label || `${p.givenName} ${p.surname}`,
+      passengerLabel: p.label || `${p.givenName}/${p.surname}`,
       passengerColor: colorPalette[index % colorPalette.length],
       initials: getInitials(p),
       readOnly: p.id !== selectedPassengerId
     }));
 
-// ✉️ Compose message to send to seat map library
     const message = {
       type: 'seatMaps',
       config: JSON.stringify(config),
@@ -94,7 +95,6 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     const targetOrigin = 'https://quicket.io';
 
     const handleIframeLoad = () => {
-    // 📤 Send the message to iframe
       iframe.contentWindow?.postMessage(message, targetOrigin);
     };
 
@@ -107,30 +107,65 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     return () => {
       iframe.removeEventListener('load', handleIframeLoad);
     };
-    
   }, [config, flightSegments, initialSegmentIndex, cabinClass, passengers, selectedSeats, selectedPassengerId]);
 
-  // ======================
+  // 📥 Listen to seat selection and unselection from iframe
+  useEffect(() => {
+    const appMessageListener = (event: MessageEvent) => {
+      const { type, data } = event.data;
+      if (!type || !data) return;
+
+      console.log('📩 Message received from SeatMap:', event.data);
+
+      if (type === 'onSeatSelected') {
+        const { seatLabel, passengerId } = data;
+        if (!seatLabel || !passengerId) return;
+
+        setSelectedSeats(prevSeats => {
+          const updatedSeats = prevSeats.filter(s => s.passengerId !== passengerId);
+          const newSeats = [...updatedSeats, { passengerId, seatLabel }];
+          onSeatChange?.(newSeats);
+          return newSeats;
+        });
+      }
+
+      if (type === 'onSeatUnselected') {
+        const { passengerId } = data;
+        if (!passengerId) return;
+
+        setSelectedSeats(prevSeats => {
+          const newSeats = prevSeats.filter(s => s.passengerId !== passengerId);
+          onSeatChange?.(newSeats);
+          return newSeats;
+        });
+      }
+    };
+
+    window.addEventListener('message', appMessageListener);
+    return () => {
+      window.removeEventListener('message', appMessageListener);
+    };
+  }, [onSeatChange]);
+
+  // ================ подключение слушателя ================
+  
+  const appMessageListener = event => {
+    const { type, ...rest } = event.data;
+    console.log(`Recieved!!!:`, event.data);
+
+    if (type == 'seatMaps') {
+      console.log(`message from react lib:`, event.data);
+    }
+  };
+
+  window.addEventListener('message', appMessageListener);
+
+  // =======================================================
 
   const handleResetSeat = () => {
     setSelectedSeats([]);
     onSeatChange?.([]);
   };
-
-    // ================ подключение слушателя ================
-
-    const appMessageListener = event => {
-      const { type, ...rest } = event.data;
-      console.log(`Recieved!!!:`, event.data);
-
-      if (type == 'seatMaps') {
-        console.log(`message from react lib:`, event.data);
-      }
-    };
-
-    window.addEventListener('message', appMessageListener);
-
-    // =======================================================
 
   return (
     <SeatMapModalLayout
