@@ -5,7 +5,8 @@ import { useEffect, useRef, useState } from 'react';
 import { FlightData } from '../../utils/generateFlightData';
 import SeatMapModalLayout from './SeatMapModalLayout';
 
-// 🧑 Passenger interface
+// === Interfaces ===
+
 interface Passenger {
   id: string;
   givenName: string;
@@ -15,13 +16,11 @@ interface Passenger {
   initials?: string;
 }
 
-// 💺 Selected seat
 interface SelectedSeat {
   passengerId: string;
   seatLabel: string;
 }
 
-// 📦 Component props
 interface SeatMapComponentBaseProps {
   config: any;
   flightSegments: any[];
@@ -37,6 +36,8 @@ interface SeatMapComponentBaseProps {
   flightInfo?: React.ReactNode;
 }
 
+// === Component ===
+
 const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   config,
   flightSegments,
@@ -50,6 +51,9 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
 }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
+  // 🔄 Управление suppress-флагом для предотвращения зацикливания
+  const suppressNextPostMessage = useRef(false);
+
   const [selectedSeats, setSelectedSeats] = useState<SelectedSeat[]>([]);
   const [selectedPassengerId, setSelectedPassengerId] = useState<string>(
     passengers.length > 0 ? passengers[0].id : ''
@@ -57,60 +61,46 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
 
   const segment = flightSegments[initialSegmentIndex];
 
-  // 📡 Send message to iframe when dependencies change
+  // === Отправка сообщения в iframe при изменениях ===
 
   useEffect(() => {
-
     const iframe = iframeRef.current;
     if (!iframe) return;
-  
+
+    if (suppressNextPostMessage.current) {
+      console.log('🚫 Пропускаем postMessage — suppress активен');
+      suppressNextPostMessage.current = false;
+      return;
+    }
+
     const flight = generateFlightData(segment, initialSegmentIndex, cabinClass);
     const availabilityData = availability || [];
-  
+
     const colorPalette = ['blue', 'orange', 'green', 'purple', 'teal', 'red'];
-  
-    const getInitials = (p: Passenger) => {
-      const g = p.givenName?.charAt(0) || '';
-      const s = p.surname?.charAt(0) || '';
-      return `${g}${s}`.toUpperCase();
-    };
-  
+    const getInitials = (p: Passenger) =>
+      `${p.givenName?.[0] || ''}${p.surname?.[0] || ''}`.toUpperCase();
+
     const passengerList = passengers.map((p, index) => ({
       id: p.id || index.toString(),
       passengerType: 'ADT',
-      seat: selectedSeats.find((s) => s.passengerId === p.id) || null,
+      seat: selectedSeats.find(s => s.passengerId === p.id) || null,
       passengerLabel: p.label || `${p.givenName}/${p.surname}`,
       passengerColor: colorPalette[index % colorPalette.length],
       initials: getInitials(p),
       readOnly: p.id !== selectedPassengerId
     }));
-  
+
     const message = {
       type: 'seatMaps',
       config: JSON.stringify(config),
       flight: JSON.stringify(flight),
       availability: JSON.stringify(availabilityData),
       passengers: JSON.stringify(passengerList),
-      currentDeckIndex: "0"
+      currentDeckIndex: '0'
     };
-    
-    // Автоматически определяем origin
+
     const targetOrigin = new URL(iframe.src).origin;
-    
-    const handleIframeLoad = () => {
-      iframe.contentWindow?.postMessage(message, targetOrigin);
-    };
-    
-    iframe.addEventListener('load', handleIframeLoad);
-    
-    // Отправка сразу (если iframe уже загружен)
-    if (iframe.contentWindow) {
-      iframe.contentWindow.postMessage(message, targetOrigin);
-    }
-  
-    return () => {
-      iframe.removeEventListener('load', handleIframeLoad);
-    };
+    iframe.contentWindow?.postMessage(message, targetOrigin);
   }, [
     config,
     flightSegments,
@@ -121,61 +111,71 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     selectedPassengerId
   ]);
 
-  // 📥 Listen to seat selection and unselection from iframe
- 
+  // === Приём событий от библиотеки ===
+
   useEffect(() => {
     const appMessageListener = (event: MessageEvent) => {
-      console.log('👂 Message event received:', event);
-      
+      if (event.origin !== 'https://quicket.io') return;
+      console.log('📩 Raw message from SeatMap:', event.data);
+  
+      let parsed;
       try {
-        const parsedData = typeof event.data === 'string'
-          ? JSON.parse(event.data)
-          : event.data;
-  
-        console.log('📩 Parsed message received from SeatMap:', parsedData);
-  
-        const { type, data } = parsedData;
-        if (!type || !data) return;
-  
-        if (type === 'onSeatSelected') {
-          const { seatLabel, passengerId } = data;
-          if (!seatLabel || !passengerId) return;
-  
-          setSelectedSeats(prevSeats => {
-            const updatedSeats = prevSeats.filter(s => s.passengerId !== passengerId);
-            const newSeats = [...updatedSeats, { passengerId, seatLabel }];
-            onSeatChange?.(newSeats);
-            return newSeats;
-          });
-        }
-  
-        if (type === 'onSeatUnselected') {
-          const { passengerId } = data;
-          if (!passengerId) return;
-  
-          setSelectedSeats(prevSeats => {
-            const newSeats = prevSeats.filter(s => s.passengerId !== passengerId);
-            onSeatChange?.(newSeats);
-            return newSeats;
-          });
-        }
+        parsed = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
       } catch (e) {
-        console.warn('❌ Failed to parse event.data:', e, event.data);
+        console.warn('❌ Failed to parse:', e, event.data);
+        return;
+      }
+
+      console.log('🧪 parsed объект:', parsed);
+      console.log('🧪 typeof onSeatSelected:', typeof parsed.onSeatSelected);
+      console.log('🧪 Содержимое onSeatSelected:', parsed.onSeatSelected);
+
+      if ('onSeatSelected' in parsed) {
+        console.log('✅ Ключ onSeatSelected найден:', parsed.onSeatSelected);
+      }
+  
+      // ✅ Если пришёл массив выбранных мест
+      if ('onSeatSelected' in parsed && Array.isArray(parsed.onSeatSelected)) {
+        console.log('✅ Ключ onSeatSelected найден:', parsed.onSeatSelected);
+  
+        // Обновляем selectedSeats
+        const updated = parsed.onSeatSelected
+          .filter(p => p.id && p.seat && p.seat.seatLabel)
+          .map(p => ({
+            passengerId: p.id,
+            seatLabel: p.seat.seatLabel
+          }));
+  
+        setSelectedSeats(updated);
+        onSeatChange?.(updated);
+      }
+  
+      // ↩️ Если пришёл сигнал снять выбор
+      if ('onSeatUnselected' in parsed && parsed.onSeatUnselected?.id) {
+        const passengerId = parsed.onSeatUnselected.id;
+        console.log(`↩️ Обработка onSeatUnselected: ${passengerId}`);
+  
+        setSelectedSeats(prev => {
+          const newSeats = prev.filter(s => s.passengerId !== passengerId);
+          onSeatChange?.(newSeats);
+          return newSeats;
+        });
       }
     };
   
     window.addEventListener('message', appMessageListener);
-    return () => {
-      window.removeEventListener('message', appMessageListener);
-    };
+    return () => window.removeEventListener('message', appMessageListener);
   }, [onSeatChange]);
 
+  // === Reset ===
 
   const handleResetSeat = () => {
     setSelectedSeats([]);
     setSelectedPassengerId(passengers.length > 0 ? passengers[0].id : '');
     onSeatChange?.([]);
   };
+
+  // === Render ===
 
   return (
     <SeatMapModalLayout
