@@ -50,21 +50,21 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
 
   const flightInfo = (
     <div>
-      <div><strong>Информация о рейсе</strong></div>
+      <div><strong>Flight info:</strong></div>
       <div>{segment.origin} → {segment.destination}</div>
-      <div>📅 Дата вылета: {segment.departureDateTime?.split?.('T')[0] || 'не указана'}</div>
-      <div>✈️ Самолёт: {typeof segment.equipment === 'object'
+      <div>📅 Date: {segment.departureDateTime?.split?.('T')[0] || 'not specified'}</div>
+      <div>✈️ Equipment: {typeof segment.equipment === 'object'
         ? segment.equipment?.EncodeDecodeElement?.SimplyDecoded
-        : segment.equipment || 'неизвестно'}
+        : segment.equipment || 'unknown'}
       </div>
-      <div>💺 Класс: {cabinClass}</div>
+      <div>💺 Class: {cabinClass}</div>
       <hr />
-      <strong>Обозначения:</strong>
+      <strong>Legend:</strong>
       <ul style={{ paddingLeft: '1rem' }}>
-        <li>🟩 — свободно</li>
-        <li>🟧 — свободно за плату</li>
-        <li>❌ — недоступно</li>
-        <li>☑️ — выбрано</li>
+        <li>🟩 — available</li>
+        <li>🟧 — available for a fee</li>
+        <li>❌ — unavailable</li>
+        <li>☑️ — occupied</li>
       </ul>
     </div>
   );

@@ -46,17 +46,17 @@ const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, d
     <div>
       <div><strong>{segment?.marketingAirline} {segment?.flightNumber}</strong></div>
       <div>{segment?.origin} → {segment?.destination}</div>
-      <div>📅 Дата вылета: {segment?.departureDateTime?.split('T')[0] || 'не указана'}</div>
-      <div>✈️ Самолёт: {segment?.equipment || 'неизвестен'}</div>
-      <div>💺 Класс: {cabinClass || 'не указан'}</div>
+      <div>📅 Date: {segment?.departureDateTime?.split('T')[0] || 'not specified'}</div>
+      <div>✈️ Equipment: {segment?.equipment || 'unknown'}</div>
+      <div>💺 Class: {cabinClass || 'not specified'}</div>
       <hr />
       <div>
-        <strong>Обозначения:</strong>
+        <strong>Legend:</strong>
         <ul style={{ paddingLeft: '1rem' }}>
-          <li>🟩 — свободно</li>
-          <li>🟧 — свободно за плату</li>
-          <li>❌ — недоступно</li>
-          <li>☑️ — выбрано</li>
+          <li>🟩 — available</li>
+          <li>🟧 — available for a fee</li>
+          <li>❌ — unavailable</li>
+          <li>☑️ — occupied</li>
         </ul>
       </div>
     </div>
