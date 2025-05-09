@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>🧪 Passenger Panel with postMessage</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    body { font-family: sans-serif; padding: 2rem; }
+    .passenger { border: 1px solid #ccc; padding: 1rem; margin-bottom: 1rem; border-radius: 5px; }
+    .active { background-color: #eef; }
+    .seat { font-weight: bold; margin-left: 0.5rem; }
+    .initials { margin-left: 0.5rem; font-size: 0.9rem; color: #555; }
+    pre { background: #f5f5f5; padding: 1rem; }
+  </style>
+</head>
+<body>
+
+  <h2>🧪 Passenger Panel Sandbox with postMessage</h2>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    function getInitials(name) {
+      const parts = name.trim().split(' ');
+      return parts.map(p => p[0]?.toUpperCase()).join('').slice(0, 2) || '??';
+    }
+
+    function PassengerPanel() {
+      const [passengers, setPassengers] = useState([
+        { id: '1', name: 'Leon Klein', seat: '' },
+        { id: '2', name: 'Mary Smith', seat: '' },
+        { id: '3', name: 'Jon Dow', seat: '' }
+      ]);
+      const [activePassengerId, setActivePassengerId] = useState('1');
+      const [lastMessage, setLastMessage] = useState(null); // ⬅️ последнее полученное сообщение
+
+      // 🎧 Слушаем сообщения от библиотеки
+      useEffect(() => {
+        const handler = (event) => {
+          const { type, data } = event.data || {};
+          if (!type || !data) return;
+
+          console.log('📥 Получено сообщение:', event.data);
+          setLastMessage(event.data); // отображаем последнее сообщение
+
+          if (type === 'onSeatSelected') {
+            const { passengerId, seatLabel } = data;
+            setPassengers(prev => prev.map(p =>
+              p.id === passengerId ? { ...p, seat: seatLabel.toUpperCase() } : p
+            ));
+          }
+
+          if (type === 'onSeatUnselected') {
+            const { passengerId } = data;
+            setPassengers(prev => prev.map(p =>
+              p.id === passengerId ? { ...p, seat: '' } : p
+            ));
+          }
+        };
+
+        window.addEventListener('message', handler);
+        return () => window.removeEventListener('message', handler);
+      }, []);
+
+      const handleSeatChange = (id, value) => {
+        setPassengers(prev =>
+          prev.map(p => p.id === id ? { ...p, seat: value.toUpperCase() } : p)
+        );
+      };
+
+      // 🧪 Эмуляция отправки сообщения в библиотеку
+      const sendMessage = () => {
+        const message = {
+          type: 'seatMaps',
+          passengers: JSON.stringify(passengers.map((p, i) => ({
+            id: p.id,
+            passengerLabel: p.name,
+            passengerColor: ['blue', 'orange', 'green'][i % 3],
+            seat: p.seat || null,
+            initials: getInitials(p.name),
+            readOnly: p.id !== activePassengerId
+          })))
+        };
+
+        window.postMessage(message, '*');
+        console.log('📤 Отправлено сообщение:', message);
+      };
+
+      // 🔁 Сброс мест
+      const resetAll = () => {
+        setPassengers(prev => prev.map(p => ({ ...p, seat: '' })));
+        setActivePassengerId(passengers[0].id);
+      };
+
+      // 🧪 Эмуляция входящего события от библиотеки
+      const emulateSeatSelect = () => {
+        const data = {
+          type: 'onSeatSelected',
+          data: {
+            passengerId: activePassengerId,
+            seatLabel: '15C'
+          }
+        };
+        window.postMessage(data, '*');
+      };
+
+      const allSeatsAssigned = passengers.every(p => p.seat.trim() !== '');
+
+      return (
+        <div>
+          {passengers.map(p => (
+            <div key={p.id} className={`passenger ${p.id === activePassengerId ? 'active' : ''}`}>
+              <label>
+                <input
+                  type="radio"
+                  name="passenger"
+                  value={p.id}
+                  checked={p.id === activePassengerId}
+                  onChange={() => setActivePassengerId(p.id)}
+                />
+                {p.name}
+              </label>
+              <div>
+                Seat:
+                <input
+                  type="text"
+                  value={p.seat}
+                  disabled={p.id !== activePassengerId}
+                  onChange={e => handleSeatChange(p.id, e.target.value)}
+                />
+                <span className="seat">{p.seat ? `🪑 ${p.seat}` : '—'}</span>
+                <span className="initials">({getInitials(p.name)})</span>
+              </div>
+            </div>
+          ))}
+
+          <div style={{ margin: '1rem 0' }}>
+            ✅ Seats assigned: {passengers.filter(p => p.seat).length} of {passengers.length}
+            {allSeatsAssigned && <strong> 🟢 Boarding complete</strong>}
+          </div>
+
+          <div style={{ marginBottom: '1rem' }}>
+            <button onClick={sendMessage}>📤 Send to Library</button>
+            <button onClick={resetAll} style={{ marginLeft: '1rem' }}>🔁 Reset all</button>
+            <button onClick={emulateSeatSelect} style={{ marginLeft: '1rem' }}>🧪 Emulate select</button>
+          </div>
+
+          <h4>📦 Message to Library:</h4>
+          <pre>{JSON.stringify({
+            type: 'seatMaps',
+            passengers: passengers.map((p, i) => ({
+              id: p.id,
+              passengerLabel: p.name,
+              passengerColor: ['blue', 'orange', 'green'][i % 3],
+              seat: p.seat || null,
+              initials: getInitials(p.name),
+              readOnly: p.id !== activePassengerId
+            }))
+          }, null, 2)}</pre>
+
+          {lastMessage && (
+            <>
+              <h4>📥 Last message received:</h4>
+              <pre>{JSON.stringify(lastMessage, null, 2)}</pre>
+            </>
+          )}
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<PassengerPanel />);
+  </script>
+</body>
+</html>

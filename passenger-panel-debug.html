@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Панель посадки пассажиров</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+    }
+    .passenger {
+      margin-bottom: 1rem;
+      padding: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    .active {
+      background-color: #eef;
+    }
+    .seat {
+      font-weight: bold;
+      margin-left: 0.5rem;
+    }
+    .initials {
+      margin-left: 0.5rem;
+      font-size: 0.9rem;
+      color: #555;
+    }
+    .json-box {
+      background: #f4f4f4;
+      padding: 1rem;
+      border: 1px solid #ccc;
+      white-space: pre-wrap;
+      font-family: monospace;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Passenger Panel</h2>
+  <div id="passenger-panel"></div>
+
+  <hr />
+
+  <div>
+    ✅ Seats assigned: <span id="seat-count">0</span> of <span id="total">3</span><br />
+    <br/>
+    <button onclick="resetAll()">🔁 Reset all</button><br />
+    <br/>
+    🟢 Boarding complete: <span id="completion-status">no</span><br />
+  </div>
+
+  <h3>📤 Sent message to library:</h3>
+  <div id="message-box" class="json-box"></div>
+
+  <h3>🧍 Passenger array:</h3>
+  <div id="passenger-array" class="json-box"></div>
+
+  <script>
+    const passengers = [
+      { id: '1', name: 'Dow Jonse', seat: '' },
+      { id: '2', name: 'Mary Smith', seat: '' },
+      { id: '3', name: 'Leon Klein', seat: '' }
+    ];
+
+    let activePassengerId = passengers[0].id;
+
+    function getInitials(name) {
+      const parts = name.trim().split(' ');
+      return parts.map(p => p[0]?.toUpperCase()).slice(0, 2).join('') || '??';
+    }
+
+    function updateMessageAndLog() {
+      const allSeatsAssigned = passengers.every(p => p.seat.trim() !== '');
+
+      const message = {
+        type: 'seatMaps',
+        passengers: passengers.map((p, i) => ({
+          id: p.id,
+          passengerType: 'ADT',
+          passengerLabel: p.name,
+          passengerColor: ['blue', 'orange', 'green'][i % 3],
+          initials: getInitials(p.name),
+          seat: p.seat ? { seatLabel: p.seat } : null,
+          readOnly: p.id !== activePassengerId
+        }))
+      };
+
+      document.getElementById('message-box').textContent = JSON.stringify(message, null, 2);
+      document.getElementById('passenger-array').textContent = JSON.stringify(passengers, null, 2);
+      document.getElementById('seat-count').textContent = passengers.filter(p => p.seat.trim() !== '').length;
+      document.getElementById('completion-status').textContent = allSeatsAssigned ? 'yes' : 'no';
+    }
+
+    function renderPanel() {
+      const panel = document.getElementById('passenger-panel');
+      panel.innerHTML = '';
+
+      passengers.forEach((p) => {
+        const initials = getInitials(p.name);
+        const div = document.createElement('div');
+        div.className = 'passenger' + (p.id === activePassengerId ? ' active' : '');
+
+        div.innerHTML = `
+          <label>
+            <input type="radio" name="passenger" value="${p.id}" ${p.id === activePassengerId ? 'checked' : ''} />
+            ${p.name}
+          </label>
+          <div>
+            Seat:
+            <input type="text" placeholder="e.g. 12A" data-id="${p.id}" value="${p.seat}" ${p.id !== activePassengerId ? 'disabled' : ''} />
+            <span class="seat">${p.seat ? `🪑 ${p.seat}` : '—'}</span>
+            <span class="initials">(${initials})</span>
+          </div>
+        `;
+        panel.appendChild(div);
+      });
+
+      document.querySelectorAll('input[name="passenger"]').forEach((radio) => {
+        radio.addEventListener('change', (e) => {
+          activePassengerId = e.target.value;
+          renderPanel();
+          updateMessageAndLog();
+        });
+      });
+
+      document.querySelectorAll('input[type="text"]').forEach((input) => {
+        input.addEventListener('input', (e) => {
+          const id = e.target.dataset.id;
+          const passenger = passengers.find(p => p.id === id);
+          passenger.seat = e.target.value.toUpperCase();
+
+          // Update only the seat label
+          const seatSpan = e.target.nextElementSibling;
+          seatSpan.textContent = passenger.seat ? `🪑 ${passenger.seat}` : '—';
+
+          updateMessageAndLog();
+        });
+      });
+
+      updateMessageAndLog();
+    }
+
+    function resetAll() {
+      passengers.forEach((p) => p.seat = '');
+      activePassengerId = passengers[0].id;
+      renderPanel();
+    }
+
+    renderPanel();
+  </script>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Passenger Panel React Sandbox</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    body { font-family: sans-serif; padding: 2rem; }
+    .passenger { border: 1px solid #ccc; padding: 1rem; margin-bottom: 1rem; border-radius: 5px; }
+    .active { background-color: #eef; }
+    .seat { font-weight: bold; margin-left: 0.5rem; }
+    .initials { margin-left: 0.5rem; font-size: 0.9rem; color: #555; }
+    pre { background: #f5f5f5; padding: 1rem; }
+    .footer { display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; }
+  </style>
+</head>
+<body>
+
+  <h2>🧪 Passenger Panel Sandbox (React)</h2>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    function getInitials(name) {
+      const parts = name.trim().split(' ');
+      return parts.map(p => p[0]?.toUpperCase()).join('').slice(0, 2) || '??';
+    }
+
+    function PassengerPanel() {
+      const [passengers, setPassengers] = useState([
+        { id: '1', name: 'Leon Klein', seat: '' },
+        { id: '2', name: 'Mary Smith', seat: '' },
+        { id: '3', name: 'Jon Dow', seat: '' }
+      ]);
+      const [activePassengerId, setActivePassengerId] = useState('1');
+
+      const handleSeatChange = (id, value) => {
+        setPassengers(prev =>
+          prev.map(p => p.id === id ? { ...p, seat: value.toUpperCase() } : p)
+        );
+      };
+
+      const handleReset = () => {
+        setPassengers(prev => prev.map(p => ({ ...p, seat: '' })));
+        setActivePassengerId('1');
+      };
+
+      const message = {
+        type: 'seatMaps',
+        passengers: passengers.map((p, i) => ({
+          id: p.id,
+          passengerLabel: p.name,
+          passengerColor: ['blue', 'orange', 'green'][i % 3],
+          seat: p.seat || null,
+          initials: getInitials(p.name),
+          readOnly: p.id !== activePassengerId
+        }))
+      };
+
+      const allSeatsAssigned = passengers.every(p => p.seat.trim() !== '');
+
+      return (
+        <div>
+          {passengers.map(p => (
+            <div key={p.id} className={`passenger ${p.id === activePassengerId ? 'active' : ''}`}>
+              <label>
+                <input
+                  type="radio"
+                  name="passenger"
+                  value={p.id}
+                  checked={p.id === activePassengerId}
+                  onChange={() => setActivePassengerId(p.id)}
+                />
+                {p.name}
+              </label>
+              <div>
+                Seat:
+                <input
+                  type="text"
+                  value={p.seat}
+                  disabled={p.id !== activePassengerId}
+                  onChange={e => handleSeatChange(p.id, e.target.value)}
+                />
+                <span className="seat">{p.seat ? `🪑 ${p.seat}` : '—'}</span>
+                <span className="initials">({getInitials(p.name)})</span>
+              </div>
+            </div>
+          ))}
+
+          <div className="footer">
+            <div>
+              ✅ Seats assigned: {passengers.filter(p => p.seat).length} of {passengers.length}
+              {allSeatsAssigned && <strong> 🟢 Boarding complete</strong>} 
+            </div>
+            <br />
+            <button onClick={handleReset}>🔁 Reset all</button>
+          </div>
+
+          <h4>📦 Message to Library:</h4>
+          <pre>{JSON.stringify(message, null, 2)}</pre>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<PassengerPanel />);
+  </script>
+</body>
+</html>

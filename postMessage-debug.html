@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Отладка postMessage</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+    }
+    .json-box {
+      background: #f9f9f9;
+      padding: 1rem;
+      border: 1px solid #ccc;
+      margin-top: 1rem;
+      white-space: pre-wrap;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Отладка сообщения в библиотеку</h2>
+  <div id="passenger-list"></div>
+
+  <button onclick="sendMessage()">📤 Отправить сообщение</button>
+
+  <h3>📦 Текущее сообщение:</h3>
+  <div id="message-output" class="json-box"></div>
+
+  <script>
+    const passengers = [
+      { id: '1', name: 'Иван Иванов', initials: 'ИИ' },
+      { id: '2', name: 'Мария Смирнова', initials: 'МС' },
+      { id: '3', name: 'Павел Козлов', initials: 'ПК' }
+    ];
+
+    const colors = ['blue', 'orange', 'green'];
+    let activePassengerId = passengers[0].id;
+
+    function renderPassengerList() {
+      const list = document.getElementById('passenger-list');
+      list.innerHTML = '';
+
+      passengers.forEach((p, i) => {
+        const div = document.createElement('div');
+        div.innerHTML = `
+          <label>
+            <input type="radio" name="passenger" value="${p.id}" ${p.id === activePassengerId ? 'checked' : ''} />
+            ${p.name}
+          </label>
+        `;
+        list.appendChild(div);
+      });
+
+      // добавим обработчики после рендера
+      document.querySelectorAll('input[name="passenger"]').forEach((radio) => {
+        radio.addEventListener('change', (e) => {
+          activePassengerId = e.target.value;
+          renderPassengerList();  // обновляем UI
+          showMessage();          // ✅ обновляем JSON
+        });
+      });
+    }
+
+    function getPassengerMessage() {
+      return passengers.map((p, i) => ({
+        id: p.id,
+        passengerType: 'ADT',
+        passengerLabel: p.name,
+        passengerColor: colors[i % colors.length],
+        initials: p.initials,
+        readOnly: p.id !== activePassengerId
+      }));
+    }
+
+    function showMessage() {
+      const message = {
+        type: 'seatMaps',
+        passengers: JSON.stringify(getPassengerMessage())
+      };
+
+      const output = document.getElementById('message-output');
+      output.textContent = JSON.stringify(message, null, 2);
+    }
+
+    function sendMessage() {
+      const message = {
+        type: 'seatMaps',
+        passengers: JSON.stringify(getPassengerMessage())
+      };
+
+      const targetOrigin = '*'; // или "https://quicket.io" при реальной интеграции
+      window.opener?.postMessage(message, targetOrigin);
+      console.log('📤 Отправлено:', message);
+    }
+
+    renderPassengerList();
+    showMessage();
+  </script>
+</body>
+</html>
