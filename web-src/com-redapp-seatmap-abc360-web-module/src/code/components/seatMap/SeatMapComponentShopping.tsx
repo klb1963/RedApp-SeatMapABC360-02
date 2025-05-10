@@ -4,6 +4,7 @@ import * as React from 'react';
 import { useState } from 'react';
 import SeatMapComponentBase from './SeatMapComponentBase';
 import { generateFlightData } from '../../utils/generateFlightData';
+import SeatLegend from './SeatLegend';
 
 interface SeatMapComponentShoppingProps {
   config: any;
@@ -70,7 +71,7 @@ const SeatMapComponentShopping: React.FC<SeatMapComponentShoppingProps> = ({ con
         </select>
       </div>
 
-      {/* 🧩 Отображение карты */}
+      {/* 🧩 Отображение карты мест */}
       <SeatMapComponentBase
         config={config}
         flightSegments={flightSegments}
@@ -86,9 +87,21 @@ const SeatMapComponentShopping: React.FC<SeatMapComponentShoppingProps> = ({ con
             index
           )
         }
-        availability={[]}          // ✅ добавляем
-        passengers={[]}            // ✅ добавляем
+        availability={[]}
+        passengers={[]} 
         showSegmentSelector={false}
+        flightInfo={
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div>
+              <strong>Flight info:</strong>
+              <div>{currentSegment.origin} → {currentSegment.destination}</div>
+              <div>Date: {currentSegment.departureDateTime || 'not specified'}</div>
+              <div>Equipment: {currentSegment.equipment?.EncodeDecodeElement?.SimplyDecoded || 'Unknown'}</div>
+              <div>Class: {cabinClass}</div>
+            </div>
+            <SeatLegend />
+          </div>
+        }
       />
     </div>
   );

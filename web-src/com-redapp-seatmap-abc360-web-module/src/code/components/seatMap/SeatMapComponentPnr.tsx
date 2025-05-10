@@ -4,6 +4,7 @@ import * as React from 'react';
 import { useState } from 'react';
 import SeatMapComponentBase from './SeatMapComponentBase';
 import { generateFlightData } from '../../utils/generateFlightData';
+import SeatLegend from './SeatLegend';
 
 // Интерфейс пассажира
 interface Passenger {
@@ -59,13 +60,14 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
       </div>
       <div>💺 Class: {cabinClass}</div>
       <hr />
-      <strong>Legend:</strong>
+      <SeatLegend/>
+      {/* <strong>Legend:</strong>
       <ul style={{ paddingLeft: '1rem' }}>
         <li>🟩 — available</li>
         <li>🟧 — available for a fee</li>
         <li>❌ — unavailable</li>
         <li>☑️ — occupied</li>
-      </ul>
+      </ul> */}
     </div>
   );
 

@@ -1,9 +1,10 @@
-// SeatMapComponentPricing.tsx
+// file: SeatMapComponentPricing.tsx
 
 import * as React from 'react';
 import { useState } from 'react';
 import SeatMapComponentBase from './SeatMapComponentBase';
 import { generateFlightData } from '../../utils/generateFlightData';
+import SeatLegend from './SeatLegend';
 
 interface SeatMapComponentPricingProps {
   config: any;
@@ -24,9 +25,25 @@ const SeatMapComponentPricing: React.FC<SeatMapComponentPricingProps> = ({
       ? segment.equipment?.EncodeDecodeElement?.SimplyDecoded
       : segment?.equipment || 'неизвестно';
 
+  const departureDate = segment?.departureDate?.toISOString().split('T')[0] || 'not specified';
+
+  // 🧩 Комбинируем Flight Info + Legend
+  const flightInfo = segment && (
+    <div>
+      <strong>Flight info:</strong>
+      <div>{segment.origin} → {segment.destination}</div>
+      <div>Date: {departureDate}</div>
+      <div>Equipment: {equipment}</div>
+      <div>Class: {cabinClass}</div>
+      <div style={{ marginTop: '1rem' }}>
+        <SeatLegend />
+      </div>
+    </div>
+  );
+
   return (
     <div style={{ padding: '1rem' }}>
-      {/* 🔝 Сегмент и Самолёт на одной строке */}
+      {/* 🔝 Сегмент и Самолёт */}
       <div
         style={{
           display: 'flex',
@@ -62,6 +79,7 @@ const SeatMapComponentPricing: React.FC<SeatMapComponentPricingProps> = ({
         </select>
       </div>
 
+      {/* 📌 Вставляем компонент карты */}
       <SeatMapComponentBase
         config={config}
         flightSegments={flightSegments}
@@ -73,9 +91,10 @@ const SeatMapComponentPricing: React.FC<SeatMapComponentPricingProps> = ({
             index
           )
         }
-        availability={[]} // ✅ добавлен для устранения ошибки
-        passengers={[]} // можно передать, если есть
+        availability={[]}
+        passengers={[]}
         showSegmentSelector={false}
+        flightInfo={flightInfo} // ✅ добавлено
       />
     </div>
   );
