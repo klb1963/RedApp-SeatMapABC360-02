@@ -1,3 +1,5 @@
+// file: SeatMapShoppingView.ts
+
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { AbstractView } from 'sabre-ngv-app/app/AbstractView';
@@ -21,19 +23,27 @@ export class SeatMapShoppingView extends AbstractView<AbstractModel> {
         this.currentSegment = cpa;
         this.updateFlightSegmentsFromSegment(cpa);
 
-        // Передаём тестовые данные в шаблон (например, JSON)
-        this.getModel().set('testData', JSON.stringify({
-            message: 'Привет из View!',
-            timestamp: new Date().toISOString()
-        }, null, 2));
+        // 🧽 Очистка контейнера при повторном открытии
+        const rootElement = document.getElementById('seatmap-root');
+        if (rootElement) {
+            rootElement.innerHTML = '';
+        }
 
-        // Отрисовываем шаблон и потом React-компонент
-        // this.render();
+    // ⏱ Перерисовка через React
+        this.tryRenderReactComponent();
+
+    }
+    
+    // 🧠 Унифицированный метод для рендера компонента
+    private renderForSegment(segment: FlightSegment): void {
+        this.currentSegment = segment;
+        this.updateFlightSegmentsFromSegment(segment);
         this.tryRenderReactComponent();
     }
 
     private updateFlightSegmentsFromSegment(segment: FlightSegment): void {
         const segments = segment.getShoppingItinerary().getFlightSegments();
+
         const aircraftTypes: Record<string, string> = {
             '359': 'Airbus A350-900',
             '388': 'Airbus A380-800',
@@ -45,23 +55,28 @@ export class SeatMapShoppingView extends AbstractView<AbstractModel> {
         };
 
         this.flightSegments = segments.map(s => {
-            const departureDateTime = s.getDepartureDate();
+            const segmentId = s.getSegmentId();
+            const flightNumber = s.getFlightNumber();
+            const origin = s.getOriginIata();
+            const destination = s.getDestinationIata();
+            const airMiles = s.getAirMiles();
+            const departureDate = s.getDepartureDate();
+            const marketingAirline = s.getMarketingAirline();
             const equipmentCode = s.getEquipmentCode?.() || 'UNKNOWN';
-            const equipmentDescription = aircraftTypes[equipmentCode] || 'Not Available';
 
             return {
-                id: s.getSegmentId(),
-                segmentId: s.getSegmentId(),
-                flightNumber: s.getFlightNumber(),
-                origin: s.getOriginIata(),
-                destination: s.getDestinationIata(),
-                airMiles: s.getAirMiles(),
-                departureDateTime: departureDateTime ? departureDateTime.toISOString().split('T')[0] : 'UNKNOWN',
-                marketingAirline: s.getMarketingAirline(),
+                id: segmentId,
+                segmentId,
+                flightNumber,
+                origin,
+                destination,
+                airMiles,
+                departureDateTime: departureDate?.toISOString().split('T')[0] || 'UNKNOWN',
+                marketingAirline,
                 cabinClass: 'A',
                 equipment: {
                     EncodeDecodeElement: {
-                        SimplyDecoded: equipmentDescription
+                        SimplyDecoded: aircraftTypes[equipmentCode] || 'Not Available'
                     }
                 }
             };
@@ -85,14 +100,7 @@ export class SeatMapShoppingView extends AbstractView<AbstractModel> {
     }
 
     private renderReactComponent(): void {
-        if (!this.currentSegment) {
-            console.warn('⚠️ Нет сегмента — пропуск рендера');
-            return;
-        }
-
-        if (!this.flightSegments?.length) {
-            this.updateFlightSegmentsFromSegment(this.currentSegment);
-        }
+        if (!this.currentSegment || !this.flightSegments?.length) return;
 
         const rootElement = document.getElementById('seatmap-root');
         if (!rootElement) {
@@ -100,7 +108,8 @@ export class SeatMapShoppingView extends AbstractView<AbstractModel> {
             return;
         }
 
-        rootElement.innerHTML = ''; // Очистка
+        rootElement.innerHTML = '';
+
         const data = {
             flightSegments: this.flightSegments,
             selectedSegmentIndex: this.selectedSegmentIndex
@@ -114,10 +123,10 @@ export class SeatMapShoppingView extends AbstractView<AbstractModel> {
         }
 
         ReactDOM.render(
-            React.createElement(SeatMapComponentShopping, { config: quicketConfig, data }),
+            <SeatMapComponentShopping config={quicketConfig} data={data} />,
             rootElement
         );
 
-        console.log('📌 [SeatMapShoppingView] React компонент отрендерен в шаблон');
+        console.log('📌 [SeatMapShoppingView] React компонент отрендерен');
     }
 }
