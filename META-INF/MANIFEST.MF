@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: RedApp-SeatMap-ABC-366-02
+Bundle-Name: RedApp-SeatMap-ABC-360-02
 Bundle-SymbolicName: RedApp-SeatMap-ABC-360-02
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: redapp_seatmap_abc_360_02.Activator
@@ -9,3 +9,4 @@ Require-Bundle: org.eclipse.ui,
  org.osgi.framework
 Automatic-Module-Name: RedApp.SeatMap.ABC.360
 Bundle-ActivationPolicy: lazy
+Export-Package: redapp_seatmap_abc_360_02
