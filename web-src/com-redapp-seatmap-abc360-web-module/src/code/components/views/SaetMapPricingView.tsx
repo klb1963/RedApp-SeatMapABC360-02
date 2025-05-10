@@ -1,17 +1,30 @@
 import * as React from 'react';
-import { useEffect } from 'react';
-import { AirPricingData } from 'sabre-ngv-pricing/response/interfaces/AirPricingData';
-import { showSeatMapPricingModal } from '../seatMap/showSeatMapPricingModal';
+import SeatMapComponentPricing from '../seatMap/SeatMapComponentPricing';
+import { quicketConfig } from '../../utils/quicketConfig';
 
-export const PricingView = (data: AirPricingData) : React.ReactElement => {
-    useEffect(() => {
-        console.log('🚀 PricingView data:', data); // Лог для отладки
-        showSeatMapPricingModal(); // Вызов функции показа модального окна c данными (data)
-    }, []);
+export const PricingView = (): React.ReactElement => {
+  const raw = window.sessionStorage.getItem('flightSegmentsForPricing');
+  let segments: any[] = [];
 
+  try {
+    segments = raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    console.error('❌ Ошибка чтения flightSegmentsForPricing:', e);
+  }
+
+  if (!segments.length) {
     return (
-        <div className={'sdk-pricing-custom-tile-content'}>
-            <p>Открываем SeatMap Viewer...</p>
-        </div>
+      <div style={{ padding: '1rem' }}>
+        ❗ Нет доступных сегментов рейса для отображения карты мест.
+      </div>
     );
-}
+  }
+
+  return (
+    <SeatMapComponentPricing
+      config={quicketConfig}
+      flightSegments={segments}
+      selectedSegmentIndex={0}
+    />
+  );
+};

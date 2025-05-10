@@ -1,12 +1,9 @@
+//file: SeatMapPricingTile.tsx
+
 import * as React from 'react';
 import { AirPricingData } from 'sabre-ngv-pricing/response/interfaces/AirPricingData';
-import { showSeatMapPricingModal } from '../seatMap/showSeatMapPricingModal';
 
 export const PricingTile = (data: AirPricingData): React.ReactElement => {
-  const handleClick = () => {
-    console.log('🔘 Клик по кнопке SeatMaps ABC 360 в PricingTile');
-    showSeatMapPricingModal(); // Вызов модального окна
-  };
 
   // 📦 Формируем подпись с сегментами (origin-destination:airline flightNo ...)
   let segmentLabel = '';
@@ -38,7 +35,6 @@ export const PricingTile = (data: AirPricingData): React.ReactElement => {
 
       <button
         className="abc-seatmap-button"
-        onClick={handleClick}
         style={{
           display: 'flex',
           alignItems: 'center',

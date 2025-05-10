@@ -349,13 +349,6 @@ export class Main extends Module {
           }
           getService(PublicModalsService).showReactModal(ngvModalOptions);
 
-           // ✅ Добавляем класс вручную, если modalClassName не сработал
-          setTimeout(() => {
-            document.querySelectorAll('.react-modal.modal-dialog').forEach(el => {
-              el.classList.add('seatmap-modal-wide');
-            });
-          }, 100);
-
         });
       }
 
