@@ -4,6 +4,7 @@ import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FlightData } from '../../utils/generateFlightData';
 import SeatMapModalLayout from './SeatMapModalLayout';
+import { constant, initial } from 'underscore';
 
 // === Interfaces ===
 interface Passenger {
@@ -35,6 +36,14 @@ interface SeatMapComponentBaseProps {
   flightInfo?: React.ReactNode;
 }
 
+// 📌 Индексируем пассажиров
+function ensurePassengerIds(passengers: Passenger[]): Passenger[] {
+  return passengers.map((p, index) => ({
+    ...p,
+    id: typeof p.id === 'string' && p.id.trim() !== '' ? p.id : `pax-${index}`
+  }));
+}
+
 // === Component ===
 const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   config,
@@ -48,79 +57,62 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   flightInfo
 }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  // отслеживаем boardingComplete
+  const [boardingComplete, setBoardingComplete] = useState(false);
+
+  // ✅ Обеспечиваем корректные и уникальные строковые ID для пассажиров
+  const [cleanPassengers] = useState(() => ensurePassengerIds(passengers));
 
   const [selectedSeats, setSelectedSeats] = useState<SelectedSeat[]>([]);
-  const [selectedPassengerId, setSelectedPassengerId] = useState<string>(
-    passengers.length > 0 ? passengers[0].id : ''
-  );
+
+  // selectedPassengerId изначально пустой
+  const [selectedPassengerId, setSelectedPassengerId] = useState<string>('');
+
+  // ✅ Ставим первого пассажира как выбранного при появлении массива
+  useEffect(() => {
+    if (cleanPassengers.length > 0 && !selectedPassengerId) {
+      const firstId = String(cleanPassengers[0].id);
+      setSelectedPassengerId(firstId);
+      console.log('👤 selectedPassengerId инициализирован:', firstId);
+    }
+  }, [passengers, selectedPassengerId]);
 
   const segment = flightSegments[initialSegmentIndex];
 
-  // === Приём событий от библиотеки ===
-  useEffect(() => {
-    const appMessageListener = (event: MessageEvent) => {
-      if (event.origin !== 'https://quicket.io') return;
-
-      let parsed;
-      try {
-        parsed = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
-      } catch {
-        return;
-      }
-
-      if ('onSeatSelected' in parsed && Array.isArray(parsed.onSeatSelected)) {
-        const updated = parsed.onSeatSelected
-          .filter(p => p.id && p.seat?.seatLabel)
-          .map(p => ({
-            passengerId: p.id,
-            seatLabel: p.seat.seatLabel
-          }));
-
-        setSelectedSeats(updated);
-        onSeatChange?.(updated);
-      }
-
-      if ('onSeatUnselected' in parsed && parsed.onSeatUnselected?.id) {
-        const passengerId = parsed.onSeatUnselected.id;
-        setSelectedSeats(prev => {
-          const newSeats = prev.filter(s => s.passengerId !== passengerId);
-          onSeatChange?.(newSeats);
-          return newSeats;
-        });
-      }
-    };
-
-    window.addEventListener('message', appMessageListener);
-    return () => window.removeEventListener('message', appMessageListener);
-  }, [onSeatChange]);
-
   const handleResetSeat = () => {
     setSelectedSeats([]);
-    setSelectedPassengerId(passengers.length > 0 ? passengers[0].id : '');
+    setSelectedPassengerId(cleanPassengers.length > 0 ? cleanPassengers[0].id : '');
     onSeatChange?.([]);
-  };
+    setBoardingComplete(false); // 🧽 Убираем сообщение
 
-  // начальная загрузка карты
-  const handleIframeLoad = () => {
+    // 🔁 Обновляем карту — все места сброшены
     const iframe = iframeRef.current;
     if (!iframe) return;
 
     const flight = generateFlightData(segment, initialSegmentIndex, cabinClass);
     const availabilityData = availability || [];
 
-    const colorPalette = ['blue', 'orange', 'green', 'purple', 'teal', 'red'];
+    const colorPalette = ['blue', 'purple', 'teal', 'gray', 'green', 'red'];
+    
+    // initials
     const getInitials = (p: Passenger) =>
       `${p.givenName?.[0] || ''}${p.surname?.[0] || ''}`.toUpperCase();
 
-    const passengerList = passengers.map((p, index) => ({
-      id: p.id || index.toString(),
+    const passengerList = cleanPassengers.map((p, index) => ({
+      id: p.id,
       passengerType: 'ADT',
-      seat: selectedSeats.find(s => s.passengerId === p.id) || null,
+      seat: null, // ✅ никаких мест
       passengerLabel: p.label || `${p.givenName}/${p.surname}`,
       passengerColor: colorPalette[index % colorPalette.length],
       initials: getInitials(p),
-      readOnly: p.id !== selectedPassengerId
+      abbr: getInitials(p),
+      readOnly: true // 🔒 по умолчанию все пассивные
     }));
+
+    console.log('🧾 Passenger initials:');
+    passengerList.forEach(p =>
+      console.log(`${p.passengerLabel} → ${p.initials}`)
+    );
 
     const message = {
       type: 'seatMaps',
@@ -133,30 +125,50 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
 
     const targetOrigin = new URL(iframe.src).origin;
     iframe.contentWindow?.postMessage(message, targetOrigin);
-    console.log('📤 Первый postMessage отправлен через onLoad');
+    console.log('🔁 PostMessage после Reset all');
+
   };
 
-  // 🔁 Обновляем карту при смене класса обслуживания
-  useEffect(() => {
+  // ======== 🗺️ начальная загрузка карты ==================
+  const handleIframeLoad = () => {
     const iframe = iframeRef.current;
     if (!iframe) return;
 
     const flight = generateFlightData(segment, initialSegmentIndex, cabinClass);
     const availabilityData = availability || [];
 
-    const colorPalette = ['blue', 'orange', 'green', 'purple', 'teal', 'red'];
+    const colorPalette = ['blue', 'purple', 'teal', 'gray', 'green', 'red'];
     const getInitials = (p: Passenger) =>
       `${p.givenName?.[0] || ''}${p.surname?.[0] || ''}`.toUpperCase();
 
-    const passengerList = passengers.map((p, index) => ({
-      id: p.id || index.toString(),
-      passengerType: 'ADT',
-      seat: selectedSeats.find(s => s.passengerId === p.id) || null,
-      passengerLabel: p.label || `${p.givenName}/${p.surname}`,
-      passengerColor: colorPalette[index % colorPalette.length],
-      initials: getInitials(p),
-      readOnly: p.id !== selectedPassengerId
-    }));
+    const passengerList = cleanPassengers.map((p, index) => {
+      // ✅ Унифицированный id — всегда строка
+      const pid = String(p.id ?? index); // ← если p.id нет, используем индекс
+
+      const seat = selectedSeats.find(s => s.passengerId === pid) || null;
+      const isReadOnly = pid !== selectedPassengerId;
+
+      const initials = getInitials(p);
+      console.log(`🔤 [initials] ${p.givenName} ${p.surname} → ${initials}`);
+
+      const passenger = {
+        id: pid,
+        passengerType: 'ADT',
+        seat,
+        passengerLabel: p.label || `${p.givenName}/${p.surname}`,
+        passengerColor: colorPalette[index % colorPalette.length],
+        initials,
+        abbr: initials,
+        readOnly: isReadOnly
+      };
+
+      console.log(
+        `👤 [onLoad] ${passenger.passengerLabel} (id=${passenger.id}) → seat: ${seat?.seatLabel || '—'}, readOnly: ${isReadOnly}`
+      );
+      console.log(`🔤 [initials] ${p.givenName} ${p.surname} → ${initials}`);
+
+      return passenger;
+    });
 
     const message = {
       type: 'seatMaps',
@@ -166,6 +178,63 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
       passengers: JSON.stringify(passengerList),
       currentDeckIndex: '0'
     };
+
+    console.log('[🚀 passengerList отправлен в iframe - загрузка карты]', passengerList);
+
+    const targetOrigin = new URL(iframe.src).origin;
+    iframe.contentWindow?.postMessage(message, targetOrigin);
+    console.log('📤 Первый postMessage отправлен через onLoad');
+  };
+
+
+  // 🔁 Обновляем карту при смене класса обслуживания
+  useEffect(() => {
+    const iframe = iframeRef.current;
+    if (!iframe) return;
+
+    const flight = generateFlightData(segment, initialSegmentIndex, cabinClass);
+    const availabilityData = availability || [];
+
+    const colorPalette = ['blue', 'purple', 'teal', 'gray', 'green', 'red'];
+    const getInitials = (p: Passenger) =>
+      `${p.givenName?.[0] || ''}${p.surname?.[0] || ''}`.toUpperCase();
+
+    const passengerList = cleanPassengers.map((p, index) => {
+      // ✅ Унифицированный id — всегда строка
+      const pid = String(p.id ?? index); // ← если p.id нет, используем индекс
+
+      const seat = selectedSeats.find(s => s.passengerId === pid) || null;
+      const isReadOnly = pid !== selectedPassengerId;
+      const initials = getInitials(p);
+
+      const passenger = {
+        id: pid,
+        passengerType: 'ADT',
+        seat,
+        passengerLabel: p.label || `${p.givenName}/${p.surname}`,
+        passengerColor: colorPalette[index % colorPalette.length],
+        initials,
+        abbr: initials,
+        readOnly: isReadOnly
+      };
+
+      console.log(
+        `👤 [update cabinClass] ${passenger.passengerLabel} (id=${passenger.id}) → seat: ${seat?.seatLabel || '—'}, readOnly: ${isReadOnly}`
+      );
+
+      return passenger;
+    });
+
+    const message = {
+      type: 'seatMaps',
+      config: JSON.stringify(config),
+      flight: JSON.stringify(flight),
+      availability: JSON.stringify(availabilityData),
+      passengers: JSON.stringify(passengerList),
+      currentDeckIndex: '0'
+    };
+
+    console.log('[🚀 passengerList отправлен в iframe - смена класса]', passengerList);
 
     const targetOrigin = new URL(iframe.src).origin;
     iframe.contentWindow?.postMessage(message, targetOrigin);
@@ -180,19 +249,36 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     const flight = generateFlightData(segment, initialSegmentIndex, cabinClass);
     const availabilityData = availability || [];
 
-    const colorPalette = ['blue', 'orange', 'green', 'purple', 'teal', 'red'];
+    const colorPalette = ['blue', 'purple', 'teal', 'gray', 'green', 'red'];
     const getInitials = (p: Passenger) =>
       `${p.givenName?.[0] || ''}${p.surname?.[0] || ''}`.toUpperCase();
 
-    const passengerList = passengers.map((p, index) => ({
-      id: p.id || index.toString(),
-      passengerType: 'ADT',
-      seat: selectedSeats.find(s => s.passengerId === p.id) || null,
-      passengerLabel: p.label || `${p.givenName}/${p.surname}`,
-      passengerColor: colorPalette[index % colorPalette.length],
-      initials: getInitials(p),
-      readOnly: p.id !== selectedPassengerId
-    }));
+    const passengerList = cleanPassengers.map((p, index) => {
+
+      // ✅ Унифицированный id — всегда строка
+      const pid = String(p.id ?? index); // ← если p.id нет, используем индекс
+
+      const seat = selectedSeats.find(s => s.passengerId === pid) || null;
+      const isReadOnly = pid !== selectedPassengerId;
+      const initials = getInitials(p);
+
+      const passenger = {
+        id: pid,
+        passengerType: 'ADT',
+        seat,
+        passengerLabel: p.label || `${p.givenName}/${p.surname}`,
+        passengerColor: colorPalette[index % colorPalette.length],
+        initials,
+        abbr: initials,
+        readOnly: isReadOnly
+      };
+
+      console.log(
+        `👤 [update segment] ${passenger.passengerLabel} (id=${passenger.id}) → seat: ${seat?.seatLabel || '—'}, readOnly: ${isReadOnly}`
+      );
+
+      return passenger;
+    });
 
     const message = {
       type: 'seatMaps',
@@ -203,55 +289,183 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
       currentDeckIndex: '0'
     };
 
+    console.log('[🚀 passengerList отправлен в iframe - смена сегмента]', passengerList);
+
     const targetOrigin = new URL(iframe.src).origin;
     iframe.contentWindow?.postMessage(message, targetOrigin);
     console.log('📤 Обновление карты после смены сегмента');
   }, [initialSegmentIndex]);
 
+  // ===  🛳️ 🛫  Посадка пассажиров - обработка выбора мест от библиотеки ===
+  useEffect(() => {
+    const handleSeatSelection = (event: MessageEvent) => {
+      console.log('📩 [seatmap] raw message received:', event);
 
+      if (event.origin !== 'https://quicket.io') {
+        console.warn('⚠️ Сообщение от неизвестного origin:', event.origin);
+        return;
+      }
+
+      let parsed;
+      try {
+        parsed = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+      } catch (e) {
+        console.error('❌ Не удалось разобрать сообщение:', e, event.data);
+        return;
+      }
+
+      // 🛑 Обрабатываем только onSeatSelected
+      if (!parsed?.onSeatSelected) {
+        console.warn('🟡 Пропущено сообщение без onSeatSelected:', parsed?.type || '(unknown type)');
+        return;
+      }
+
+      console.log('📦 [seatmap] parsed object:', parsed);
+      console.log('🔑 Keys in parsed:', Object.keys(parsed));
+
+      let seatArray = parsed.onSeatSelected;
+      console.log('🪑 RAW seatArray:', seatArray);
+      console.log('📏 Тип onSeatSelected:', typeof seatArray);
+
+      if (typeof seatArray === 'string') {
+        try {
+          seatArray = JSON.parse(seatArray);
+        } catch (e) {
+          console.error('❌ Не удалось разобрать onSeatSelected:', e, seatArray);
+          return;
+        }
+      }
+
+      if (!Array.isArray(seatArray)) {
+        console.warn('⚠️ seatArray не массив:', seatArray);
+        return;
+      }
+
+      console.log('🎯 Обработка onSeatSelected:', seatArray);
+
+      const updated = seatArray
+        .filter(p => p.id && p.seat?.seatLabel)
+        .map(p => ({
+          passengerId: String(p.id),
+          seatLabel: p.seat.seatLabel.toUpperCase()
+        }));
+
+      console.log('🆕 updated selectedSeats:', updated);
+
+      if (updated.length === 0) {
+        console.warn('⚠️ updated массив пустой, мест не найдено');
+      }
+
+      setSelectedSeats(prev => {
+        const withoutOld = prev.filter(s => !updated.some(u => u.passengerId === s.passengerId));
+        const merged = [...withoutOld, ...updated];
+        onSeatChange?.(merged);
+        // ✅ Проверка: все пассажиры рассажены?
+        const allSeated = cleanPassengers.every(p =>
+          merged.some(s => s.passengerId === p.id)
+        );
+        setBoardingComplete(allSeated);
+
+
+        // 🧭 Переход к следующему пассажиру без места
+        const nextPassenger = cleanPassengers.find(
+          (p) => !merged.some((s) => s.passengerId === String(p.id))
+        );
+        if (nextPassenger) {
+          setSelectedPassengerId(String(nextPassenger.id));
+          console.log(`➡️ Переключение на следующего пассажира: ${nextPassenger.label || nextPassenger.givenName}`);
+        }
+
+        console.log('🧾 ===== Пассажиры и их места (after update) =====');
+        cleanPassengers.forEach((p) => {
+          const pid = String(p.id);
+          const matchedSeat = merged.find(s => s.passengerId === pid);
+          console.log(`👤 ${p.label || p.givenName + ' ' + p.surname} (${pid}) → ${matchedSeat?.seatLabel || '—'}`);
+          // ✅ Показываем уведомление, если все пассажиры рассажены
+          if (cleanPassengers.every(p => merged.some(s => s.passengerId === p.id))) {
+            console.log('✅ Boarding complete — все пассажиры рассажены');
+          }
+        });
+
+        return merged;
+      });
+
+    };
+
+    window.addEventListener('message', handleSeatSelection);
+    return () => window.removeEventListener('message', handleSeatSelection);
+  }, [onSeatChange]);
+
+
+  // ============== Passengers =====================
+  const passengerPanel = (
+    <>
+      {console.log('📺 Re-render passengerPanel:', selectedSeats)}
+      <div>
+        <strong>Passengers</strong>
+
+        {/* ✅ Уведомление о завершённой рассадке */}
+        {boardingComplete && (
+          <div style={{
+            backgroundColor: '#e6ffe6',
+            padding: '0.75rem',
+            margin: '1rem 0',
+            border: '1px solid #00cc66',
+            borderRadius: '5px',
+            fontWeight: 'bold',
+            color: '#006633'
+          }}>
+            ✅ Boarding complete — all passengers have seats
+          </div>
+        )}
+
+        <div style={{ margin: '1rem 0' }}>
+          {cleanPassengers.map((p) => {
+            const passengerId = String(p.id); // 🧠 Приведение к строке
+            const seat = selectedSeats.find((s) => s.passengerId === passengerId);
+            const isActive = selectedPassengerId === passengerId;
+
+            return (
+              <div key={p.id} style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <input
+                    type="radio"
+                    name="activePassenger"
+                    value={p.id}
+                    checked={selectedPassengerId === String(p.id)}
+                    onChange={() => setSelectedPassengerId(passengerId)}
+                  />
+                  {p.label || `${p.givenName} ${p.surname}`}
+                </label>
+                <div>
+                  Seat: <strong>{seat?.seatLabel || '—'}</strong>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            ✅ Seats assigned:{' '}
+            {
+              cleanPassengers.filter((p) =>
+                selectedSeats.some((s) => s.passengerId === String(p.id))
+              ).length
+            } of {cleanPassengers.length}
+          </div>
+          <button onClick={handleResetSeat}>🔁 Reset all</button>
+        </div>
+      </div>
+    </>
+  );
+  // ✊ ⚒️ 🧰 ================= show Seat Map =====================
+  
   return (
     <SeatMapModalLayout
       flightInfo={flightInfo}
-      passengerPanel={
-        <div>
-          <strong>Passengers</strong>
-          <div style={{ margin: '1rem 0' }}>
-            {passengers.map((p) => {
-              const seat = selectedSeats.find((s) => s.passengerId === p.id);
-              const isActive = p.id === selectedPassengerId;
-              return (
-                <div key={p.id} style={{ marginBottom: '1rem' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <input
-                      type="radio"
-                      name="activePassenger"
-                      value={p.id}
-                      checked={isActive}
-                      onChange={() => setSelectedPassengerId(p.id)}
-                    />
-                    {p.label || `${p.givenName} ${p.surname}`}
-                  </label>
-                  <div>
-                    Seat: <strong>{seat?.seatLabel || '—'}</strong>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+      passengerPanel={passengerPanel} // ⬅️ вот так, именно через пропс
 
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div>
-              ✅ Seats assigned:{' '}
-              {
-                passengers.filter((p) =>
-                  selectedSeats.some((s) => s.passengerId === p.id)
-                ).length
-              } of {passengers.length}
-            </div>
-            <button onClick={handleResetSeat}>🔁 Reset all</button>
-          </div>
-        </div>
-      }
     >
       <iframe
         ref={iframeRef}
@@ -262,6 +476,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
       />
     </SeatMapModalLayout>
   );
+
 };
 
 export default SeatMapComponentBase;
