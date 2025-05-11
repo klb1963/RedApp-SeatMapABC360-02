@@ -25,6 +25,7 @@ interface SeatMapComponentPnrProps {
   showSegmentSelector?: boolean;
 }
 
+// show Seat Map
 const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
   config,
   flightSegments = [],
