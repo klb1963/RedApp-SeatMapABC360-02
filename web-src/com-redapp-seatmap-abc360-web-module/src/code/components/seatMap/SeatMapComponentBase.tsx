@@ -35,6 +35,14 @@ interface SeatMapComponentBaseProps {
   flightInfo?: React.ReactNode;
 }
 
+// 📌 Добавь до основного компонента - индексируем пассажиров
+function ensurePassengerIds(passengers: Passenger[]): Passenger[] {
+  return passengers.map((p, index) => ({
+    ...p,
+    id: typeof p.id === 'string' && p.id.trim() !== '' ? p.id : `pax-${index}`
+  }));
+}
+
 // === Component ===
 const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   config,
@@ -49,20 +57,36 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
 }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
+  // ✅ Обеспечиваем корректные и уникальные строковые ID для пассажиров
+  const [cleanPassengers] = useState(() => ensurePassengerIds(passengers));
+
   const [selectedSeats, setSelectedSeats] = useState<SelectedSeat[]>([]);
-  const [selectedPassengerId, setSelectedPassengerId] = useState<string>(
-    passengers.length > 0 ? passengers[0].id : ''
-  );
+
+  // ================
+
+  // selectedPassengerId изначально пустой
+  const [selectedPassengerId, setSelectedPassengerId] = useState<string>('');
+
+  // ✅ Ставим первого пассажира как выбранного при появлении массива
+  useEffect(() => {
+    if (cleanPassengers.length > 0 && !selectedPassengerId) {
+      const firstId = String(cleanPassengers[0].id);
+      setSelectedPassengerId(firstId);
+      console.log('👤 selectedPassengerId инициализирован:', firstId);
+    }
+  }, [passengers, selectedPassengerId]);
+
+  // ==================
 
   const segment = flightSegments[initialSegmentIndex];
 
   const handleResetSeat = () => {
     setSelectedSeats([]);
-    setSelectedPassengerId(passengers.length > 0 ? passengers[0].id : '');
+    setSelectedPassengerId(cleanPassengers.length > 0 ? cleanPassengers[0].id : '');
     onSeatChange?.([]);
   };
 
-  // начальная загрузка карты
+  // ======== 🗺️ начальная загрузка карты ==================
   const handleIframeLoad = () => {
     const iframe = iframeRef.current;
     if (!iframe) return;
@@ -74,15 +98,29 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     const getInitials = (p: Passenger) =>
       `${p.givenName?.[0] || ''}${p.surname?.[0] || ''}`.toUpperCase();
 
-    const passengerList = passengers.map((p, index) => ({
-      id: p.id || index.toString(),
-      passengerType: 'ADT',
-      seat: selectedSeats.find(s => s.passengerId === p.id) || null,
-      passengerLabel: p.label || `${p.givenName}/${p.surname}`,
-      passengerColor: colorPalette[index % colorPalette.length],
-      initials: getInitials(p),
-      readOnly: p.id !== selectedPassengerId
-    }));
+    const passengerList = cleanPassengers.map((p, index) => {
+      // ✅ Унифицированный id — всегда строка
+      const pid = String(p.id ?? index); // ← если p.id нет, используем индекс
+
+      const seat = selectedSeats.find(s => s.passengerId === pid) || null;
+      const isReadOnly = pid !== selectedPassengerId;
+
+      const passenger = {
+        id: pid,
+        passengerType: 'ADT',
+        seat,
+        passengerLabel: p.label || `${p.givenName}/${p.surname}`,
+        passengerColor: colorPalette[index % colorPalette.length],
+        initials: getInitials(p),
+        readOnly: isReadOnly
+      };
+
+      console.log(
+        `👤 [onLoad] ${passenger.passengerLabel} (id=${passenger.id}) → seat: ${seat?.seatLabel || '—'}, readOnly: ${isReadOnly}`
+      );
+
+      return passenger;
+    });
 
     const message = {
       type: 'seatMaps',
@@ -98,6 +136,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     console.log('📤 Первый postMessage отправлен через onLoad');
   };
 
+
   // 🔁 Обновляем карту при смене класса обслуживания
   useEffect(() => {
     const iframe = iframeRef.current;
@@ -110,15 +149,29 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     const getInitials = (p: Passenger) =>
       `${p.givenName?.[0] || ''}${p.surname?.[0] || ''}`.toUpperCase();
 
-    const passengerList = passengers.map((p, index) => ({
-      id: p.id || index.toString(),
-      passengerType: 'ADT',
-      seat: selectedSeats.find(s => s.passengerId === p.id) || null,
-      passengerLabel: p.label || `${p.givenName}/${p.surname}`,
-      passengerColor: colorPalette[index % colorPalette.length],
-      initials: getInitials(p),
-      readOnly: p.id !== selectedPassengerId
-    }));
+    const passengerList = cleanPassengers.map((p, index) => {
+      // ✅ Унифицированный id — всегда строка
+      const pid = String(p.id ?? index); // ← если p.id нет, используем индекс
+
+      const seat = selectedSeats.find(s => s.passengerId === pid) || null;
+      const isReadOnly = pid !== selectedPassengerId;
+
+      const passenger = {
+        id: pid,
+        passengerType: 'ADT',
+        seat,
+        passengerLabel: p.label || `${p.givenName}/${p.surname}`,
+        passengerColor: colorPalette[index % colorPalette.length],
+        initials: getInitials(p),
+        readOnly: isReadOnly
+      };
+
+      console.log(
+        `👤 [update cabinClass] ${passenger.passengerLabel} (id=${passenger.id}) → seat: ${seat?.seatLabel || '—'}, readOnly: ${isReadOnly}`
+      );
+
+      return passenger;
+    });
 
     const message = {
       type: 'seatMaps',
@@ -146,15 +199,30 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     const getInitials = (p: Passenger) =>
       `${p.givenName?.[0] || ''}${p.surname?.[0] || ''}`.toUpperCase();
 
-    const passengerList = passengers.map((p, index) => ({
-      id: p.id || index.toString(),
-      passengerType: 'ADT',
-      seat: selectedSeats.find(s => s.passengerId === p.id) || null,
-      passengerLabel: p.label || `${p.givenName}/${p.surname}`,
-      passengerColor: colorPalette[index % colorPalette.length],
-      initials: getInitials(p),
-      readOnly: p.id !== selectedPassengerId
-    }));
+    const passengerList = cleanPassengers.map((p, index) => {
+
+      // ✅ Унифицированный id — всегда строка
+      const pid = String(p.id ?? index); // ← если p.id нет, используем индекс
+
+      const seat = selectedSeats.find(s => s.passengerId === pid) || null;
+      const isReadOnly = pid !== selectedPassengerId;
+
+      const passenger = {
+        id: pid,
+        passengerType: 'ADT',
+        seat,
+        passengerLabel: p.label || `${p.givenName}/${p.surname}`,
+        passengerColor: colorPalette[index % colorPalette.length],
+        initials: getInitials(p),
+        readOnly: isReadOnly
+      };
+
+      console.log(
+        `👤 [update segment] ${passenger.passengerLabel} (id=${passenger.id}) → seat: ${seat?.seatLabel || '—'}, readOnly: ${isReadOnly}`
+      );
+
+      return passenger;
+    });
 
     const message = {
       type: 'seatMaps',
@@ -170,10 +238,9 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     console.log('📤 Обновление карты после смены сегмента');
   }, [initialSegmentIndex]);
 
-  // ===  🛳️ 🛫  Посадка пассажиров ===
+  // ===  🛳️ 🛫  Посадка пассажиров - обработка выбора мест от библиотеки ===
   useEffect(() => {
     const handleSeatSelection = (event: MessageEvent) => {
-
       console.log('📩 [seatmap] raw message received:', event);
 
       if (event.origin !== 'https://quicket.io') {
@@ -189,11 +256,17 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
         return;
       }
 
+      // 🛑 Обрабатываем только onSeatSelected
+      if (!parsed?.onSeatSelected) {
+        console.warn('🟡 Пропущено сообщение без onSeatSelected:', parsed?.type || '(unknown type)');
+        return;
+      }
+
       console.log('📦 [seatmap] parsed object:', parsed);
       console.log('🔑 Keys in parsed:', Object.keys(parsed));
 
       let seatArray = parsed.onSeatSelected;
-      console.log('🧪 Значение parsed.onSeatSelected:', seatArray);
+      console.log('🪑 RAW seatArray:', seatArray);
       console.log('📏 Тип onSeatSelected:', typeof seatArray);
 
       if (typeof seatArray === 'string') {
@@ -215,17 +288,28 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
       const updated = seatArray
         .filter(p => p.id && p.seat?.seatLabel)
         .map(p => ({
-          passengerId: p.id,
+          passengerId: String(p.id),
           seatLabel: p.seat.seatLabel.toUpperCase()
         }));
+
+      console.log('🆕 updated selectedSeats:', updated);
+
+      if (updated.length === 0) {
+        console.warn('⚠️ updated массив пустой, мест не найдено');
+      }
 
       setSelectedSeats(prev => {
         const withoutOld = prev.filter(s => !updated.some(u => u.passengerId === s.passengerId));
         const merged = [...withoutOld, ...updated];
-        console.log('🧩 Было:', prev);
-        console.log('🔁 Добавляем:', updated);
         onSeatChange?.(merged);
-        console.log('🧩 Обновленный selectedSeats:', merged);
+
+        console.log('🧾 ===== Пассажиры и их места (after update) =====');
+        passengers.forEach((p) => {
+          const pid = String(p.id);
+          const matchedSeat = merged.find(s => s.passengerId === pid);
+          console.log(`👤 ${p.label || p.givenName + ' ' + p.surname} (${pid}) → ${matchedSeat?.seatLabel || '—'}`);
+        });
+
         return merged;
       });
     };
@@ -233,6 +317,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     window.addEventListener('message', handleSeatSelection);
     return () => window.removeEventListener('message', handleSeatSelection);
   }, [onSeatChange]);
+
 
   // ============== Passengers =====================
   const passengerPanel = (
@@ -242,7 +327,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
         <strong>Passengers</strong>
 
         <div style={{ margin: '1rem 0' }}>
-          {passengers.map((p) => {
+          {cleanPassengers.map((p) => {
             const passengerId = String(p.id); // 🧠 Приведение к строке
             const seat = selectedSeats.find((s) => s.passengerId === passengerId);
             const isActive = selectedPassengerId === passengerId;
@@ -254,7 +339,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
                     type="radio"
                     name="activePassenger"
                     value={p.id}
-                    checked={isActive}
+                    checked={selectedPassengerId === String(p.id)}
                     onChange={() => setSelectedPassengerId(passengerId)}
                   />
                   {p.label || `${p.givenName} ${p.surname}`}
@@ -271,10 +356,10 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
           <div>
             ✅ Seats assigned:{' '}
             {
-              passengers.filter((p) =>
+              cleanPassengers.filter((p) =>
                 selectedSeats.some((s) => s.passengerId === String(p.id))
               ).length
-            } of {passengers.length}
+            } of {cleanPassengers.length}
           </div>
           <button onClick={handleResetSeat}>🔁 Reset all</button>
         </div>
