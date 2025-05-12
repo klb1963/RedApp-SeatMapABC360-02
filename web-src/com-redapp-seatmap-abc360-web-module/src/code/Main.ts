@@ -194,6 +194,7 @@ export class Main extends Module {
             }
           ),
           onSubmit: () => handleSaveSeats(this.localStore.store.getState().selectedSeats),
+          // buttons in modal window
           actions: actions(() => handleSaveSeats(this.localStore.store.getState().selectedSeats), this.onClickCancel),
           modalClassName: 'seatmap-modal-wide',
         });

@@ -4,7 +4,6 @@ import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FlightData } from '../../utils/generateFlightData';
 import SeatMapModalLayout from './SeatMapModalLayout';
-import { constant, initial } from 'underscore';
 
 // === Interfaces ===
 interface Passenger {

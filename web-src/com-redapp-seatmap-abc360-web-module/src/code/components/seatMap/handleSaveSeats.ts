@@ -18,32 +18,36 @@ export const handleSaveSeats = async (selectedSeats: any[]): Promise<void> => {
   const modalService = getService(PublicModalsService);
 
   try {
-    for (const seat of selectedSeats) {
-      const xml = `
-        <UpdateReservationRQ xmlns="http://services.sabre.com/sp/updatereservation/v1_6">
-          <Profile>
-            <UniqueID ID="" />
-          </Profile>
-          <ReservationUpdate>
-            <SeatUpdate>
-              <PassengerRef>${seat.passengerId}</PassengerRef>
-              <SegmentRef>1</SegmentRef>
-              <Seat>${seat.seatLabel}</Seat>
-            </SeatUpdate>
-          </ReservationUpdate>
-        </UpdateReservationRQ>
-      `;
+    // 📍 Сбор всех блоков <SeatUpdate>
+    const seatUpdateBlocks = selectedSeats.map(seat => {
+      return `
+        <SeatUpdate>
+          <PassengerRef>${seat.passengerId}</PassengerRef>
+          <SegmentRef>1</SegmentRef>
+          <Seat>${seat.seatLabel}</Seat>
+        </SeatUpdate>`;
+    }).join('');
 
-      const response = await soap.callSws({
-        action: 'UpdateReservationRQ',
-        payload: xml,
-        authTokenType: 'SESSION'
-      });
+    // 📄 Общий XML
+    const xml = `
+      <UpdateReservationRQ xmlns="http://services.sabre.com/sp/updatereservation/v1_6">
+        <Profile>
+          <UniqueID ID="" />
+        </Profile>
+        <ReservationUpdate>
+          ${seatUpdateBlocks}
+        </ReservationUpdate>
+      </UpdateReservationRQ>
+    `;
 
-      console.log(`✅ Назначено место ${seat.seatLabel} → пассажиру ${seat.passengerId}`, response.value);
-    }
+    const response = await soap.callSws({
+      action: 'UpdateReservationRQ',
+      payload: xml,
+      authTokenType: 'SESSION'
+    });
 
-    // ✅ Обновление PNR и закрытие окна
+    console.log('✅ Все места успешно назначены:', response.value);
+
     await pnrService.refreshData();
     modalService.closeReactModal();
 
