@@ -38,6 +38,8 @@ import { loadSeatMapFromSabre } from './services/loadSeatMapFromSabre';
 import { actions } from './components/seatMap/actions';
 import { handleSaveSeats } from './components/seatMap/handleSaveSeats';
 
+import { openSeatMapPnr } from './components/seatMap/openSeatMapPnr';
+
 export class Main extends Module {
     init(): void {
         super.init();
@@ -115,109 +117,22 @@ export class Main extends Module {
 
     } // end of init
 
-  //============= форма для создания PNR =======
+  //============= create PNR form =======
   showForm(): void {
     const ls = getService(LayerService);
     ls.showOnLayer(CreatePNR, { display: "areaView", position: 42 });
   }
 
-  //============= открываем SeatMap ABC 360 =====
+  //============= open SeatMap ABC 360 with PNR data =====
+
   openSeatMapABC360(): void {
-    const publicModalsService = getService(PublicModalsService);
-    publicModalsService.closeReactModal(); // ✅ Закрываем любые старые окна
-
-    // берем данные из PNR
-    (async () => {
-      try {
-        const { parsedData: pnrData } = await loadPnrDetailsFromSabre();
-
-        if (!pnrData || !pnrData.segments || pnrData.segments.length === 0) {
-          publicModalsService.showReactModal({
-            header: 'SeatMap ABC 360',
-            component: React.createElement(
-              'div',
-              { style: { padding: '1rem' } },
-              'No active PNR with flight segments.'
-            ),
-            modalClassName: 'seatmap-modal-class'
-          });
-          return;
-        }
-
-        // ✅ Преобразуем все сегменты в нужный формат
-        const flightSegments = pnrData.segments.map((seg: any) => ({
-          ...seg,
-          flightNo: seg.marketingFlightNumber || '000',
-          flightNumber: seg.marketingFlightNumber || '000',
-          airlineCode: seg.marketingCarrier || 'XX',
-          origin: seg.origin || 'XXX',
-          destination: seg.destination || 'YYY',
-          departureDate: seg.departureDate || '2025-01-01',
-          cabinClass: seg.bookingClass || 'Y',
-          equipment: seg.equipment || 'unknown',
-          passengerType: 'ADT'
-        }));
-
-        // ✅ Пассажиры из PNR
-        const passengers = pnrData.passengers || [];
-
-        // 🪑 Выбираем сегмент по умолчанию — первый
-        const selectedSegmentIndex = 0;
-        const activeFlight = flightSegments[selectedSegmentIndex];
-
-        // 🆕 Загружаем availability по выбранному сегменту
-        const { availability } = await loadSeatMapFromSabre(activeFlight, passengers);
-
-        // ✅ Логи
-        console.log('✈️ flightSegments:', flightSegments);
-        console.log('🧑‍✈️ passengers:', passengers);
-        console.log('🪑 availability:', availability);
-
-        // =========== кнопки для модального окна =====
-        const onClickCancel = () => {
-          getService(PublicModalsService).closeReactModal();
-        };
-
-        const store = this.localStore.store;
-
-        // ✅ Открываем модальное окно с компонентом карты мест
-        publicModalsService.showReactModal({
-          header: 'Seat Map ABC 360',
-          component: React.createElement(
-            require('./components/seatMap/SeatMapComponentPnr').default,
-            {
-              config: quicketConfig,
-              flightSegments,
-              selectedSegmentIndex,
-              availability,
-              passengers
-            }
-          ),
-          onSubmit: () => handleSaveSeats(this.localStore.store.getState().selectedSeats),
-          // buttons in modal window
-          actions: actions(() => handleSaveSeats(this.localStore.store.getState().selectedSeats), this.onClickCancel),
-          modalClassName: 'seatmap-modal-wide',
-        });
-
-      } catch (error) {
-        console.error('❌ Failed to load PNR for seat maps:', error);
-
-        publicModalsService.showReactModal({
-          header: 'SeatMaps Error',
-          component: React.createElement(
-            'div',
-            { style: { padding: '1rem', color: 'red' } },
-            'Failed to load PNR data.'
-          ),
-          modalClassName: 'seatmap-modal-class'
-        });
-      }
-    })();
+    getService(PublicModalsService).closeReactModal(); // ✅ Close any open modals
+    openSeatMapPnr(this.localStore.store); // delegate 
   }
 
   // ===============================================
 
-    // ✅ Внутри класса Main
+    // ✅ needed inside Main
     localStore = {
       store: {
         getState: () => {
@@ -232,7 +147,7 @@ export class Main extends Module {
       getService(PublicModalsService).closeReactModal();
     };
 
-  //============= Кнопка getEnhancedSeatMapRQ ==========
+  //============= Burron getEnhancedSeatMapRQ ==========
   private getEnhancedSeatMapRQ(): void {
     const publicModalsService = getService(PublicModalsService);
 
@@ -243,7 +158,7 @@ export class Main extends Module {
     });
   }
 
-  // =========== Кнопка showPnrInfo ==================
+  // =========== Button showPnrInfo ==================
   showPnrInfo(): void {
     const publicModalsService = getService(PublicModalsService);
 
@@ -317,14 +232,14 @@ export class Main extends Module {
 
   //========= Shopping & Pricing Tile =============
   private registerSeatMapShoppingTile(): void {
-    // определяем config shoppingDrawerConfig для Shopping
+    // define config shoppingDrawerConfig
     console.log("registerSeatMapShoppingTile");
     
     const shoppingDrawerConfig = new LargeWidgetDrawerConfig(SeatMapShoppingTile, SeatMapShoppingView, {
-      title: 'Shopping Tile Widget', // заголовок окна
+      title: 'Shopping Tile Widget', // window header
       
     });
-    // вызвываем сервис с этим config shoppingDrawerConfig
+    // call service with config shoppingDrawerConfig
     getService(DrawerService).addConfig(['shopping-flight-segment'], shoppingDrawerConfig);
 
     // Pricing Tile
