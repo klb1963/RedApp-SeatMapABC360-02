@@ -4,15 +4,13 @@ import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FlightData } from '../../utils/generateFlightData';
 import SeatMapModalLayout from './SeatMapModalLayout';
+import { PassengerOption } from '../../utils/parcePnrData';
 
-// === Interfaces ===
-interface Passenger {
-  id: string;
-  givenName: string;
-  surname: string;
-  seatAssignment?: string;
-  label?: string;
-  initials?: string;
+// glogal variable 
+declare global {
+  interface Window {
+    selectedSeats?: SelectedSeat[];
+  }
 }
 
 interface SelectedSeat {
@@ -27,7 +25,7 @@ interface SeatMapComponentBaseProps {
   showSegmentSelector?: boolean;
   cabinClass: string;
   availability: any[];
-  passengers: Passenger[];
+  passengers: PassengerOption[];
   generateFlightData: (segment: any, index: number, cabin: string) => FlightData;
   onSeatChange?: (seats: SelectedSeat[]) => void;
   passengerPanel?: React.ReactNode;
@@ -36,10 +34,11 @@ interface SeatMapComponentBaseProps {
 }
 
 // 📌 Индексируем пассажиров
-function ensurePassengerIds(passengers: Passenger[]): Passenger[] {
+function ensurePassengerIds(passengers: PassengerOption[]): PassengerOption[] {
   return passengers.map((p, index) => ({
     ...p,
-    id: typeof p.id === 'string' && p.id.trim() !== '' ? p.id : `pax-${index}`
+    id: typeof p.id === 'string' && p.id.trim() !== '' ? p.id : `pax-${index}`,
+    value: typeof p.value === 'string' && p.value.trim() !== '' ? p.value : `pax-${index}`
   }));
 }
 
@@ -63,6 +62,11 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   const [cleanPassengers] = useState(() => ensurePassengerIds(passengers));
 
   const [selectedSeats, setSelectedSeats] = useState<SelectedSeat[]>([]);
+
+  // 🔁 Синхронизация selectedSeats с глобальным window
+  useEffect(() => {
+    window.selectedSeats = selectedSeats;
+  }, [selectedSeats]);
 
   // selectedPassengerId изначально пустой
   const [selectedPassengerId, setSelectedPassengerId] = useState<string>('');
@@ -94,7 +98,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     const colorPalette = ['blue', 'purple', 'teal', 'gray', 'green', 'red'];
     
     // initials
-    const getInitials = (p: Passenger) =>
+    const getInitials = (p: PassengerOption) =>
       `${p.givenName?.[0] || ''}${p.surname?.[0] || ''}`.toUpperCase();
 
     const passengerList = cleanPassengers.map((p, index) => ({
@@ -137,7 +141,8 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     const availabilityData = availability || [];
 
     const colorPalette = ['blue', 'purple', 'teal', 'gray', 'green', 'red'];
-    const getInitials = (p: Passenger) =>
+
+    const getInitials = (p: PassengerOption) =>
       `${p.givenName?.[0] || ''}${p.surname?.[0] || ''}`.toUpperCase();
 
     const passengerList = cleanPassengers.map((p, index) => {
@@ -195,7 +200,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     const availabilityData = availability || [];
 
     const colorPalette = ['blue', 'purple', 'teal', 'gray', 'green', 'red'];
-    const getInitials = (p: Passenger) =>
+    const getInitials = (p: PassengerOption) =>
       `${p.givenName?.[0] || ''}${p.surname?.[0] || ''}`.toUpperCase();
 
     const passengerList = cleanPassengers.map((p, index) => {
@@ -249,7 +254,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     const availabilityData = availability || [];
 
     const colorPalette = ['blue', 'purple', 'teal', 'gray', 'green', 'red'];
-    const getInitials = (p: Passenger) =>
+    const getInitials = (p: PassengerOption) =>
       `${p.givenName?.[0] || ''}${p.surname?.[0] || ''}`.toUpperCase();
 
     const passengerList = cleanPassengers.map((p, index) => {
@@ -343,11 +348,15 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
       console.log('🎯 Обработка onSeatSelected:', seatArray);
 
       const updated = seatArray
-        .filter(p => p.id && p.seat?.seatLabel)
-        .map(p => ({
-          passengerId: String(p.id),
+      .filter(p => p.id && p.seat?.seatLabel)
+      .map(p => {
+        const index = Number(p.id); // id приходит как "0", "1"
+        const realId = cleanPassengers[index]?.value || String(p.id);// берём из cleanPassengers
+        return {
+          passengerId: realId,
           seatLabel: p.seat.seatLabel.toUpperCase()
-        }));
+        };
+      });
 
       console.log('🆕 updated selectedSeats:', updated);
 

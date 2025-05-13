@@ -5,15 +5,7 @@ import { useState } from 'react';
 import SeatMapComponentBase from './SeatMapComponentBase';
 import { generateFlightData } from '../../utils/generateFlightData';
 import SeatLegend from './SeatLegend';
-
-// Интерфейс пассажира
-interface Passenger {
-  id: string;
-  givenName: string;
-  surname: string;
-  seatAssignment?: string;
-  label?: string;
-}
+import { PassengerOption } from '../../utils/parcePnrData';
 
 // Интерфейс пропсов
 interface SeatMapComponentPnrProps {
@@ -21,7 +13,7 @@ interface SeatMapComponentPnrProps {
   flightSegments: any[];
   selectedSegmentIndex?: number;
   availability?: any[];
-  passengers?: Passenger[];
+  passengers?: PassengerOption[];
   showSegmentSelector?: boolean;
 }
 
@@ -86,9 +78,10 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
     );
   };
 
-  const selectedPassengers = (Array.isArray(passengers)
+  // ✅ фильтруем только выбранных пассажиров
+  const selectedPassengers = Array.isArray(passengers)
     ? passengers.filter((p) => selectedPassengerIds.includes(p.id))
-    : []) as Passenger[];
+    : [];
 
   return (
     <div style={{ padding: '1rem' }}>

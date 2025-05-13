@@ -147,7 +147,7 @@ export class Main extends Module {
       getService(PublicModalsService).closeReactModal();
     };
 
-  //============= Burron getEnhancedSeatMapRQ ==========
+  //============= Button getEnhancedSeatMapRQ ==========
   private getEnhancedSeatMapRQ(): void {
     const publicModalsService = getService(PublicModalsService);
 

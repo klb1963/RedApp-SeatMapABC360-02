@@ -5,40 +5,38 @@ import { ISoapApiService } from 'sabre-ngv-communication/interfaces/ISoapApiServ
 import { PnrPublicService } from 'sabre-ngv-app/app/services/impl/PnrPublicService';
 import { PublicModalsService } from 'sabre-ngv-modals/services/PublicModalService';
 
-export const handleSaveSeats = async (selectedSeats: any[]): Promise<void> => {
+export const handleSaveSeats = async (selectedSeats: { passengerId: string; seatLabel: string }[]): Promise<void> => {
   if (!Array.isArray(selectedSeats) || selectedSeats.length === 0) {
     alert('❌ Нет выбранных мест для обновления.');
     return;
   }
 
-  console.log('📦 Отправляем места в Sabre:', selectedSeats);
+  console.log('📦 Отправляем места в Sabre через UpdateReservationRQ:', selectedSeats);
 
   const soap = getService(ISoapApiService);
   const pnrService = getService(PnrPublicService);
   const modalService = getService(PublicModalsService);
 
   try {
-    // 📍 Сбор всех блоков <SeatUpdate>
     const seatUpdateBlocks = selectedSeats.map(seat => {
       return `
         <SeatUpdate>
           <PassengerRef>${seat.passengerId}</PassengerRef>
           <SegmentRef>1</SegmentRef>
           <Seat>${seat.seatLabel}</Seat>
-        </SeatUpdate>`;
+        </SeatUpdate>
+      `;
     }).join('');
 
-    // 📄 Общий XML
     const xml = `
       <UpdateReservationRQ xmlns="http://services.sabre.com/sp/updatereservation/v1_6">
-        <Profile>
-          <UniqueID ID="" />
-        </Profile>
         <ReservationUpdate>
           ${seatUpdateBlocks}
         </ReservationUpdate>
       </UpdateReservationRQ>
     `;
+
+    console.log('📤 XML-запрос на обновление резервации:', xml);
 
     const response = await soap.callSws({
       action: 'UpdateReservationRQ',
@@ -46,13 +44,20 @@ export const handleSaveSeats = async (selectedSeats: any[]): Promise<void> => {
       authTokenType: 'SESSION'
     });
 
-    console.log('✅ Все места успешно назначены:', response.value);
+    console.log('✅ Ответ от Sabre:', response.value);
+
+    if (response.value.includes('<Success')) {
+      console.log('✅ Все места успешно назначены.');
+    } else {
+      console.warn('⚠️ Ответ не содержит <Success>. Проверьте детали.');
+    }
 
     await pnrService.refreshData();
     modalService.closeReactModal();
 
   } catch (error) {
     console.error('❌ Ошибка при обновлении мест:', error);
-    alert('Ошибка при обновлении мест. Попробуйте снова.');
+    alert('Ошибка при сохранении мест. Попробуйте снова.');
   }
 };
+

@@ -1,7 +1,9 @@
+// file: code/components/ShowPnrInfo.tsx
+
 // файл: code/components/ShowPnrInfo.tsx
 
 import * as React from 'react';
-import { XmlViewer } from '../../utils/XmlViewer'; // если хочешь также показать сырой XML
+import { XmlViewer } from '../../utils/XmlViewer'; // для отображения "сырого" XML
 
 interface ShowPnrInfoProps {
     pnrData: any;
@@ -11,16 +13,25 @@ interface ShowPnrInfoProps {
 export const ShowPnrInfo: React.FC<ShowPnrInfoProps> = ({ pnrData, rawXml }) => {
     return (
         <div style={{ padding: '1rem', maxHeight: '80vh', overflowY: 'auto' }}>
+            {/* === 🧳 ПАССАЖИРЫ === */}
             <h3>🧳 Passenger List</h3>
             <ul>
                 {pnrData.passengers.map((passenger: any, index: number) => (
                     <li key={index}>
                         {passenger.surname}/{passenger.givenName}
+                        {passenger.externalRef && (
+                            <span style={{ color: '#666', marginLeft: '0.5rem' }}>
+                                (ref: {passenger.externalRef})
+                            </span>
+                        )}
+                        {' — '}
+                        <strong>Seat:</strong> {passenger.seatAssignment || 'not assigned'}
                     </li>
                 ))}
             </ul>
 
-            <h3 style={{ marginTop: '2rem' }}>✈️ Flight Segments</h3>
+            {/* === ✈️ СЕГМЕНТЫ РЕЙСОВ === */}
+            <h3 style={{ marginTop: '2rem' }}>✈️ FLIGHT SEGMENTS</h3>
             <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>
                 <thead>
                     <tr>
@@ -48,9 +59,10 @@ export const ShowPnrInfo: React.FC<ShowPnrInfoProps> = ({ pnrData, rawXml }) => 
                 </tbody>
             </table>
 
+            {/* === 📦 RAW XML (если есть) === */}
             {rawXml && (
                 <>
-                    <h3 style={{ marginTop: '2rem' }}>🗂️ Raw PNR XML</h3>
+                    <h3 style={{ marginTop: '2rem' }}>🗂️ RAW PNR XML</h3>
                     <XmlViewer xml={rawXml} />
                 </>
             )}
@@ -58,6 +70,7 @@ export const ShowPnrInfo: React.FC<ShowPnrInfoProps> = ({ pnrData, rawXml }) => 
     );
 };
 
+// 🧾 Стили для таблицы
 const thStyle: React.CSSProperties = {
     borderBottom: '1px solid #ccc',
     padding: '8px',
