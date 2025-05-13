@@ -38,10 +38,11 @@ export async function openSeatMapPnr(store: any): Promise<void> {
 
     const passengers = pnrData.passengers || [];
     const mappedPassengers = passengers.map((p) => ({
-        ...p,
-        id: p.value,   // ✅ именно value содержит корректный PassengerRef, например 1.1
-        value: p.value
-      }));
+      ...p,
+      id: p.value,             // 🔑 уникальный ID (например, "2")
+      value: p.value,          // 🔁 для совместимости с UI-компонентами
+      nameNumber: p.value      // ✅ NameNumber, например "2.1"
+    }));
 
     const selectedSegmentIndex = 0;
     const activeFlight = flightSegments[selectedSegmentIndex];

@@ -11,7 +11,7 @@ export interface PassengerOption extends Option<string> {
     givenName: string;
     surname: string;
     seatAssignment?: string;
-    externalRef?: string; // ✅ внешний идентификатор (например, "2.1")
+    nameNumber?: string; // ✅ внешний идентификатор (например, "2.1")
 }
 
 export interface SegmentOption extends Option<string> {
@@ -41,9 +41,9 @@ export const parsePnrData = (xmlDoc: XMLDocument): PnrData => {
         const surname = passenger.getElementsByTagName('stl19:LastName')[0]?.textContent?.trim() || '';
         const givenName = passenger.getElementsByTagName('stl19:FirstName')[0]?.textContent?.trim() || '';
 
-        // ✅ НОВОЕ: получаем внешний идентификатор напрямую из elementId
-        const elementId = passenger.getAttribute('elementId') || '';
-        const externalRef = elementId.startsWith('pnr-') ? elementId.replace('pnr-', '') : undefined;
+        // ✅ НОВОЕ: строим внешний идентификатор по правилу: nameAssocId + ".1"
+        const nameAssocId = passenger.getAttribute('nameAssocId') || '';
+        const nameNumber = nameAssocId ? `${nameAssocId}.1` : undefined;
 
         // место (если есть)
         let seatAssignment: string = 'not assigned';
@@ -63,7 +63,7 @@ export const parsePnrData = (xmlDoc: XMLDocument): PnrData => {
             surname,
             label: `${surname}/${givenName}`,
             seatAssignment,
-            externalRef // ✅ добавлено
+            nameNumber // ✅ добавлено
         });
     }
 

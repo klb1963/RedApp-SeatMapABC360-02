@@ -5,59 +5,71 @@ import { ISoapApiService } from 'sabre-ngv-communication/interfaces/ISoapApiServ
 import { PnrPublicService } from 'sabre-ngv-app/app/services/impl/PnrPublicService';
 import { PublicModalsService } from 'sabre-ngv-modals/services/PublicModalService';
 
-export const handleSaveSeats = async (selectedSeats: { passengerId: string; seatLabel: string }[]): Promise<void> => {
+/**
+ * Использует PassengerDetailsRQ для назначения мест пассажирам.
+ * Передаём nameNumber в формате NameNumber (например, "2.1").
+ */
+export const handleSaveSeats = async (
+  selectedSeats: { nameNumber: string; seatLabel: string }[] // ✅ заменили nameAssocId на nameNumber
+): Promise<void> => {
   if (!Array.isArray(selectedSeats) || selectedSeats.length === 0) {
     alert('❌ Нет выбранных мест для обновления.');
     return;
   }
 
-  console.log('📦 Отправляем места в Sabre через UpdateReservationRQ:', selectedSeats);
+  console.log('📦 Отправляем места через PassengerDetailsRQ:', selectedSeats);
 
   const soap = getService(ISoapApiService);
   const pnrService = getService(PnrPublicService);
   const modalService = getService(PublicModalsService);
 
   try {
-    const seatUpdateBlocks = selectedSeats.map(seat => {
+    const seatRequests = selectedSeats.map(seat => {
+      const nameNumber = seat.nameNumber; // ✅ nameNumber уже в нужном формате: "2.1"
       return `
-        <SeatUpdate>
-          <PassengerRef>${seat.passengerId}</PassengerRef>
-          <SegmentRef>1</SegmentRef>
-          <Seat>${seat.seatLabel}</Seat>
-        </SeatUpdate>
-      `;
-    }).join('');
+        <Service SSR_Code="SEAT" SSR_Type="A" SegmentNumber="A">
+          <PersonName NameNumber="${nameNumber}" />
+          <Text>${seat.seatLabel}</Text>
+        </Service>
+      `.trim();
+    }).join('\n');
 
     const xml = `
-      <UpdateReservationRQ xmlns="http://services.sabre.com/sp/updatereservation/v1_6">
-        <ReservationUpdate>
-          ${seatUpdateBlocks}
-        </ReservationUpdate>
-      </UpdateReservationRQ>
-    `;
+      <PassengerDetailsRQ xmlns="http://services.sabre.com/sp/pd/v3_5" version="3.5.0" ignoreOnError="false" haltOnError="false">
+        <PostProcessing ignoreAfter="false" unmaskCreditCard="true">
+          <RedisplayReservation waitInterval="1000"/>
+        </PostProcessing>
+        <SpecialReqDetails>
+          <SpecialServiceRQ>
+            <SpecialServiceInfo>
+              ${seatRequests}
+            </SpecialServiceInfo>
+          </SpecialServiceRQ>
+        </SpecialReqDetails>
+      </PassengerDetailsRQ>
+    `.trim();
 
-    console.log('📤 XML-запрос на обновление резервации:', xml);
+    console.log('📤 PassengerDetailsRQ XML:\n', xml);
 
     const response = await soap.callSws({
-      action: 'UpdateReservationRQ',
+      action: 'PassengerDetailsRQ',
       payload: xml,
       authTokenType: 'SESSION'
     });
 
-    console.log('✅ Ответ от Sabre:', response.value);
+    console.log('📩 Ответ от Sabre:\n', response.value);
 
     if (response.value.includes('<Success')) {
-      console.log('✅ Все места успешно назначены.');
+      console.log('✅ Места успешно сохранены.');
     } else {
-      console.warn('⚠️ Ответ не содержит <Success>. Проверьте детали.');
+      console.warn('⚠️ Ответ не содержит <Success>. Проверьте XML и PNR.');
     }
 
     await pnrService.refreshData();
     modalService.closeReactModal();
 
   } catch (error) {
-    console.error('❌ Ошибка при обновлении мест:', error);
-    alert('Ошибка при сохранении мест. Попробуйте снова.');
+    console.error('❌ Ошибка при отправке PassengerDetailsRQ:', error);
+    alert('Ошибка при сохранении мест. Проверьте консоль.');
   }
 };
-

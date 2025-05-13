@@ -36,6 +36,14 @@ interface XmlViewerProps {
 }
 
 export const XmlViewer: React.FC<XmlViewerProps> = ({ xml }) => {
+    if (!xml || typeof xml !== 'string' || xml.trim().length === 0) {
+        return (
+            <div style={{ padding: '1rem', color: 'red' }}>
+                ❌ XML-документ отсутствует или пуст.
+            </div>
+        );
+    }
+
     const formattedXml = formatXml(xml);
 
     const downloadXml = () => {
@@ -44,7 +52,7 @@ export const XmlViewer: React.FC<XmlViewerProps> = ({ xml }) => {
 
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'soap-responce.xml';
+        a.download = 'soap-response.xml';
         a.click();
 
         URL.revokeObjectURL(url);

@@ -1,7 +1,5 @@
 // file: code/components/ShowPnrInfo.tsx
 
-// файл: code/components/ShowPnrInfo.tsx
-
 import * as React from 'react';
 import { XmlViewer } from '../../utils/XmlViewer'; // для отображения "сырого" XML
 
@@ -18,14 +16,16 @@ export const ShowPnrInfo: React.FC<ShowPnrInfoProps> = ({ pnrData, rawXml }) => 
             <ul>
                 {pnrData.passengers.map((passenger: any, index: number) => (
                     <li key={index}>
-                        {passenger.surname}/{passenger.givenName}
-                        {passenger.externalRef && (
-                            <span style={{ color: '#666', marginLeft: '0.5rem' }}>
-                                (ref: {passenger.externalRef})
+                        <strong>{passenger.surname}/{passenger.givenName}</strong>
+                        {' — '}
+                        <span style={{ color: '#555' }}>
+                            Seat: <strong>{passenger.seatAssignment || 'not assigned'}</strong>
+                        </span>
+                        {passenger.nameNumber && (
+                            <span style={{ marginLeft: '1rem', color: '#999' }}>
+                                NameNumber: <code>{passenger.nameNumber}</code>
                             </span>
                         )}
-                        {' — '}
-                        <strong>Seat:</strong> {passenger.seatAssignment || 'not assigned'}
                     </li>
                 ))}
             </ul>

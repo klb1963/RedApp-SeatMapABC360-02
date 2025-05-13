@@ -1,3 +1,5 @@
+// file: Main.ts
+
 import * as React from 'react';
 import {Module} from 'sabre-ngv-core/modules/Module';
 import { getService, registerService } from './Context';

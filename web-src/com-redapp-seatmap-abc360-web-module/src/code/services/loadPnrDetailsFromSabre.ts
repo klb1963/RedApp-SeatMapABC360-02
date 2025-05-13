@@ -38,8 +38,8 @@ export const loadPnrDetailsFromSabre = async (): Promise<{ parsedData: PnrData; 
     const parsedData = parsePnrData(response.getParsedValue());
     const rawXml = response.value;
 
-    // ✅ LOG для отладки externalRef
-    console.log('✅++ parsedData.passengers:', JSON.stringify(parsedData.passengers, null, 2));
+    // ✅ LOG для отладки NameNumber (externalRef)
+    console.log('✅ parsedData.passengers:', JSON.stringify(parsedData.passengers, null, 2));
 
     // 🔍 Выводим все сегменты
     console.log('🧩 Segments from parsed PNR Data [RAW]:', parsedData.segments);
