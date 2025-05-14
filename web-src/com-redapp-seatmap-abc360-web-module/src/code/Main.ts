@@ -35,10 +35,8 @@ import { CreatePNR } from './components/pnrServices/CreatePNR';
 
 import { loadPnrDetailsFromSabre } from './services/loadPnrDetailsFromSabre';
 
-import { loadSeatMapFromSabre } from './services/loadSeatMapFromSabre';
-
-import { actions } from './components/seatMap/actions';
-import { handleSaveSeats } from './components/seatMap/handleSaveSeats';
+import { AgentProfileService } from 'sabre-ngv-app/app/services/impl/AgentProfileService';
+import { ShowAgentProfile } from './services/ShowAgentProfile';
 
 import { openSeatMapPnr } from './components/seatMap/openSeatMapPnr';
 
@@ -113,6 +111,13 @@ export class Main extends Module {
           false
         ),
 
+        new RedAppSidePanelButton(
+          "Show Agent Profile",
+          "btn-secondary side-panel-button",
+          () => { this.showAgentProfile(); },
+          false
+        ),
+
       ]);
 
       xp.addConfig("redAppSidePanel", sidepanelMenu);
@@ -131,6 +136,28 @@ export class Main extends Module {
     getService(PublicModalsService).closeReactModal(); // ✅ Close any open modals
     openSeatMapPnr(this.localStore.store); // delegate 
   }
+
+  // ========== open showAgentProfile =====================
+  private showAgentProfile = (): void => {
+    const modals = getService(PublicModalsService);
+    const agentService = getService(AgentProfileService);
+  
+    const agent = {
+      agentId: agentService.getAgentId() || '—',
+      pcc: agentService.getPcc() || '—',
+      country: agentService.getCountry() || '—',
+      region: agentService.getRegion() || '—',
+      locale: agentService.getLocale() || '—',
+      customerBusinessUnit: agentService.getCustomerBusinessUnit() || '—',
+      customerEmployeeId: agentService.getCustomerEmployeeId() || '—'
+    };
+  
+    modals.showReactModal({
+      header: 'Agent Profile',
+      component: React.createElement(ShowAgentProfile, { agent }),
+      modalClassName: 'seatmap-modal-class'
+    });
+  };
 
   // ===============================================
 

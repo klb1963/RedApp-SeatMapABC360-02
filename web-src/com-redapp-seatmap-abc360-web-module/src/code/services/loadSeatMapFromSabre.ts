@@ -4,6 +4,7 @@ import { getService } from '../Context';
 import { ISoapApiService } from 'sabre-ngv-communication/interfaces/ISoapApiService';
 import { PassengerOption } from '../utils/parcePnrData';
 import { parseSeatMapResponse } from '../utils/parseSeatMapResponse';
+import { AgentProfileService } from 'sabre-ngv-app/app/services/impl/AgentProfileService';
 
 interface FlightSegment {
   bookingClass: string;
@@ -21,6 +22,9 @@ export const loadSeatMapFromSabre = async (
 ): Promise<{ rawXml: string; availability: any }> => {
   try {
     const soapApiService = getService(ISoapApiService);
+
+    const agentService = getService(AgentProfileService);
+    const pcc = agentService.getPcc() || 'DI9L'; // fallback на старое значение
 
     const passengerXml = passengers
     .map(
@@ -60,7 +64,7 @@ export const loadSeatMapFromSabre = async (
           .join('')}
         <ns4:POS multiHost="${segment.marketingCarrier}" company="${segment.marketingCarrier}">
           <ns4:Actual city="${segment.origin}"/>
-          <ns4:PCC>DI9L</ns4:PCC>
+          <ns4:PCC>${pcc}</ns4:PCC>
           <ns4:ClientContext clientType="SSW_RES"/>
         </ns4:POS>
       </ns4:SeatMapQueryEnhanced>

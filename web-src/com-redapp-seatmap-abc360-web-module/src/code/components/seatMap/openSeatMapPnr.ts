@@ -1,3 +1,5 @@
+// file: openSeatMapPnr.ts
+
 import * as React from 'react';
 import { getService } from '../../Context';
 import { PublicModalsService } from 'sabre-ngv-modals/services/PublicModalService';
@@ -41,7 +43,7 @@ export async function openSeatMapPnr(store: any): Promise<void> {
       ...p,
       id: p.value,             // 🔑 уникальный ID (например, "2")
       value: p.value,          // 🔁 для совместимости с UI-компонентами
-      nameNumber: p.value      // ✅ NameNumber, например "2.1"
+      nameNumber: p.nameNumber      // ✅ NameNumber, например "2.1"
     }));
 
     const selectedSegmentIndex = 0;
@@ -50,6 +52,21 @@ export async function openSeatMapPnr(store: any): Promise<void> {
     const { availability } = await loadSeatMapFromSabre(activeFlight, passengers);
 
     const onClickCancel = () => modals.closeReactModal();
+
+
+    // 🆕 ENRICH перед отправкой
+    const handleSubmit = () => {
+        const selected = store.getState().selectedSeats || [];
+        const enriched = selected.map(seat => {
+          const pax = mappedPassengers.find(p => p.id === seat.passengerId);
+          return {
+            nameNumber: pax?.nameNumber || '',
+            seatLabel: seat.seatLabel,
+            segmentNumber: activeFlight?.value || '1' // ⚠️ значение ID сегмента
+          };
+        });
+        return handleSaveSeats(); // убрал аргумент
+      };
 
     modals.showReactModal({
       header: 'Seat Map ABC 360',
@@ -61,8 +78,8 @@ export async function openSeatMapPnr(store: any): Promise<void> {
         availability,
         passengers: mappedPassengers
       }),
-      onSubmit: () => handleSaveSeats(store.getState().selectedSeats),
-      actions: actions(() => handleSaveSeats(store.getState().selectedSeats), onClickCancel),
+      onSubmit: handleSubmit,
+      actions: actions(handleSubmit, onClickCancel),
       modalClassName: 'seatmap-modal-wide'
     });
 
