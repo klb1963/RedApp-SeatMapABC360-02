@@ -1,4 +1,15 @@
 // file: SeatMapModalLayout.tsx
+
+/**
+ * SeatMapModalLayout
+ * 
+ * Layout component used for the Seat Map modal.
+ * Divides the modal into three columns:
+ * - Left: flight info
+ * - Center: seat map iframe
+ * - Right: passenger panel
+ */
+
 import * as React from 'react';
 
 interface SeatMapModalLayoutProps {

@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FlightData } from '../../utils/generateFlightData';
-import SeatMapModalLayout from './SeatMapModalLayout';
+import SeatMapModalLayout from './layout/SeatMapModalLayout';
 import { PassengerOption } from '../../utils/parcePnrData';
 import { createPassengerPayload } from './helpers/createPassengerPayload';
 import { SeatMapMessagePayload } from './types/SeatMapMessagePayload';
