@@ -11,6 +11,7 @@ import { useSyncOnSegmentChange } from './hooks/useSyncOnSegmentChange';
 import { useSyncOnCabinClassChange } from './hooks/useSyncOnCabinClassChange';
 import { useOnIframeLoad } from './hooks/useOnIframeLoad';
 import { useSeatSelectionHandler } from './hooks/useSeatSelectionHandler';
+import { PassengerPanel } from './panels/PassengerPanel';
 
 // global variable 
 declare global {
@@ -162,7 +163,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     generateFlightData
   });
 
-  // ===  🛳️ 🛫  Посадка пассажиров - обработка выбора мест от библиотеки ===
+  // ============= SeatSelectionHandler =====================
   useSeatSelectionHandler({
     cleanPassengers,
     selectedPassengerId,
@@ -174,68 +175,17 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
 
   // ============== Passengers =====================
   const passengerPanel = (
-    <>
-      {console.log('📺 Re-render passengerPanel:', selectedSeats)}
-      <div>
-        <strong>Passengers</strong>
-
-        {/* ✅ Уведомление о завершённой рассадке */}
-        {boardingComplete && (
-          <div style={{
-            backgroundColor: '#e6ffe6',
-            padding: '0.75rem',
-            margin: '1rem 0',
-            border: '1px solid #00cc66',
-            borderRadius: '5px',
-            fontWeight: 'bold',
-            color: '#006633'
-          }}>
-            ✅ Boarding complete — all passengers have seats
-          </div>
-        )}
-
-        <div style={{ margin: '1rem 0' }}>
-          {cleanPassengers.map((p) => {
-            const passengerId = String(p.id); // 🧠 Приведение к строке
-            const seat = selectedSeats.find((s) => s.passengerId === passengerId);
-            const isActive = selectedPassengerId === passengerId;
-
-            return (
-              <div key={p.id} style={{ marginBottom: '1rem' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <input
-                    type="radio"
-                    name="activePassenger"
-                    value={p.id}
-                    checked={selectedPassengerId === String(p.id)}
-                    onChange={() => setSelectedPassengerId(passengerId)}
-                  />
-                  {p.label || `${p.givenName} ${p.surname}`}
-                </label>
-                <div>
-                  Seat: <strong>{seat?.seatLabel || '—'}</strong>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div>
-            ✅ Seats assigned:{' '}
-            {
-              cleanPassengers.filter((p) =>
-                selectedSeats.some((s) => s.passengerId === String(p.id))
-              ).length
-            } of {cleanPassengers.length}
-          </div>
-          <button onClick={handleResetSeat}>🔁 Reset all</button>
-        </div>
-      </div>
-    </>
+    <PassengerPanel
+      passengers={cleanPassengers}
+      selectedSeats={selectedSeats}
+      selectedPassengerId={selectedPassengerId}
+      setSelectedPassengerId={setSelectedPassengerId}
+      handleResetSeat={handleResetSeat}
+      boardingComplete={boardingComplete}
+    />
   );
-  // ✊ ⚒️ 🧰 ================= show Seat Map =====================
-  
+
+  // ============== show Seat Map =====================
   return (
     <SeatMapModalLayout
       flightInfo={flightInfo}
