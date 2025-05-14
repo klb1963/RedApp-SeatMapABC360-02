@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import SeatMapComponentBase from './SeatMapComponentBase';
-import { getFlightFromSabreData } from './getFlightFromSabreData';
+import { getFlightFromSabreData } from './transformers/getFlightFromSabreData';
 import SeatLegend from './panels/SeatLegend';
 
 type CabinClassForLibrary = 'E' | 'P' | 'B' | 'F' | 'ALL';

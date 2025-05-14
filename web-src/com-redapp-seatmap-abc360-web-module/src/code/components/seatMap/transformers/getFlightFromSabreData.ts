@@ -1,4 +1,25 @@
-// файл: code/components/SeatMap/getFlightFromSabreData.ts
+// file: code/components/SeatMap/getFlightFromSabreData.ts
+
+/**
+ * Extracts normalized flight segment data from raw Sabre response.
+ *
+ * This helper parses a single flight segment, handling various structural formats
+ * returned by Sabre APIs (e.g., EnhancedAirBookRS, GetReservationRS).
+ * 
+ * It returns a simplified flight object with:
+ * - airline code
+ * - flight number
+ * - origin and destination airport codes
+ * - departure date (YYYY-MM-DD)
+ * - cabin class
+ * - aircraft equipment description
+ * 
+ * If the segment is missing or cannot be parsed, the function returns `null`.
+ *
+ * @param data - Full response object that contains `flightSegments` array
+ * @param segmentIndex - Index of the segment to extract (default = 0)
+ * @returns Normalized flight object or null if parsing fails
+ */
 
 export const getFlightFromSabreData = (
   data: any,
@@ -11,7 +32,7 @@ export const getFlightFromSabreData = (
     return null;
   }
 
-  console.log('🔍 Исходный сегмент:', segment);
+  console.log('🔍 Current segment:', segment);
 
   const airlineCode =
     segment?.MarketingAirline?.EncodeDecodeElement?.Code ||
@@ -43,9 +64,9 @@ export const getFlightFromSabreData = (
     : '';
 
   if (!departureDate) {
-    console.warn('⚠️ Не удалось извлечь дату вылета из:', rawDeparture);
+    console.warn('⚠️ Failed to extract departure date from:', rawDeparture);
   } else {
-    console.log('📅 Извлечена дата вылета:', departureDate);
+    console.log('📅 Departure date extracted:', departureDate);
   }
 
   const cabinClass = segment?.cabinClass || 'E';
@@ -67,7 +88,7 @@ export const getFlightFromSabreData = (
     equipment
   };
 
-  console.log('✅ [getFlightFromSabreData] Итоговый объект flight:', result);
+  console.log('✅ [getFlightFromSabreData] Finl object flight:', result);
 
   return result;
 };

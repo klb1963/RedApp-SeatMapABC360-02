@@ -6,8 +6,9 @@ import { PnrPublicService } from 'sabre-ngv-app/app/services/impl/PnrPublicServi
 import { parsePnrData, PnrData } from '../utils/parcePnrData';
 
 /**
- * Загружает данные PNR как Promise.
+ * Load PNR data as Promise.
  */
+
 export const loadPnrDetailsFromSabre = async (): Promise<{ parsedData: PnrData; rawXml: string }> => {
   try {
     const pnrService = getService(PnrPublicService);
@@ -38,10 +39,10 @@ export const loadPnrDetailsFromSabre = async (): Promise<{ parsedData: PnrData; 
     const parsedData = parsePnrData(response.getParsedValue());
     const rawXml = response.value;
 
-    // ✅ LOG для отладки NameNumber (externalRef)
+    // ✅ LOG for NameNumber (externalRef)
     console.log('✅ parsedData.passengers:', JSON.stringify(parsedData.passengers, null, 2));
 
-    // 🔍 Выводим все сегменты
+    // 🔍 Show all segments
     console.log('🧩 Segments from parsed PNR Data [RAW]:', parsedData.segments);
 
     return { parsedData, rawXml };

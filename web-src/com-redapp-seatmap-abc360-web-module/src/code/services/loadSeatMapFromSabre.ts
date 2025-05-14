@@ -1,4 +1,4 @@
-// файл: code/components/loadSeatMapFromSabre.ts
+// file: code/components/loadSeatMapFromSabre.ts
 
 import { getService } from '../Context';
 import { ISoapApiService } from 'sabre-ngv-communication/interfaces/ISoapApiService';
