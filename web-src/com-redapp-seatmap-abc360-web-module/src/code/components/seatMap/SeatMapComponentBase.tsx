@@ -5,14 +5,13 @@ import { useEffect, useRef, useState } from 'react';
 import { FlightData } from '../../utils/generateFlightData';
 import SeatMapModalLayout from './SeatMapModalLayout';
 import { PassengerOption } from '../../utils/parcePnrData';
-import { getPassengerColor } from './helpers/getPassengerColor';
 import { createPassengerPayload } from './helpers/createPassengerPayload';
 import { SeatMapMessagePayload } from './types/SeatMapMessagePayload';
 import { useSyncOnSegmentChange } from './hooks/useSyncOnSegmentChange';
 import { useSyncOnCabinClassChange } from './hooks/useSyncOnCabinClassChange';
+import { useOnIframeLoad } from './hooks/useOnIframeLoad';
 
-
-// glogal variable 
+// global variable 
 declare global {
   interface Window {
     selectedSeats?: SelectedSeat[];
@@ -100,18 +99,9 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
 
     const flight = generateFlightData(segment, initialSegmentIndex, cabinClass);
     const availabilityData = availability || [];
-    
-    // initials
-    const getInitials = (p: PassengerOption) =>
-      `${p.givenName?.[0] || ''}${p.surname?.[0] || ''}`.toUpperCase();
 
     const passengerList = cleanPassengers.map((p, i) =>
       createPassengerPayload(p, i, selectedPassengerId, selectedSeats)
-    );
-
-    console.log('🧾 Passenger initials:');
-    passengerList.forEach(p =>
-      console.log(`${p.passengerLabel} → ${p.initials}`)
     );
 
     const message: SeatMapMessagePayload  = {
@@ -130,34 +120,21 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   };
 
   // ======== 🗺️ начальная загрузка карты ==================
-  const handleIframeLoad = () => {
-    const iframe = iframeRef.current;
-    if (!iframe) return;
+  const handleIframeLoad = useOnIframeLoad({
+    iframeRef,
+    config,
+    segment,
+    initialSegmentIndex,
+    cabinClass,
+    availability,
+    cleanPassengers,
+    selectedPassengerId,
+    selectedSeats,
+    generateFlightData
+  });   
 
-    const flight = generateFlightData(segment, initialSegmentIndex, cabinClass);
-    const availabilityData = availability || [];
 
-    const passengerList = cleanPassengers.map((p, index) =>
-      createPassengerPayload(p, index, selectedPassengerId, selectedSeats)
-    );
-
-    const message: SeatMapMessagePayload = {
-      type: 'seatMaps',
-      config: JSON.stringify(config),
-      flight: JSON.stringify(flight),
-      availability: JSON.stringify(availabilityData),
-      passengers: JSON.stringify(passengerList),
-      currentDeckIndex: '0'
-    };
-
-  console.log('[🚀 passengerList отправлен в iframe - загрузка карты]', passengerList);
-
-  const targetOrigin = new URL(iframe.src).origin;
-  iframe.contentWindow?.postMessage(message, targetOrigin);
-  console.log('📤 Первый postMessage отправлен через onLoad');
-};
-
-  // 🔁 Обновляем карту при смене класса обслуживания
+  // ============ 🔁 SyncOnCabinClassChange ===================
   useSyncOnCabinClassChange({
     iframeRef,
     config,
@@ -170,7 +147,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     selectedSeats
   });
 
-  // 🔁 Обновляем карту при смене выбранного сегмента
+  // =========== 🔁 SyncOnSegmentChange ========================
   useSyncOnSegmentChange({
     config,
     segment,
@@ -287,7 +264,6 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     window.addEventListener('message', handleSeatSelection);
     return () => window.removeEventListener('message', handleSeatSelection);
   }, [onSeatChange]);
-
 
   // ============== Passengers =====================
   const passengerPanel = (
