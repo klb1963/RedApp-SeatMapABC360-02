@@ -5,6 +5,12 @@ import { useEffect, useRef, useState } from 'react';
 import { FlightData } from '../../utils/generateFlightData';
 import SeatMapModalLayout from './SeatMapModalLayout';
 import { PassengerOption } from '../../utils/parcePnrData';
+import { getPassengerColor } from './helpers/getPassengerColor';
+import { createPassengerPayload } from './helpers/createPassengerPayload';
+import { SeatMapMessagePayload } from './types/SeatMapMessagePayload';
+import { useSyncOnSegmentChange } from './hooks/useSyncOnSegmentChange';
+import { useSyncOnCabinClassChange } from './hooks/useSyncOnCabinClassChange';
+
 
 // glogal variable 
 declare global {
@@ -13,7 +19,7 @@ declare global {
   }
 }
 
-interface SelectedSeat {
+export interface SelectedSeat {
   passengerId: string;
   seatLabel: string;
 }
@@ -94,30 +100,21 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
 
     const flight = generateFlightData(segment, initialSegmentIndex, cabinClass);
     const availabilityData = availability || [];
-
-    const colorPalette = ['blue', 'purple', 'teal', 'gray', 'green', 'red'];
     
     // initials
     const getInitials = (p: PassengerOption) =>
       `${p.givenName?.[0] || ''}${p.surname?.[0] || ''}`.toUpperCase();
 
-    const passengerList = cleanPassengers.map((p, index) => ({
-      id: p.id,
-      passengerType: 'ADT',
-      seat: null, // ✅ никаких мест
-      passengerLabel: p.label || `${p.givenName}/${p.surname}`,
-      passengerColor: colorPalette[index % colorPalette.length],
-      initials: getInitials(p),
-      abbr: getInitials(p),
-      readOnly: true // 🔒 по умолчанию все пассивные
-    }));
+    const passengerList = cleanPassengers.map((p, i) =>
+      createPassengerPayload(p, i, selectedPassengerId, selectedSeats)
+    );
 
     console.log('🧾 Passenger initials:');
     passengerList.forEach(p =>
       console.log(`${p.passengerLabel} → ${p.initials}`)
     );
 
-    const message = {
+    const message: SeatMapMessagePayload  = {
       type: 'seatMaps',
       config: JSON.stringify(config),
       flight: JSON.stringify(flight),
@@ -140,41 +137,11 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     const flight = generateFlightData(segment, initialSegmentIndex, cabinClass);
     const availabilityData = availability || [];
 
-    const colorPalette = ['blue', 'purple', 'teal', 'gray', 'green', 'red'];
+    const passengerList = cleanPassengers.map((p, index) =>
+      createPassengerPayload(p, index, selectedPassengerId, selectedSeats)
+    );
 
-    const getInitials = (p: PassengerOption) =>
-      `${p.givenName?.[0] || ''}${p.surname?.[0] || ''}`.toUpperCase();
-
-    const passengerList = cleanPassengers.map((p, index) => {
-      // ✅ Унифицированный id — всегда строка
-      const pid = String(p.id ?? index); // ← если p.id нет, используем индекс
-
-      const seat = selectedSeats.find(s => s.passengerId === pid) || null;
-      const isReadOnly = pid !== selectedPassengerId;
-
-      const initials = getInitials(p);
-      console.log(`🔤 [initials] ${p.givenName} ${p.surname} → ${initials}`);
-
-      const passenger = {
-        id: pid,
-        passengerType: 'ADT',
-        seat,
-        passengerLabel: p.label || `${p.givenName}/${p.surname}`,
-        passengerColor: colorPalette[index % colorPalette.length],
-        initials,
-        abbr: initials,
-        readOnly: isReadOnly
-      };
-
-      console.log(
-        `👤 [onLoad] ${passenger.passengerLabel} (id=${passenger.id}) → seat: ${seat?.seatLabel || '—'}, readOnly: ${isReadOnly}`
-      );
-      console.log(`🔤 [initials] ${p.givenName} ${p.surname} → ${initials}`);
-
-      return passenger;
-    });
-
-    const message = {
+    const message: SeatMapMessagePayload = {
       type: 'seatMaps',
       config: JSON.stringify(config),
       flight: JSON.stringify(flight),
@@ -183,122 +150,39 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
       currentDeckIndex: '0'
     };
 
-    console.log('[🚀 passengerList отправлен в iframe - загрузка карты]', passengerList);
+  console.log('[🚀 passengerList отправлен в iframe - загрузка карты]', passengerList);
 
-    const targetOrigin = new URL(iframe.src).origin;
-    iframe.contentWindow?.postMessage(message, targetOrigin);
-    console.log('📤 Первый postMessage отправлен через onLoad');
-  };
-
+  const targetOrigin = new URL(iframe.src).origin;
+  iframe.contentWindow?.postMessage(message, targetOrigin);
+  console.log('📤 Первый postMessage отправлен через onLoad');
+};
 
   // 🔁 Обновляем карту при смене класса обслуживания
-  useEffect(() => {
-    const iframe = iframeRef.current;
-    if (!iframe) return;
-
-    const flight = generateFlightData(segment, initialSegmentIndex, cabinClass);
-    const availabilityData = availability || [];
-
-    const colorPalette = ['blue', 'purple', 'teal', 'gray', 'green', 'red'];
-    const getInitials = (p: PassengerOption) =>
-      `${p.givenName?.[0] || ''}${p.surname?.[0] || ''}`.toUpperCase();
-
-    const passengerList = cleanPassengers.map((p, index) => {
-      // ✅ Унифицированный id — всегда строка
-      const pid = String(p.id ?? index); // ← если p.id нет, используем индекс
-
-      const seat = selectedSeats.find(s => s.passengerId === pid) || null;
-      const isReadOnly = pid !== selectedPassengerId;
-      const initials = getInitials(p);
-
-      const passenger = {
-        id: pid,
-        passengerType: 'ADT',
-        seat,
-        passengerLabel: p.label || `${p.givenName}/${p.surname}`,
-        passengerColor: colorPalette[index % colorPalette.length],
-        initials,
-        abbr: initials,
-        readOnly: isReadOnly
-      };
-
-      console.log(
-        `👤 [update cabinClass] ${passenger.passengerLabel} (id=${passenger.id}) → seat: ${seat?.seatLabel || '—'}, readOnly: ${isReadOnly}`
-      );
-
-      return passenger;
-    });
-
-    const message = {
-      type: 'seatMaps',
-      config: JSON.stringify(config),
-      flight: JSON.stringify(flight),
-      availability: JSON.stringify(availabilityData),
-      passengers: JSON.stringify(passengerList),
-      currentDeckIndex: '0'
-    };
-
-    console.log('[🚀 passengerList отправлен в iframe - смена класса]', passengerList);
-
-    const targetOrigin = new URL(iframe.src).origin;
-    iframe.contentWindow?.postMessage(message, targetOrigin);
-    console.log('📤 Обновление карты после смены cabinClass');
-  }, [cabinClass]);
+  useSyncOnCabinClassChange({
+    iframeRef,
+    config,
+    segment,
+    initialSegmentIndex,
+    cabinClass,
+    availability,
+    cleanPassengers,
+    selectedPassengerId,
+    selectedSeats
+  });
 
   // 🔁 Обновляем карту при смене выбранного сегмента
-  useEffect(() => {
-    const iframe = iframeRef.current;
-    if (!iframe) return;
-
-    const flight = generateFlightData(segment, initialSegmentIndex, cabinClass);
-    const availabilityData = availability || [];
-
-    const colorPalette = ['blue', 'purple', 'teal', 'gray', 'green', 'red'];
-    const getInitials = (p: PassengerOption) =>
-      `${p.givenName?.[0] || ''}${p.surname?.[0] || ''}`.toUpperCase();
-
-    const passengerList = cleanPassengers.map((p, index) => {
-
-      // ✅ Унифицированный id — всегда строка
-      const pid = String(p.id ?? index); // ← если p.id нет, используем индекс
-
-      const seat = selectedSeats.find(s => s.passengerId === pid) || null;
-      const isReadOnly = pid !== selectedPassengerId;
-      const initials = getInitials(p);
-
-      const passenger = {
-        id: pid,
-        passengerType: 'ADT',
-        seat,
-        passengerLabel: p.label || `${p.givenName}/${p.surname}`,
-        passengerColor: colorPalette[index % colorPalette.length],
-        initials,
-        abbr: initials,
-        readOnly: isReadOnly
-      };
-
-      console.log(
-        `👤 [update segment] ${passenger.passengerLabel} (id=${passenger.id}) → seat: ${seat?.seatLabel || '—'}, readOnly: ${isReadOnly}`
-      );
-
-      return passenger;
-    });
-
-    const message = {
-      type: 'seatMaps',
-      config: JSON.stringify(config),
-      flight: JSON.stringify(flight),
-      availability: JSON.stringify(availabilityData),
-      passengers: JSON.stringify(passengerList),
-      currentDeckIndex: '0'
-    };
-
-    console.log('[🚀 passengerList отправлен в iframe - смена сегмента]', passengerList);
-
-    const targetOrigin = new URL(iframe.src).origin;
-    iframe.contentWindow?.postMessage(message, targetOrigin);
-    console.log('📤 Обновление карты после смены сегмента');
-  }, [initialSegmentIndex]);
+  useSyncOnSegmentChange({
+    config,
+    segment,
+    initialSegmentIndex,
+    cabinClass,
+    availability,
+    passengers: cleanPassengers,
+    selectedPassengerId,
+    selectedSeats,
+    iframeRef,
+    generateFlightData
+  });
 
   // ===  🛳️ 🛫  Посадка пассажиров - обработка выбора мест от библиотеки ===
   useEffect(() => {
