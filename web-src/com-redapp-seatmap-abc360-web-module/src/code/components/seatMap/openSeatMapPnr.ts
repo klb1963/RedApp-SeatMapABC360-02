@@ -49,9 +49,9 @@ export async function openSeatMapPnr(store: any): Promise<void> {
     const passengers = pnrData.passengers || [];
     const mappedPassengers = passengers.map((p) => ({
       ...p,
-      id: p.value,             // 🔑 уникальный ID (например, "2")
-      value: p.value,          // 🔁 для совместимости с UI-компонентами
-      nameNumber: p.nameNumber      // ✅ NameNumber, например "2.1"
+      id: p.value,             // 🔑 unique ID (например, "2")
+      value: p.value,          // 🔁 for compability with UI-components
+      nameNumber: p.nameNumber      // ✅ NameNumber, example "2.1"
     }));
 
     const selectedSegmentIndex = 0;
@@ -62,7 +62,7 @@ export async function openSeatMapPnr(store: any): Promise<void> {
     const onClickCancel = () => modals.closeReactModal();
 
 
-    // 🆕 ENRICH перед отправкой
+    // 🆕 ENRICH before sending
     const handleSubmit = () => {
         const selected = store.getState().selectedSeats || [];
         const enriched = selected.map(seat => {

@@ -1,5 +1,19 @@
 // file: SeatMapComponentPnr.tsx
 
+/**
+ * SeatMapComponentPnr.tsx
+ *
+ * This component is used to render the seat map interface in the PNR context.
+ * It allows the user to:
+ * - Select a flight segment
+ * - Choose a cabin class (Economy, Business, etc.)
+ * - View flight details and equipment info
+ * - Interact with the seat map to assign seats to selected passengers
+ *
+ * Internally it uses the SeatMapComponentBase to render the seat map via iframe
+ * and provides all necessary props (segment, availability, passengers, etc.).
+ */
+
 import * as React from 'react';
 import { useState } from 'react';
 import SeatMapComponentBase from './SeatMapComponentBase';
@@ -7,7 +21,6 @@ import { generateFlightData } from '../../utils/generateFlightData';
 import SeatLegend from './panels/SeatLegend';
 import { PassengerOption } from '../../utils/parcePnrData';
 
-// Интерфейс пропсов
 interface SeatMapComponentPnrProps {
   config: any;
   flightSegments: any[];
@@ -17,7 +30,7 @@ interface SeatMapComponentPnrProps {
   showSegmentSelector?: boolean;
 }
 
-// show Seat Map
+// Displays seat map component in PNR context
 const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
   config,
   flightSegments = [],
@@ -29,12 +42,12 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
   if (!flightSegments.length) {
     return (
       <div style={{ padding: '1rem', color: 'red' }}>
-        ❌ Нет доступного сегмента
+        ❌ No flight segments available
       </div>
     );
   }
 
-  // состояние: выбранный сегмент и класс обслуживания
+  // Segment and cabin class state
   const [segmentIndex, setSegmentIndex] = useState<number>(selectedSegmentIndex);
   const [cabinClass, setCabinClass] = useState<'Y' | 'S' | 'C' | 'F' | 'A'>(
     flightSegments[segmentIndex]?.cabinClass || 'Y'
@@ -60,17 +73,17 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
   const equipment =
     typeof segment?.equipment === 'object'
       ? segment.equipment?.EncodeDecodeElement?.SimplyDecoded
-      : segment?.equipment || 'неизвестно';
+      : segment?.equipment || 'unknown';
 
-  // состояние: выбранные ID пассажиров
+  // State: selected passenger IDs
   const [selectedPassengerIds, setSelectedPassengerIds] = useState<string[]>(
     Array.isArray(passengers) ? passengers.map((p) => p.id) : []
   );
 
-  // состояние: выбранные места для всех пассажиров
+  // State: selected seats for all passengers
   const [selectedSeats, setSelectedSeats] = useState<
     { passengerId: string; seatLabel: string }[]
-  >([]); // 🆕 добавлен массив мест
+  >([]);
 
   const handleTogglePassenger = (id: string) => {
     setSelectedPassengerIds((prev) =>
@@ -78,14 +91,14 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
     );
   };
 
-  // ✅ фильтруем только выбранных пассажиров
+  // Filter passengers based on selected IDs
   const selectedPassengers = Array.isArray(passengers)
     ? passengers.filter((p) => selectedPassengerIds.includes(p.id))
     : [];
 
   return (
     <div style={{ padding: '1rem' }}>
-      {/* 🔝 Сегмент и Самолёт на одной строке */}
+      {/* 🔝 Segment and aircraft info in one row */}
       <div
         style={{
           display: 'flex',
@@ -96,27 +109,27 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
         }}
       >
         <div>
-          <label style={{ marginRight: '0.5rem' }}>Сегмент:</label>
+          <label style={{ marginRight: '0.5rem' }}>Segment:</label>
           <select value={segmentIndex} onChange={(e) => {
             setSegmentIndex(Number(e.target.value));
             setCabinClass('Y');
           }}>
             {flightSegments.map((seg: any, idx: number) => (
               <option key={idx} value={idx}>
-                {seg.origin} → {seg.destination}, рейс {seg.flightNumber}
+                {seg.origin} → {seg.destination}, flight {seg.flightNumber}
               </option>
             ))}
           </select>
         </div>
 
         <div style={{ fontSize: '1.5rem', color: '#555' }}>
-          ✈️ <strong>Самолёт:</strong> {equipment}
+          ✈️ <strong>Aircraft:</strong> {equipment}
         </div>
       </div>
 
-      {/* 👔 Класс обслуживания */}
+      {/* 👔 Cabin class selector */}
       <div style={{ marginBottom: '1rem' }}>
-        <label style={{ marginRight: '0.5rem' }}>Класс обслуживания:</label>
+        <label style={{ marginRight: '0.5rem' }}>Cabin class:</label>
         <select
           value={cabinClass}
           onChange={(e) => setCabinClass(e.target.value as 'Y' | 'S' | 'C' | 'F' | 'A')}
@@ -129,7 +142,7 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
         </select>
       </div>
 
-      {/* 🧩 Карта мест */}
+      {/* 🧩 Seat map */}
       <SeatMapComponentBase
         config={config}
         flightSegments={flightSegments}
@@ -141,10 +154,9 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
         }
         availability={Array.isArray(availability) ? availability : []}
         passengers={selectedPassengers}
-        // 🆕 Передаём setSelectedSeats и selectedSeats в дочерний компонент
         onSeatChange={(updatedSeats) => setSelectedSeats(updatedSeats)}
         selectedSeats={selectedSeats}
-        flightInfo = {flightInfo}
+        flightInfo={flightInfo}
       />
     </div>
   );

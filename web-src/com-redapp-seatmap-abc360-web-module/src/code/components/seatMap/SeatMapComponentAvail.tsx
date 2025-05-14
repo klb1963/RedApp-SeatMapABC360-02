@@ -52,15 +52,6 @@ const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, d
       <div>💺 Class: {cabinClass || 'not specified'}</div>
       <hr />
       <SeatLegend/>
-      {/* <div>
-        <strong>Legend:</strong>
-        <ul style={{ paddingLeft: '1rem' }}>
-          <li>🟩 — available</li>
-          <li>🟧 — available for a fee</li>
-          <li>❌ — unavailable</li>
-          <li>☑️ — occupied</li>
-        </ul>
-      </div> */}
     </div>
   );
 

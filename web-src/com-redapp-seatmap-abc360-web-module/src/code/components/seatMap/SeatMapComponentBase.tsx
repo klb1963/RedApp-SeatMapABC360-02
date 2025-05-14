@@ -40,7 +40,7 @@ interface SeatMapComponentBaseProps {
   flightInfo?: React.ReactNode;
 }
 
-// 📌 Индексируем пассажиров
+// 📌 Indexing passengers
 function ensurePassengerIds(passengers: PassengerOption[]): PassengerOption[] {
   return passengers.map((p, index) => ({
     ...p,
@@ -62,15 +62,15 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   flightInfo
 }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  // отслеживаем boardingComplete
+  // tracking the boardingComplete
   const [boardingComplete, setBoardingComplete] = useState(false);
 
-  // ✅ Обеспечиваем корректные и уникальные строковые ID для пассажиров
+  // ✅ Provide correct and unique string IDs for passengers
   const [cleanPassengers] = useState(() => ensurePassengerIds(passengers));
 
   const [selectedSeats, setSelectedSeats] = useState<SelectedSeat[]>([]);
 
-  // 🔁 Синхронизация selectedSeats с глобальным window
+  // 🔁 Sync selectedSeats with global window
   useEffect(() => {
     window.selectedSeats = selectedSeats;
   }, [selectedSeats]);
@@ -78,12 +78,12 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   // selectedPassengerId изначально пустой
   const [selectedPassengerId, setSelectedPassengerId] = useState<string>('');
 
-  // ✅ Ставим первого пассажира как выбранного при появлении массива
+  // ✅ Set the first passenger as selected when the array appears
   useEffect(() => {
     if (cleanPassengers.length > 0 && !selectedPassengerId) {
       const firstId = String(cleanPassengers[0].id);
       setSelectedPassengerId(firstId);
-      console.log('👤 selectedPassengerId инициализирован:', firstId);
+      console.log('👤 selectedPassengerId initiated:', firstId);
     }
   }, [passengers, selectedPassengerId]);
 
@@ -93,9 +93,9 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     setSelectedSeats([]);
     setSelectedPassengerId(cleanPassengers.length > 0 ? cleanPassengers[0].id : '');
     onSeatChange?.([]);
-    setBoardingComplete(false); // 🧽 Убираем сообщение
+    setBoardingComplete(false);
 
-    // 🔁 Обновляем карту — все места сброшены
+    // 🔁 Updating the map - all seats reset
     const iframe = iframeRef.current;
     if (!iframe) return;
 
@@ -121,7 +121,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
 
   };
 
-  // ======== 🗺️ начальная загрузка карты ==================
+  // ======== 🗺️ initial map loading ==================
   const handleIframeLoad = useOnIframeLoad({
     iframeRef,
     config,
@@ -189,7 +189,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   return (
     <SeatMapModalLayout
       flightInfo={flightInfo}
-      passengerPanel={passengerPanel} // ⬅️ вот так, именно через пропс
+      passengerPanel={passengerPanel}
 
     >
       <iframe
