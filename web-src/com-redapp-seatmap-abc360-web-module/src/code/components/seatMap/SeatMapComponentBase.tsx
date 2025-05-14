@@ -10,6 +10,7 @@ import { SeatMapMessagePayload } from './types/SeatMapMessagePayload';
 import { useSyncOnSegmentChange } from './hooks/useSyncOnSegmentChange';
 import { useSyncOnCabinClassChange } from './hooks/useSyncOnCabinClassChange';
 import { useOnIframeLoad } from './hooks/useOnIframeLoad';
+import { useSeatSelectionHandler } from './hooks/useSeatSelectionHandler';
 
 // global variable 
 declare global {
@@ -162,108 +163,14 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   });
 
   // ===  🛳️ 🛫  Посадка пассажиров - обработка выбора мест от библиотеки ===
-  useEffect(() => {
-    const handleSeatSelection = (event: MessageEvent) => {
-      console.log('📩 [seatmap] raw message received:', event);
-
-      if (event.origin !== 'https://quicket.io') {
-        console.warn('⚠️ Сообщение от неизвестного origin:', event.origin);
-        return;
-      }
-
-      let parsed;
-      try {
-        parsed = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
-      } catch (e) {
-        console.error('❌ Не удалось разобрать сообщение:', e, event.data);
-        return;
-      }
-
-      // 🛑 Обрабатываем только onSeatSelected
-      if (!parsed?.onSeatSelected) {
-        console.warn('🟡 Пропущено сообщение без onSeatSelected:', parsed?.type || '(unknown type)');
-        return;
-      }
-
-      console.log('📦 [seatmap] parsed object:', parsed);
-      console.log('🔑 Keys in parsed:', Object.keys(parsed));
-
-      let seatArray = parsed.onSeatSelected;
-      console.log('🪑 RAW seatArray:', seatArray);
-      console.log('📏 Тип onSeatSelected:', typeof seatArray);
-
-      if (typeof seatArray === 'string') {
-        try {
-          seatArray = JSON.parse(seatArray);
-        } catch (e) {
-          console.error('❌ Не удалось разобрать onSeatSelected:', e, seatArray);
-          return;
-        }
-      }
-
-      if (!Array.isArray(seatArray)) {
-        console.warn('⚠️ seatArray не массив:', seatArray);
-        return;
-      }
-
-      console.log('🎯 Обработка onSeatSelected:', seatArray);
-
-      const updated = seatArray
-      .filter(p => p.id && p.seat?.seatLabel)
-      .map(p => {
-        const index = Number(p.id); // id приходит как "0", "1"
-        const realId = cleanPassengers[index]?.value || String(p.id);// берём из cleanPassengers
-        return {
-          passengerId: realId,
-          seatLabel: p.seat.seatLabel.toUpperCase()
-        };
-      });
-
-      console.log('🆕 updated selectedSeats:', updated);
-
-      if (updated.length === 0) {
-        console.warn('⚠️ updated массив пустой, мест не найдено');
-      }
-
-      setSelectedSeats(prev => {
-        const withoutOld = prev.filter(s => !updated.some(u => u.passengerId === s.passengerId));
-        const merged = [...withoutOld, ...updated];
-        onSeatChange?.(merged);
-        // ✅ Проверка: все пассажиры рассажены?
-        const allSeated = cleanPassengers.every(p =>
-          merged.some(s => s.passengerId === p.id)
-        );
-        setBoardingComplete(allSeated);
-
-
-        // 🧭 Переход к следующему пассажиру без места
-        const nextPassenger = cleanPassengers.find(
-          (p) => !merged.some((s) => s.passengerId === String(p.id))
-        );
-        if (nextPassenger) {
-          setSelectedPassengerId(String(nextPassenger.id));
-          console.log(`➡️ Переключение на следующего пассажира: ${nextPassenger.label || nextPassenger.givenName}`);
-        }
-
-        console.log('🧾 ===== Пассажиры и их места (after update) =====');
-        cleanPassengers.forEach((p) => {
-          const pid = String(p.id);
-          const matchedSeat = merged.find(s => s.passengerId === pid);
-          console.log(`👤 ${p.label || p.givenName + ' ' + p.surname} (${pid}) → ${matchedSeat?.seatLabel || '—'}`);
-          // ✅ Показываем уведомление, если все пассажиры рассажены
-          if (cleanPassengers.every(p => merged.some(s => s.passengerId === p.id))) {
-            console.log('✅ Boarding complete — все пассажиры рассажены');
-          }
-        });
-
-        return merged;
-      });
-
-    };
-
-    window.addEventListener('message', handleSeatSelection);
-    return () => window.removeEventListener('message', handleSeatSelection);
-  }, [onSeatChange]);
+  useSeatSelectionHandler({
+    cleanPassengers,
+    selectedPassengerId,
+    setSelectedPassengerId,
+    setSelectedSeats,
+    setBoardingComplete,
+    onSeatChange
+  });
 
   // ============== Passengers =====================
   const passengerPanel = (
