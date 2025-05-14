@@ -4,7 +4,7 @@ import * as React from 'react';
 import { useState } from 'react';
 import SeatMapComponentBase from './SeatMapComponentBase';
 import { generateFlightData } from '../../utils/generateFlightData';
-import SeatLegend from './SeatLegend';
+import SeatLegend from './panels/SeatLegend';
 
 interface SeatMapComponentShoppingProps {
   config: any;

@@ -1,3 +1,5 @@
+// file: SeatLegend.tsx
+
 import * as React from 'react';
 
 const SeatLegend: React.FC = () => (

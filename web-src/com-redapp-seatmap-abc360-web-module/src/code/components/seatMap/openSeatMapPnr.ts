@@ -1,12 +1,20 @@
 // file: openSeatMapPnr.ts
 
+/**
+ * Opens the Seat Map modal for PNR context.
+ * Loads PNR data, fetches seat availability from Sabre,
+ * maps passenger/segment data, and initializes the SeatMapComponentPnr.
+ *
+ * Triggered by UI events (e.g., button click or tile).
+ */
+
 import * as React from 'react';
 import { getService } from '../../Context';
 import { PublicModalsService } from 'sabre-ngv-modals/services/PublicModalService';
 import { loadPnrDetailsFromSabre } from '../../services/loadPnrDetailsFromSabre';
 import { loadSeatMapFromSabre } from '../../services/loadSeatMapFromSabre';
 import { handleSaveSeats } from './handleSaveSeats';
-import { actions } from './actions';
+import { actions } from './panels/actions';
 import SeatMapComponentPnr from './SeatMapComponentPnr';
 import { quicketConfig } from '../../utils/quicketConfig';
 
