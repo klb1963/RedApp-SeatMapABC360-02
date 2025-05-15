@@ -1,2 +1,20 @@
 {
+        "seatMap.boardingComplete": "✅ Boarding complete — all passengers have seats",
+        "seatMap.noSegments": "❌ No flight segments available",
+        "seatMap.flightInfo": "Flight info",
+        "seatMap.date": "Date",
+        "seatMap.dateUnknown": "not specified",
+        "seatMap.equipment": "Equipment",
+        "seatMap.class": "Class",
+        "seatMap.unknown": "unknown",
+        "seatMap.segment": "Segment",
+        "seatMap.flight": "flight",
+        "seatMap.aircraft": "Aircraft",
+        "seatMap.cabinClass": "Cabin class",
+        "seatMap.cabin.economy": "Economy",
+        "seatMap.cabin.premiumEconomy": "Premium Economy",
+        "seatMap.cabin.business": "Business",
+        "seatMap.cabin.first": "First",
+        "seatMap.cabin.all": "All Cabins"
+        
 }

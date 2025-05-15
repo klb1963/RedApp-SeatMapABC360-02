@@ -1,2 +1,6 @@
 {
+    "seatMap.boardingComplete": "✅ Посадка завершена — все пассажиры рассажены",
+    "seatMap.segment": "Сегмент рйса",
+    "seatMap.cabinClass": "Класс обслуживания",
+    "seatMap.flightInfo": "Информация о рейсе"
 }

@@ -18,6 +18,7 @@
 import * as React from 'react';
 import { PassengerOption } from '../../../utils/parcePnrData';
 import { SelectedSeat } from '../SeatMapComponentBase';
+import { t } from '../../../Context';
 
 interface Props {
   passengers: PassengerOption[];
@@ -50,7 +51,7 @@ export const PassengerPanel: React.FC<Props> = ({
           fontWeight: 'bold',
           color: '#006633'
         }}>
-          ✅ Boarding complete — all passengers have seats
+          {t('seatMap.boardingComplete')}
         </div>
       )}
 

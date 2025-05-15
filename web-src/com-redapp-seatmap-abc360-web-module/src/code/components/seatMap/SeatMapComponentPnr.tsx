@@ -20,6 +20,7 @@ import SeatMapComponentBase from './SeatMapComponentBase';
 import { generateFlightData } from '../../utils/generateFlightData';
 import SeatLegend from './panels/SeatLegend';
 import { PassengerOption } from '../../utils/parcePnrData';
+import { t } from '../../Context'; // ✅ i18n translate
 
 interface SeatMapComponentPnrProps {
   config: any;
@@ -57,14 +58,15 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
 
   const flightInfo = (
     <div>
-      <div><strong>Flight info:</strong></div>
+      <div><strong>{t('seatMap.flightInfo')}</strong></div> {/* 🏷️ "Flight info" */}
       <div>{segment.origin} → {segment.destination}</div>
-      <div>📅 Date: {segment.departureDateTime?.split?.('T')[0] || 'not specified'}</div>
-      <div>✈️ Equipment: {typeof segment.equipment === 'object'
-        ? segment.equipment?.EncodeDecodeElement?.SimplyDecoded
-        : segment.equipment || 'unknown'}
-      </div>
-      <div>💺 Class: {cabinClass}</div>
+      <div>📅 {t('seatMap.date')}: {segment.departureDateTime?.split?.('T')[0] || t('seatMap.dateUnknown')}</div>
+      <div>✈️ {t('seatMap.equipment')}: {
+        typeof segment.equipment === 'object'
+          ? segment.equipment?.EncodeDecodeElement?.SimplyDecoded
+          : segment.equipment || t('seatMap.unknown')
+      }</div>
+      <div>💺 {t('seatMap.class')}: {cabinClass}</div>
       <hr />
       <SeatLegend/>
     </div>
@@ -73,7 +75,7 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
   const equipment =
     typeof segment?.equipment === 'object'
       ? segment.equipment?.EncodeDecodeElement?.SimplyDecoded
-      : segment?.equipment || 'unknown';
+      : segment?.equipment || t('seatMap.unknown'); // ✅ Localized fallback
 
   // State: selected passenger IDs
   const [selectedPassengerIds, setSelectedPassengerIds] = useState<string[]>(
@@ -109,7 +111,7 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
         }}
       >
         <div>
-          <label style={{ marginRight: '0.5rem' }}>Segment:</label>
+          <label style={{ marginRight: '0.5rem' }}>{t('seatMap.segment')}:</label> {/* ✅ "Segment" */}
           <select value={segmentIndex} onChange={(e) => {
             setSegmentIndex(Number(e.target.value));
             setCabinClass('Y');
@@ -123,22 +125,22 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
         </div>
 
         <div style={{ fontSize: '1.5rem', color: '#555' }}>
-          ✈️ <strong>Aircraft:</strong> {equipment}
+        ✈️ <strong>{t('seatMap.aircraft')}:</strong> {equipment} {/* ✅ "Aircraft" */}
         </div>
       </div>
 
       {/* 👔 Cabin class selector */}
       <div style={{ marginBottom: '1rem' }}>
-        <label style={{ marginRight: '0.5rem' }}>Cabin class:</label>
+        <label style={{ marginRight: '0.5rem' }}>{t('seatMap.cabinClass')}:</label>
         <select
           value={cabinClass}
           onChange={(e) => setCabinClass(e.target.value as 'Y' | 'S' | 'C' | 'F' | 'A')}
         >
-          <option value="Y">Economy</option>
-          <option value="S">Premium Economy</option>
-          <option value="C">Business</option>
-          <option value="F">First</option>
-          <option value="A">All Cabins</option>
+          <option value="Y">{t('seatMap.cabin.economy')}</option>
+          <option value="S">{t('seatMap.cabin.premiumEconomy')}</option>
+          <option value="C">{t('seatMap.cabin.business')}</option>
+          <option value="F">{t('seatMap.cabin.first')}</option>
+          <option value="A">{t('seatMap.cabin.all')}</option>
         </select>
       </div>
 
