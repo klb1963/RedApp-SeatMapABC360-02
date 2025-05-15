@@ -1,7 +1,20 @@
-// file: generateFlightData.ts 
+// file: /code/utils/generateFlightData.ts 
+
+/**
+ * generateFlightData.ts
+ *
+ * 🛫 Utility to normalize raw flight segment input into the structured format
+ * expected by the SeatMap visualization library (JETS).
+ *
+ * Accepts raw Sabre segment data (from PNR, pricing, shopping, availability),
+ * and returns a normalized FlightData object.
+ */
 
 import { mapCabinToCode } from '../utils/mapCabinToCode';
 
+/**
+ * Flight segment input structure from various Sabre APIs.
+ */
 export interface FlightSegmentInput {
   marketingAirline?: string;
   marketingCarrier?: string;
@@ -23,6 +36,9 @@ export interface FlightSegmentInput {
   };
 }
 
+/**
+ * Normalized flight data format used by the seat map library.
+ */
 export interface FlightData {
   id: string;
   airlineCode: string;
@@ -33,29 +49,51 @@ export interface FlightData {
   cabinClass: string;
   equipment: string;
   marketingCarrier?: string;
-  passengerType: string; // 🔥 добавлено
+  passengerType: string; // Always 'ADT' (Adult) for now
 }
 
-export function generateFlightData(segment: FlightSegmentInput, index: number, cabinClassOverride?: string): FlightData {
+/**
+ * Generates a normalized FlightData object from raw segment input.
+ *
+ * @param segment - Raw segment object from Sabre or shared context
+ * @param index - Index of the segment (used for ID)
+ * @param cabinClassOverride - Optional cabin override (Y, C, F, etc.)
+ * @returns A FlightData object ready for rendering in the seat map
+ */
+export function generateFlightData(
+  segment: FlightSegmentInput,
+  index: number,
+  cabinClassOverride?: string
+): FlightData {
 
   console.log('[📥 Incoming segment]', segment);
 
+  // ✈️ Airline code logic
   const airlineCode = segment.marketingAirline || segment.marketingCarrier || 'XX';
+
+  // 🔢 Flight number fallback logic
   const flightNoRaw = segment.flightNumber || segment.marketingFlightNumber || '000';
   const flightNo = String(flightNoRaw) || '000';
+
+  // 📅 Normalize departure date
   const rawDate = segment.departureDateTime || segment.departureDate || '';
   const departureDate = rawDate.includes('T') ? rawDate.split('T')[0] : rawDate;
+
+  // 🌍 Departure / Arrival airport codes
   const departure = segment.origin || segment.departure || '???';
   const arrival = segment.destination || segment.arrival || '???';
 
+  // 🛫 Aircraft equipment description
   const rawEquipment =
     typeof segment.equipment === 'object'
       ? segment.equipment?.EncodeDecodeElement?.SimplyDecoded || ''
       : segment.equipment || '';
 
+  // 💺 Cabin class logic with mapping (Y, C → E, B, etc.)
   const cabinClass = cabinClassOverride || segment.cabinClass || 'Y';
   const mappedCabin = mapCabinToCode(cabinClass);
 
+  // 🧩 Final object construction
   const result: FlightData = {
     id: String(index).padStart(3, '0'),
     airlineCode,
@@ -70,6 +108,6 @@ export function generateFlightData(segment: FlightSegmentInput, index: number, c
   };
 
   console.log('[✅ FlightData Ready]', result);
-  
+
   return result;
 }
