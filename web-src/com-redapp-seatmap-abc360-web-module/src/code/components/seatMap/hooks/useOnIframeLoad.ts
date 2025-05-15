@@ -1,4 +1,18 @@
-// file: useOnIframeLoad.ts
+// file: code/components/seatMap/hooks/useOnIframeLoad.ts
+
+/**
+ * useOnIframeLoad.ts
+ * 
+ * 📤 Custom React hook to initialize the seat map iframe when it finishes loading.
+ * 
+ * Responsibilities:
+ * - Generates flight data and passenger list using provided segment and cabin info
+ * - Builds a SeatMapMessagePayload object containing config, flight, availability, and passengers
+ * - Sends the payload to the iframe via postMessage once it's ready
+ * 
+ * This hook ensures that the external SeatMap rendering library receives all necessary data
+ * immediately after the iframe becomes available.
+ */
 
 import { useCallback } from 'react';
 import { PassengerOption } from '../../../utils/parcePnrData';

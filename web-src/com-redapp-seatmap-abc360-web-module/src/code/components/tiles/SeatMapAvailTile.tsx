@@ -1,15 +1,27 @@
-// file: SeatMapAvailTile.tsx
+// file: /code/components/seatMap/tiles/SeatMapAvailTile.tsx
+
+/**
+ * SeatMapAvailTile.tsx
+ * 
+ * 🧩 Tile Component for Air Availability Panel – RedApp ABC360
+ * 
+ * This tile is rendered inside the Sabre Red 360 Air Availability workflow.
+ * It displays basic information about flight segments and provides a button
+ * to trigger the SeatMap modal (integration to be handled externally).
+ */
 
 import * as React from 'react';
 import { PublicAirAvailabilityData } from 'sabre-ngv-airAvailability/services/PublicAirAvailabilityData';
 
 export const SeatMapAvailTile = (data: PublicAirAvailabilityData): React.ReactElement => {
 
-    console.log('🧩 [SeatMapAvailTile] Полученные данные:', data);
+    // 🪵 Log the incoming data for debugging purposes
+    console.log('🧩 [SeatMapAvailTile] Received data:', data);
         
     return (
         <div className={'sdk-seatmap-custom-tile-content'} style={{ padding: '10px' }}> 
             
+            {/* 🔽 Display flight segments as a list */}
             <ol>
                 {data.flightSegments.map((segment, index) => (
                     <li key={index}>
@@ -18,7 +30,7 @@ export const SeatMapAvailTile = (data: PublicAirAvailabilityData): React.ReactEl
                 ))}
             </ol>
 
-            {/* Добавляем (рисуем) кнопку*/}
+            {/* 🎯 Seat Map trigger button (placeholder – action must be wired externally) */}
             <button 
                 className="abc-seatmap-button"
                 style={{

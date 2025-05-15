@@ -1,5 +1,19 @@
 // file: code/components/seatMap/helpers/generatePassengersList.ts
 
+/**
+ * generatePassengersList.ts
+ * 
+ * 👥 Generates a formatted list of passenger objects for visual rendering in the SeatMap component.
+ * 
+ * Each object includes:
+ * - Passenger ID and type
+ * - Seat assignment from selectedSeats[]
+ * - Label, color, and initials for display
+ * - readOnly flag for interaction control
+ * 
+ * Used to prepare consistent visual data for all passengers displayed in the seat map UI.
+ */
+
 import { PassengerOption } from '../../../utils/parcePnrData';
 import { SelectedSeat } from '../SeatMapComponentBase';
 import { getInitials } from './getInitials';

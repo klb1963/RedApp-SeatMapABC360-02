@@ -1,3 +1,5 @@
+// file: /code/services/CustomWorkflowService.ts
+
 import {ICustomWorkflow} from 'sabre-ngv-redAppSidePanel/interfaces/ICustomWorkflow';
 import {IAreaService} from 'sabre-ngv-app/app/services/impl/IAreaService';
 import {getService} from '../Context';

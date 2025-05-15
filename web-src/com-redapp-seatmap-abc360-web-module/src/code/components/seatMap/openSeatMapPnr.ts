@@ -1,4 +1,4 @@
-// file: openSeatMapPnr.ts
+// file: /code/components/seatMap/openSeatMapPnr.ts
 
 /**
  * Opens the Seat Map modal for PNR context.

@@ -1,6 +1,17 @@
 // file: code/services/ShowAgentProfile.tsx
 
-
+/**
+ * ShowAgentProfile.tsx
+ * 
+ * 👤 UI-компонент для отображения информации о текущем агенте Sabre.
+ * 
+ * Принимает объект `agent` с данными профиля и визуализирует их в виде таблицы.
+ * Используется в отладочных или вспомогательных интерфейсах, где нужно показать:
+ * - PCC (Pseudo City Code)
+ * - Идентификатор агента
+ * - Локаль, страна, регион
+ * - ID сотрудника и бизнес-единицы клиента
+ */
 
 import * as React from 'react';
 
@@ -19,8 +30,10 @@ interface ShowAgentProfileProps {
 export const ShowAgentProfile: React.FC<ShowAgentProfileProps> = ({ agent }) => {
     return (
         <div style={{ padding: '1rem', maxHeight: '80vh', overflowY: 'auto' }}>
-            {/* === 👤 AGENT PROFILE === */}
+            {/* === 👤 AGENT PROFILE HEADER === */}
             <h3>👤 Agent Profile</h3>
+
+            {/* 📋 Таблица с полями профиля */}
             <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>
                 <tbody>
                     <tr><td style={thStyle}>Agent ID</td><td style={tdStyle}>{agent.agentId}</td></tr>
@@ -36,7 +49,7 @@ export const ShowAgentProfile: React.FC<ShowAgentProfileProps> = ({ agent }) => 
     );
 };
 
-// 🧾 Стили для таблицы
+// 🧾 Стили для заголовков таблицы (левая колонка)
 const thStyle: React.CSSProperties = {
     borderBottom: '1px solid #ccc',
     padding: '8px',
@@ -45,6 +58,7 @@ const thStyle: React.CSSProperties = {
     width: '40%'
 };
 
+// 📄 Стили для значений (правая колонка)
 const tdStyle: React.CSSProperties = {
     borderBottom: '1px solid #eee',
     padding: '8px',

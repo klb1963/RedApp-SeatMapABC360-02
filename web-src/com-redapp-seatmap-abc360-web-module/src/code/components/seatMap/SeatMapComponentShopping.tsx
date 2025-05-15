@@ -1,4 +1,16 @@
-// file: SeatMapComponentShopping.tsx
+// file: /code/components/seatMap/SeatMapComponentShopping.tsx
+
+/**
+ * SeatMapComponentShopping.tsx
+ * 
+ * 🛍️ SeatMap Viewer for Shopping Scenario – RedApp ABC360
+ * 
+ * Displays a seat map based on flight data during the fare shopping stage.
+ * Allows selection of a flight segment and service class to preview cabin layout.
+ * No passengers or seat availability are shown at this stage.
+ * 
+ * Wraps the reusable <SeatMapComponentBase /> and feeds it appropriate input.
+ */
 
 import * as React from 'react';
 import { useState } from 'react';
@@ -12,22 +24,25 @@ interface SeatMapComponentShoppingProps {
 }
 
 const SeatMapComponentShopping: React.FC<SeatMapComponentShoppingProps> = ({ config, data }) => {
+  // 📦 Safely extract the list of flight segments
   const flightSegments = Array.isArray(data?.flightSegments) ? data.flightSegments : [];
 
+  // 🎚️ Manage selected cabin class and flight segment
   const [cabinClass, setCabinClass] = useState<'Y' | 'S' | 'C' | 'F' | 'A'>('Y');
   const [segmentIndex, setSegmentIndex] = useState(0);
 
+  // 📌 Currently selected segment
   const currentSegment = flightSegments[segmentIndex] || {};
 
-  // Прямая проверка типа оборудования (если есть вложенный EncodeDecodeElement)
+  // ✈️ Normalize equipment name for readability
   const equipment =
     typeof currentSegment.equipment === 'object'
       ? currentSegment.equipment?.EncodeDecodeElement?.SimplyDecoded
-      : currentSegment.equipment || 'неизвестно';
+      : currentSegment.equipment || 'Unknown';
 
   return (
     <div style={{ padding: '1rem' }}>
-      {/* 🔁 Селектор сегмента и отображение типа самолёта */}
+      {/* 🔁 Segment selector and aircraft type display */}
       <div
         style={{
           display: 'flex',
@@ -38,27 +53,28 @@ const SeatMapComponentShopping: React.FC<SeatMapComponentShoppingProps> = ({ con
         }}
       >
         <div>
-          <label style={{ marginRight: '0.5rem' }}>Сегмент:</label>
+          <label style={{ marginRight: '0.5rem' }}>Segment:</label>
           <select
             value={segmentIndex}
             onChange={(e) => setSegmentIndex(Number(e.target.value))}
           >
             {flightSegments.map((seg: any, idx: number) => (
               <option key={idx} value={idx}>
-                {seg.origin || '???'} → {seg.destination || '???'}, рейс {seg.flightNumber || '---'}
+                {seg.origin || '???'} → {seg.destination || '???'}, Flight {seg.flightNumber || '---'}
               </option>
             ))}
           </select>
         </div>
 
+        {/* ✈️ Aircraft information */}
         <div style={{ fontSize: '1.5rem', color: '#555' }}>
-          ✈️ <strong>Самолёт:</strong> {equipment}
+          ✈️ <strong>Aircraft:</strong> {equipment}
         </div>
       </div>
 
-      {/* 👔 Класс обслуживания */}
+      {/* 👔 Cabin class selector */}
       <div style={{ marginBottom: '1rem' }}>
-        <label style={{ marginRight: '0.5rem' }}>Класс обслуживания:</label>
+        <label style={{ marginRight: '0.5rem' }}>Cabin class:</label>
         <select
           value={cabinClass}
           onChange={(e) => setCabinClass(e.target.value as 'Y' | 'S' | 'C' | 'F' | 'A')}
@@ -71,7 +87,7 @@ const SeatMapComponentShopping: React.FC<SeatMapComponentShoppingProps> = ({ con
         </select>
       </div>
 
-      {/* 🧩 Отображение карты мест */}
+      {/* 🧩 Seat map rendering */}
       <SeatMapComponentBase
         config={config}
         flightSegments={flightSegments}
@@ -87,8 +103,8 @@ const SeatMapComponentShopping: React.FC<SeatMapComponentShoppingProps> = ({ con
             index
           )
         }
-        availability={[]}
-        passengers={[]} 
+        availability={[]}     // 👥 No seat availability data in the Shopping step
+        passengers={[]}       // 👤 No passengers yet (PNR not created)
         showSegmentSelector={false}
         flightInfo={
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>

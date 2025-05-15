@@ -1,3 +1,23 @@
+//file: code/components/pnrSevices/CreatePNR.tsx
+
+/**
+ * CreatePNR.tsx
+ *
+ * 📌 RedApp SeatMap ABC360 – PNR Utility
+ * 
+ * ✈️ React-компонент для создания PNR с добавлением имени пассажира и типа поездки.
+ * 
+ * Функции:
+ * - Многоэтапная форма (name → travel type)
+ * - SOAP-запрос `UpdateReservationRQ` с операцией `PassengerNameUpdate` и `RemarkUpdate`
+ * - Обработка ошибок и подтверждение через Bootstrap-модальные окна
+ * - Обновление PNR и рефреш данных UI после успешного запроса
+ *
+ * Используется внутри RedApp для ввода данных вручную, если PNR отсутствует или неполный.
+ *
+ * 🔐 SOAP отправка идёт через ISoapApiService Sabre SDK.
+ */
+
 import * as React from "react";
 import {Button, Form, FormGroup, Modal, InputGroup, ControlLabel, FormControl, HelpBlock, Panel, Alert} from "react-bootstrap";
 import { getService, t } from "../../Context";

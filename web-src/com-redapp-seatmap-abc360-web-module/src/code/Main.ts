@@ -100,7 +100,7 @@ export class Main extends Module {
         new RedAppSidePanelButton(
           "Get EnhancedSeatMapRQ",
           "btn-secondary side-panel-button",
-          () => { this.getEnhancedSeatMapRQ(); }, // 👈 новая кнопка
+          () => { this.getEnhancedSeatMapRQ(); },
           false
         ),
 
@@ -182,7 +182,7 @@ export class Main extends Module {
 
     publicModalsService.showReactModal({
       header: 'Get EnhancedSeatMapRQ',
-      component: React.createElement(require('./components/EnhancedSeatMapRequest').EnhancedSeatMapRequest),
+      component: React.createElement(require('./tools/EnhancedSeatMapRequest').EnhancedSeatMapRequest),
       modalClassName: 'seatmap-xml-modal'
     });
   }

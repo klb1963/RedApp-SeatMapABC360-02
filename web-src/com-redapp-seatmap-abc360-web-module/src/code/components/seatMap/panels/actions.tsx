@@ -1,4 +1,4 @@
-// file: actions.tsx
+// file: code/components/seatMap/panels/actions.tsx
 
 /**
  * UI Actions for SeatMap Modal

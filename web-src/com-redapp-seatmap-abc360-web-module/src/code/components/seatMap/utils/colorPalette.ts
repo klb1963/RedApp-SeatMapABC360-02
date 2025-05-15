@@ -1,3 +1,5 @@
+//file: /code/components/seatMap/utils/colorPalette.ts
+
 /**
  * Default color palette used to assign colors to passengers.
  */

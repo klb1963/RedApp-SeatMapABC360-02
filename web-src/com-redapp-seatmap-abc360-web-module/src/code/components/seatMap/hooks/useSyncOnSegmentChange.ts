@@ -1,11 +1,24 @@
 // file: code/components/seatMap/hooks/useSyncOnSegmentChange.ts
 
+/**
+ * useSyncOnSegmentChange.ts
+ * 
+ * 🔁 React hook that synchronizes the seat map content when the selected flight segment changes.
+ * 
+ * Responsibilities:
+ * - Regenerates flight data and passenger payload for the new segment
+ * - Builds a SeatMapMessagePayload including updated config, flight, availability, and passengers
+ * - Sends the payload to the SeatMap iframe via postMessage
+ * 
+ * Triggered automatically when `initialSegmentIndex` changes.
+ * Keeps the seat map view aligned with the currently selected segment.
+ */
+
 import { useEffect } from 'react';
 import { PassengerOption } from '../../../utils/parcePnrData';
 import { FlightData } from '../../../utils/generateFlightData';
 import { createPassengerPayload } from '../helpers/createPassengerPayload';
 import { SeatMapMessagePayload } from '../types/SeatMapMessagePayload';
-import { FlightSegment } from 'sabre-ngv-app/app/common/data/flight/FlightSegment';
 
 interface Props {
   config: any;

@@ -1,4 +1,20 @@
-// file: SeatMapComponentPricing.tsx
+// file: /code/components/seatMap/SeatMapComponentPricing.tsx
+
+/**
+ * SeatMapComponentPricing.tsx
+ * 
+ * 💺 SeatMap Viewer for Pricing Scenario – RedApp ABC360
+ * 
+ * Displays a static SeatMap in the context of a pricing workflow.
+ * Allows the agent to select the cabin class (Economy, Business, etc.)
+ * and view the aircraft layout without availability or passenger data.
+ * 
+ * This component wraps SeatMapComponentBase and provides:
+ * - Basic segment info
+ * - Cabin class selection dropdown
+ * - Static flight info header
+ * - Visual seat map (no availability, no interactivity)
+ */
 
 import * as React from 'react';
 import { useState } from 'react';
@@ -17,17 +33,22 @@ const SeatMapComponentPricing: React.FC<SeatMapComponentPricingProps> = ({
   flightSegments,
   selectedSegmentIndex
 }) => {
+  // 🔁 Cabin class selection (defaults to Economy)
   const [cabinClass, setCabinClass] = useState<'Y' | 'S' | 'C' | 'F' | 'A'>('Y');
 
+  // 📦 Extract selected segment
   const segment = flightSegments[selectedSegmentIndex];
+
+  // ✈️ Normalize equipment name
   const equipment =
     typeof segment?.equipment === 'object'
       ? segment.equipment?.EncodeDecodeElement?.SimplyDecoded
       : segment?.equipment || 'неизвестно';
 
+  // 📅 Format departure date
   const departureDate = segment?.departureDate?.toISOString().split('T')[0] || 'not specified';
 
-  // 🧩 Комбинируем Flight Info + Legend
+  // 🧩 Compose header info block (above map)
   const flightInfo = segment && (
     <div>
       <strong>Flight info:</strong>
@@ -43,7 +64,7 @@ const SeatMapComponentPricing: React.FC<SeatMapComponentPricingProps> = ({
 
   return (
     <div style={{ padding: '1rem' }}>
-      {/* 🔝 Сегмент и Самолёт */}
+      {/* 🔝 Segment info header */}
       <div
         style={{
           display: 'flex',
@@ -60,11 +81,11 @@ const SeatMapComponentPricing: React.FC<SeatMapComponentPricingProps> = ({
           </span>
         </div>
         <div style={{ fontSize: '1.5rem', color: '#555' }}>
-          ✈️ <strong>Самолёт:</strong> {equipment}
+          ✈️ <strong>Equipment:</strong> {equipment}
         </div>
       </div>
 
-      {/* 👔 Класс обслуживания */}
+      {/* 👔 Cabin class selector */}
       <div style={{ marginBottom: '1rem' }}>
         <label style={{ marginRight: '0.5rem' }}>Класс обслуживания:</label>
         <select
@@ -79,7 +100,7 @@ const SeatMapComponentPricing: React.FC<SeatMapComponentPricingProps> = ({
         </select>
       </div>
 
-      {/* 📌 Вставляем компонент карты */}
+      {/* 📌 Render seat map with selected cabin class */}
       <SeatMapComponentBase
         config={config}
         flightSegments={flightSegments}
@@ -91,10 +112,10 @@ const SeatMapComponentPricing: React.FC<SeatMapComponentPricingProps> = ({
             index
           )
         }
-        availability={[]}
-        passengers={[]}
+        availability={[]} // no dynamic seat data
+        passengers={[]}   // no passengers in Pricing mode
         showSegmentSelector={false}
-        flightInfo={flightInfo} // ✅ добавлено
+        flightInfo={flightInfo} // header info + legend
       />
     </div>
   );

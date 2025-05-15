@@ -1,4 +1,4 @@
-// file: handleSaveSeats.ts
+// file: /code/components/seatMap/handleSaveSeats.ts
 
 import { getService } from '../../Context';
 import { ISoapApiService } from 'sabre-ngv-communication/interfaces/ISoapApiService';

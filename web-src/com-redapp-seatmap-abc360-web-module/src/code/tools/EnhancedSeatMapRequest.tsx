@@ -1,4 +1,19 @@
-// файл: code/components/EnhancedSeatMapRequest.tsx
+// file: code/components/EnhancedSeatMapRequest.tsx
+
+/**
+ * EnhancedSeatMapRequest.tsx
+ * 
+ * 🔧 Developer Tool: Manual tester for sending EnhancedSeatMapRQ to Sabre and viewing raw XML response.
+ * 
+ * Features:
+ * - Loads PNR via `loadPnrDetailsFromSabre()`
+ * - Selects flight segment from parsed PNR
+ * - Sends EnhancedSeatMapRQ using `loadSeatMapFromSabre()`
+ * - Renders raw XML response in <XmlViewer />
+ * - 💾 Automatically stores formatted XML for future analysis and comparison
+ * 
+ * 📌 This tool is intended for internal use only (debugging / development).
+ */
 
 import * as React from 'react';
 import { Button, FormGroup, ControlLabel } from 'react-bootstrap';

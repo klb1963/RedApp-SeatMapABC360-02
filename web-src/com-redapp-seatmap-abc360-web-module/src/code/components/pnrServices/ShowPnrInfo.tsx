@@ -1,4 +1,20 @@
-// file: code/components/ShowPnrInfo.tsx
+// file: code/components/pnrServices/ShowPnrInfo.tsx
+
+/**
+ * ShowPnrInfo.tsx
+ * 
+ * 📌 RedApp SeatMap ABC360 – PNR Viewer Component
+ * 
+ * 📋 React component for displaying PNR details:
+ * - Passenger list with seat assignments and nameNumber
+ * - Flight segments (origin, destination, carrier, flight, booking class)
+ * - Raw XML display using <XmlViewer />
+ * 
+ * 💾 Allows saving the retrieved PNR XML to a local file (via XmlViewer)
+ * 
+ * Used after loading PNR data from Sabre through `loadPnrDetailsFromSabre()`.
+ * Useful for debugging and analyzing PNR structure.
+ */
 
 import * as React from 'react';
 import { XmlViewer } from '../../utils/XmlViewer'; // для отображения "сырого" XML
@@ -11,7 +27,7 @@ interface ShowPnrInfoProps {
 export const ShowPnrInfo: React.FC<ShowPnrInfoProps> = ({ pnrData, rawXml }) => {
     return (
         <div style={{ padding: '1rem', maxHeight: '80vh', overflowY: 'auto' }}>
-            {/* === 🧳 ПАССАЖИРЫ === */}
+            {/* === 🧳 Pessengers === */}
             <h3>🧳 Passenger List</h3>
             <ul>
                 {pnrData.passengers.map((passenger: any, index: number) => (
@@ -30,7 +46,7 @@ export const ShowPnrInfo: React.FC<ShowPnrInfoProps> = ({ pnrData, rawXml }) => 
                 ))}
             </ul>
 
-            {/* === ✈️ СЕГМЕНТЫ РЕЙСОВ === */}
+            {/* === ✈️ Segments === */}
             <h3 style={{ marginTop: '2rem' }}>✈️ FLIGHT SEGMENTS</h3>
             <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>
                 <thead>
@@ -70,7 +86,7 @@ export const ShowPnrInfo: React.FC<ShowPnrInfoProps> = ({ pnrData, rawXml }) => 
     );
 };
 
-// 🧾 Стили для таблицы
+// 🧾 CSS for table
 const thStyle: React.CSSProperties = {
     borderBottom: '1px solid #ccc',
     padding: '8px',

@@ -1,4 +1,16 @@
-// file: SeatMapShoppingView.ts
+// file: /code/components/seatMap/tiles/SeatMapShoppingView.ts
+
+/**
+ * SeatMapShoppingView.ts
+ * 
+ * 🛍️ SeatMap View for Shopping Tile – RedApp ABC360
+ * 
+ * This class-based view integrates with the Sabre Red 360 shopping drawer workflow.
+ * It receives a `FlightSegment`, extracts relevant flight data (including aircraft and dates),
+ * then renders a React-based SeatMap view using `SeatMapComponentShopping`.
+ * 
+ * The SeatMap is mounted into a DOM node with ID `seatmap-root`, declared in the template.
+ */
 
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
@@ -17,30 +29,39 @@ export class SeatMapShoppingView extends AbstractView<AbstractModel> {
     private flightSegments: any[] = [];
     private selectedSegmentIndex: number = 0;
 
+    /**
+     * Triggered when the shopping context is propagated to this view.
+     * Stores the received segment and renders the seat map component.
+     */
     selfDrawerContextModelPropagated(cpa: FlightSegment): void {
         console.log('📌 [SeatMapShoppingView] selfDrawerContextModelPropagated called with cpa:', cpa);
 
         this.currentSegment = cpa;
         this.updateFlightSegmentsFromSegment(cpa);
 
-        // 🧽 Очистка контейнера при повторном открытии
+        // 🧼 Clean up the container in case of re-render
         const rootElement = document.getElementById('seatmap-root');
         if (rootElement) {
             rootElement.innerHTML = '';
         }
 
-    // ⏱ Перерисовка через React
+        // ⏱ Retry rendering via React when DOM is ready
         this.tryRenderReactComponent();
-
     }
     
-    // 🧠 Унифицированный метод для рендера компонента
+    /**
+     * Optionally trigger rendering for a segment programmatically.
+     */
     private renderForSegment(segment: FlightSegment): void {
         this.currentSegment = segment;
         this.updateFlightSegmentsFromSegment(segment);
         this.tryRenderReactComponent();
     }
 
+    /**
+     * Converts Sabre FlightSegment objects into simplified structure for React rendering.
+     * Adds aircraft decoding for user-friendly display.
+     */
     private updateFlightSegmentsFromSegment(segment: FlightSegment): void {
         const segments = segment.getShoppingItinerary().getFlightSegments();
 
@@ -55,24 +76,17 @@ export class SeatMapShoppingView extends AbstractView<AbstractModel> {
         };
 
         this.flightSegments = segments.map(s => {
-            const segmentId = s.getSegmentId();
-            const flightNumber = s.getFlightNumber();
-            const origin = s.getOriginIata();
-            const destination = s.getDestinationIata();
-            const airMiles = s.getAirMiles();
-            const departureDate = s.getDepartureDate();
-            const marketingAirline = s.getMarketingAirline();
             const equipmentCode = s.getEquipmentCode?.() || 'UNKNOWN';
 
             return {
-                id: segmentId,
-                segmentId,
-                flightNumber,
-                origin,
-                destination,
-                airMiles,
-                departureDateTime: departureDate?.toISOString().split('T')[0] || 'UNKNOWN',
-                marketingAirline,
+                id: s.getSegmentId(),
+                segmentId: s.getSegmentId(),
+                flightNumber: s.getFlightNumber(),
+                origin: s.getOriginIata(),
+                destination: s.getDestinationIata(),
+                airMiles: s.getAirMiles(),
+                departureDateTime: s.getDepartureDate()?.toISOString().split('T')[0] || 'UNKNOWN',
+                marketingAirline: s.getMarketingAirline(),
                 cabinClass: 'A',
                 equipment: {
                     EncodeDecodeElement: {
@@ -83,28 +97,35 @@ export class SeatMapShoppingView extends AbstractView<AbstractModel> {
         });
     }
 
+    /**
+     * Retry logic: attempts to render the React component if the container is not ready yet.
+     */
     private tryRenderReactComponent(attempts = 0): void {
         const MAX_ATTEMPTS = 10;
         const INTERVAL = 500;
         const rootElement = document.getElementById('seatmap-root');
 
         if (rootElement) {
-            console.log('✅ [SeatMapShoppingView] Найден seatmap-root. Рендерим React.');
+            console.log('✅ [SeatMapShoppingView] Found seatmap-root. Rendering React.');
             this.renderReactComponent();
         } else if (attempts < MAX_ATTEMPTS) {
-            console.warn(`⚠️ [SeatMapShoppingView] seatmap-root не найден. Попытка ${attempts + 1}`);
+            console.warn(`⚠️ [SeatMapShoppingView] seatmap-root not found. Retry #${attempts + 1}`);
             setTimeout(() => this.tryRenderReactComponent(attempts + 1), INTERVAL);
         } else {
-            console.error('❌ [SeatMapShoppingView] Не удалось найти seatmap-root.');
+            console.error('❌ [SeatMapShoppingView] Could not find seatmap-root after max attempts.');
         }
     }
 
+    /**
+     * Mounts the React seat map component into the DOM with prepared data.
+     * Also stores flightSegments in sessionStorage for later reuse (e.g., in Pricing).
+     */
     private renderReactComponent(): void {
         if (!this.currentSegment || !this.flightSegments?.length) return;
 
         const rootElement = document.getElementById('seatmap-root');
         if (!rootElement) {
-            console.error('❌ Не найден #seatmap-root в шаблоне');
+            console.error('❌ seatmap-root not found in DOM');
             return;
         }
 
@@ -117,9 +138,9 @@ export class SeatMapShoppingView extends AbstractView<AbstractModel> {
 
         try {
             sessionStorage.setItem('flightSegmentsForPricing', JSON.stringify(this.flightSegments));
-            console.log('💾 Сегменты сохранены в sessionStorage');
+            console.log('💾 Flight segments saved to sessionStorage');
         } catch (err) {
-            console.error('❌ Ошибка при сохранении в sessionStorage:', err);
+            console.error('❌ Failed to save segments to sessionStorage:', err);
         }
 
         ReactDOM.render(
@@ -127,6 +148,6 @@ export class SeatMapShoppingView extends AbstractView<AbstractModel> {
             rootElement
         );
 
-        console.log('📌 [SeatMapShoppingView] React компонент отрендерен');
+        console.log('📌 [SeatMapShoppingView] React component rendered');
     }
 }

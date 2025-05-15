@@ -1,4 +1,4 @@
-// file: code/components/SeatMap/getFlightFromSabreData.ts
+// file: code/components/seatMap/transformers/getFlightFromSabreData.ts
 
 /**
  * Extracts normalized flight segment data from raw Sabre response.

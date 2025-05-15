@@ -1,4 +1,4 @@
-// file: SeatMapComponentPnr.tsx
+// file: /code/components/seatMap/SeatMapComponentPnr.tsx
 
 /**
  * SeatMapComponentPnr.tsx

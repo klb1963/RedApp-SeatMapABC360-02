@@ -1,4 +1,20 @@
-// file: useSeatSelectionHandler.ts
+// file: code/components/seatMap/hooks/useSeatSelectionHandler.ts
+
+/**
+ * useSeatSelectionHandler.ts
+ * 
+ * 🪑 Custom React hook that handles seat selection messages from the embedded SeatMap iframe.
+ * 
+ * Responsibilities:
+ * - Listens for postMessage events from https://quicket.io
+ * - Parses and validates the incoming seat selection payload (onSeatSelected)
+ * - Updates the selectedSeats state with new assignments
+ * - Determines if all passengers are seated and sets boardingComplete flag
+ * - Automatically advances to the next unseated passenger (auto-focus behavior)
+ * 
+ * This hook connects the SeatMap UI with the RedApp passenger management logic,
+ * enabling interactive and sequential seat assignment.
+ */
 
 import { useEffect } from 'react';
 import { PassengerOption } from '../../../utils/parcePnrData';

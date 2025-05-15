@@ -1,4 +1,4 @@
-// file: SeatMapModalLayout.tsx
+// file: code/components/seatMap/layout/SeatMapModalLayout.tsx
 
 /**
  * SeatMapModalLayout

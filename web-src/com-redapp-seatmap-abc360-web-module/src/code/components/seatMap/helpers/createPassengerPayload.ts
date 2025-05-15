@@ -1,5 +1,20 @@
 // file: code/components/seatMap/helpers/createPassengerPayload.ts
 
+/**
+ * createPassengerPayload.ts
+ * 
+ * 🎫 Helper function for building the passenger data object used by the SeatMap library.
+ * 
+ * Features:
+ * - Derives passenger ID from input or index
+ * - Attaches seat assignment from selectedSeats[]
+ * - Sets readOnly flag based on currently active passenger
+ * - Computes initials and visual color for labeling
+ * 
+ * Used inside SeatMapComponentBase to transform PassengerOption into a format
+ * required by the seat map rendering library.
+ */
+
 import { PassengerOption } from '../../../utils/parcePnrData';
 import { SelectedSeat } from '../SeatMapComponentBase';
 import { getInitials } from '../helpers/getInitials';

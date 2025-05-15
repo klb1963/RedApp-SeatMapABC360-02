@@ -1,4 +1,18 @@
-// file: useSyncOnCabinClassChange.ts
+// file: code/components/seatMap/hooks/useSyncOnCabinClassChange.ts
+
+/**
+ * useSyncOnCabinClassChange.ts
+ * 
+ * 🎚️ React hook that synchronizes seat map content when the selected cabin class changes.
+ * 
+ * Responsibilities:
+ * - Regenerates flight data and passenger visuals for the new cabin class
+ * - Builds a SeatMapMessagePayload with updated data
+ * - Sends the payload to the embedded SeatMap iframe via postMessage
+ * 
+ * Triggered automatically when the `cabinClass` prop changes.
+ * Ensures that the seat map view reflects the correct cabin layout and availability.
+ */
 
 import { useEffect } from 'react';
 import { PassengerOption } from '../../../utils/parcePnrData';

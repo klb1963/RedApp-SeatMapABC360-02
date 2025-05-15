@@ -1,4 +1,18 @@
-// file: SeatMapComponentBase.tsx
+// file: /code/components/seatMap/SeatMapComponentBase.tsx
+
+/**
+ * SeatMapComponentBase.tsx
+ * 
+ * 🎯 Core Seat Map Wrapper Component – RedApp ABC360
+ * 
+ * This component wraps the external SeatMap rendering iframe (quicket.io) and manages:
+ * - Mapping passenger data to visual payload
+ * - Selecting passengers and tracking their assigned seats
+ * - Posting data into the iframe via postMessage
+ * - Handling deck/class/segment changes and seat selections
+ * 
+ * Acts as a central data bridge between Sabre PNR/availability data and the SeatMap visualization engine.
+ */
 
 import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
@@ -13,7 +27,7 @@ import { useOnIframeLoad } from './hooks/useOnIframeLoad';
 import { useSeatSelectionHandler } from './hooks/useSeatSelectionHandler';
 import { PassengerPanel } from './panels/PassengerPanel';
 
-// global variable 
+// Global type declaration for optional debug use
 declare global {
   interface Window {
     selectedSeats?: SelectedSeat[];
@@ -40,7 +54,7 @@ interface SeatMapComponentBaseProps {
   flightInfo?: React.ReactNode;
 }
 
-// 📌 Indexing passengers
+// 🧮 Ensure each passenger has unique id and value fields
 function ensurePassengerIds(passengers: PassengerOption[]): PassengerOption[] {
   return passengers.map((p, index) => ({
     ...p,
@@ -49,7 +63,7 @@ function ensurePassengerIds(passengers: PassengerOption[]): PassengerOption[] {
   }));
 }
 
-// === Component ===
+// === Main Component ===
 const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   config,
   flightSegments,
@@ -61,24 +75,24 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   onSeatChange,
   flightInfo
 }) => {
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-  // tracking the boardingComplete
-  const [boardingComplete, setBoardingComplete] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null); // reference to the iframe
+  const [boardingComplete, setBoardingComplete] = useState(false); // boarding status
 
-  // ✅ Provide correct and unique string IDs for passengers
+  // ✅ Normalize passenger IDs on initial load
   const [cleanPassengers] = useState(() => ensurePassengerIds(passengers));
 
+  // 🪑 State for selected seats
   const [selectedSeats, setSelectedSeats] = useState<SelectedSeat[]>([]);
 
-  // 🔁 Sync selectedSeats with global window
+  // 🔁 Sync selected seats to a global variable for debugging/testing
   useEffect(() => {
     window.selectedSeats = selectedSeats;
   }, [selectedSeats]);
 
-  // selectedPassengerId изначально пустой
+  // 🎯 Track which passenger is currently selected
   const [selectedPassengerId, setSelectedPassengerId] = useState<string>('');
 
-  // ✅ Set the first passenger as selected when the array appears
+  // ✅ Auto-select the first passenger on mount
   useEffect(() => {
     if (cleanPassengers.length > 0 && !selectedPassengerId) {
       const firstId = String(cleanPassengers[0].id);
@@ -87,15 +101,15 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     }
   }, [passengers, selectedPassengerId]);
 
-  const segment = flightSegments[initialSegmentIndex];
+  const segment = flightSegments[initialSegmentIndex]; // selected segment
 
+  // 🔁 Reset seat selection and post a full update to the iframe
   const handleResetSeat = () => {
     setSelectedSeats([]);
     setSelectedPassengerId(cleanPassengers.length > 0 ? cleanPassengers[0].id : '');
     onSeatChange?.([]);
     setBoardingComplete(false);
 
-    // 🔁 Updating the map - all seats reset
     const iframe = iframeRef.current;
     if (!iframe) return;
 
@@ -106,7 +120,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
       createPassengerPayload(p, i, selectedPassengerId, selectedSeats)
     );
 
-    const message: SeatMapMessagePayload  = {
+    const message: SeatMapMessagePayload = {
       type: 'seatMaps',
       config: JSON.stringify(config),
       flight: JSON.stringify(flight),
@@ -117,11 +131,10 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
 
     const targetOrigin = new URL(iframe.src).origin;
     iframe.contentWindow?.postMessage(message, targetOrigin);
-    console.log('🔁 PostMessage после Reset all');
-
+    console.log('🔁 PostMessage after Reset all');
   };
 
-  // ======== 🗺️ initial map loading ==================
+  // === 🗺️ Initial iframe load handler (fires onLoad) ===
   const handleIframeLoad = useOnIframeLoad({
     iframeRef,
     config,
@@ -135,8 +148,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     generateFlightData
   });   
 
-
-  // ============ 🔁 SyncOnCabinClassChange ===================
+  // === 🔁 Sync on cabin class change ===
   useSyncOnCabinClassChange({
     iframeRef,
     config,
@@ -149,7 +161,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     selectedSeats
   });
 
-  // =========== 🔁 SyncOnSegmentChange ========================
+  // === 🔁 Sync on segment change ===
   useSyncOnSegmentChange({
     config,
     segment,
@@ -163,7 +175,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     generateFlightData
   });
 
-  // ============= SeatSelectionHandler =====================
+  // === 🎯 Handle iframe message events (seat selection) ===
   useSeatSelectionHandler({
     cleanPassengers,
     selectedPassengerId,
@@ -173,7 +185,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     onSeatChange
   });
 
-  // ============== Passengers =====================
+  // === 👥 Passenger control panel ===
   const passengerPanel = (
     <PassengerPanel
       passengers={cleanPassengers}
@@ -185,12 +197,11 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     />
   );
 
-  // ============== show Seat Map =====================
+  // === 📤 Render layout with iframe and passenger info ===
   return (
     <SeatMapModalLayout
       flightInfo={flightInfo}
       passengerPanel={passengerPanel}
-
     >
       <iframe
         ref={iframeRef}
@@ -201,7 +212,6 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
       />
     </SeatMapModalLayout>
   );
-
 };
 
 export default SeatMapComponentBase;
