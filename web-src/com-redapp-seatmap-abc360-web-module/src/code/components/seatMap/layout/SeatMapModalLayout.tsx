@@ -11,6 +11,7 @@
  */
 
 import * as React from 'react';
+import { t } from '../../../Context';
 
 interface SeatMapModalLayoutProps {
   flightInfo: React.ReactNode;
@@ -33,7 +34,7 @@ const SeatMapModalLayout: React.FC<SeatMapModalLayoutProps> = ({
       padding: '1rem',
       gap: '1rem'
     }}>
-      {/* Левая колонка — информация о рейсе */}
+      {/* Left side — flight info */}
       <div style={{
         width: '25%',
         minWidth: '180px',
@@ -45,7 +46,7 @@ const SeatMapModalLayout: React.FC<SeatMapModalLayoutProps> = ({
         {flightInfo}
       </div>
 
-      {/* Центр — iframe с картой салона */}
+      {/* Center — iframe with seat map */}
       <div style={{
         flexGrow: 1,
         border: '1px solid #ccc',
@@ -54,7 +55,7 @@ const SeatMapModalLayout: React.FC<SeatMapModalLayoutProps> = ({
         {children}
       </div>
 
-      {/* Правая колонка — панель пассажиров и подтверждение */}
+      {/* Right side — passengers panel */}
       <div style={{
         width: '25%',
         minWidth: '220px',

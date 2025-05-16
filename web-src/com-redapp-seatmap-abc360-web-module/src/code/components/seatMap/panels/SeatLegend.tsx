@@ -16,15 +16,16 @@
  */
 
 import * as React from 'react';
+import { t } from '../../../Context'; // i18n
 
 const SeatLegend: React.FC = () => (
   <div style={{ marginBottom: '1rem' }}>
-    <strong>Legend:</strong>
+    <strong>{t('seatMap.legendTitle')}:</strong> {/* i18n */}
     <ul style={{ paddingLeft: '1rem', lineHeight: '1.8' }}>
-      <li>🟩 — available</li>
-      <li>🟧 — available for a fee</li>
-      <li>❌ — unavailable</li>
-      <li>☑️ — occupied</li>
+      <li>🟩 — {t('seatMap.legend.available')}</li> {/* i18n */}
+      <li>🟧 — {t('seatMap.legend.availableFee')}</li> {/* i18n */}
+      <li>⬜️ — {t('seatMap.legend.occupied')}</li> {/* i18n */}
+      <li>🛑 — {t('seatMap.legend.unavailable')}</li> {/* i18n */}
     </ul>
   </div>
 );

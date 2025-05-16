@@ -32,13 +32,12 @@ import { PricingView } from './components/views/SaetMapPricingView';
 import { SampleComponent } from './views/SampleComponent';
 
 import { CreatePNR } from './components/pnrServices/CreatePNR';
-
 import { loadPnrDetailsFromSabre } from './services/loadPnrDetailsFromSabre';
-
+import { openSeatMapPnr } from './components/seatMap/openSeatMapPnr';
 import { AgentProfileService } from 'sabre-ngv-app/app/services/impl/AgentProfileService';
 import { ShowAgentProfile } from './services/ShowAgentProfile';
 
-import { openSeatMapPnr } from './components/seatMap/openSeatMapPnr';
+import { t } from './Context'; // i18n
 
 export class Main extends Module {
     init(): void {
@@ -223,7 +222,7 @@ export class Main extends Module {
           component: React.createElement(
             'div',
             { style: { padding: '1rem', color: 'red' } },
-            'Failed to load PNR data.'
+            t('seatMap.loadPnrError')
           ),
           modalClassName: 'seatmap-modal-class',
         });
