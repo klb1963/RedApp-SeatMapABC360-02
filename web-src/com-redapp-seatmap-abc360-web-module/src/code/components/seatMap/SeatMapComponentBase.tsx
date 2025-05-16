@@ -203,15 +203,31 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
       flightInfo={flightInfo}
       passengerPanel={passengerPanel}
     >
-      <iframe
-        ref={iframeRef}
-        title="Seat Map"
-        src="https://quicket.io/react-proxy-app/"
-        onLoad={handleIframeLoad}
-        style={{ width: '100%', height: '100%', border: 'none' }}
-      />
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100%',
+          width: '100%',
+          overflow: 'auto',
+        }}
+      >
+        <iframe
+          ref={iframeRef}
+          title="Seat Map"
+          src="https://quicket.io/react-proxy-app/"
+          onLoad={handleIframeLoad}
+          style={{
+            width: '1400px', // фикс ширина
+            height: '100%',
+            border: 'none',
+          }}
+        />
+      </div>
     </SeatMapModalLayout>
   );
+
 };
 
 export default SeatMapComponentBase;

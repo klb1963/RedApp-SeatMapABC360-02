@@ -36,8 +36,8 @@ const SeatMapModalLayout: React.FC<SeatMapModalLayoutProps> = ({
     }}>
       {/* Left side — flight info */}
       <div style={{
-        width: '25%',
-        minWidth: '180px',
+        width: '32%',
+        minWidth: '250px',
         background: '#f8f8f8',
         padding: '1rem',
         borderRight: '1px solid #ddd',
@@ -47,18 +47,24 @@ const SeatMapModalLayout: React.FC<SeatMapModalLayoutProps> = ({
       </div>
 
       {/* Center — iframe with seat map */}
-      <div style={{
-        flexGrow: 1,
-        border: '1px solid #ccc',
-        overflow: 'hidden'
-      }}>
+      <div
+        style={{
+          flexGrow: 1,
+          display: 'flex',               // 💡 flex-контейнер
+          justifyContent: 'center',      // 👉 горизонтальное центрирование
+          alignItems: 'center',          // 👉 вертикальное центрирование
+          border: '1px solid #ccc',
+          overflow: 'hidden',
+          minHeight: '100%',             // 💡 растягиваем по высоте
+        }}
+      >
         {children}
       </div>
 
       {/* Right side — passengers panel */}
       <div style={{
-        width: '25%',
-        minWidth: '220px',
+        width: '32%',
+        minWidth: '250px',
         background: '#f8f8f8',
         padding: '1rem',
         borderLeft: '1px solid #ddd',
