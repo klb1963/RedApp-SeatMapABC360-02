@@ -37,6 +37,8 @@ import { openSeatMapPnr } from './components/seatMap/openSeatMapPnr';
 import { AgentProfileService } from 'sabre-ngv-app/app/services/impl/AgentProfileService';
 import { ShowAgentProfile } from './services/ShowAgentProfile';
 
+import { t } from './Context'; // i18n
+
 export class Main extends Module {
     init(): void {
         super.init();
@@ -220,7 +222,7 @@ export class Main extends Module {
           component: React.createElement(
             'div',
             { style: { padding: '1rem', color: 'red' } },
-            'Failed to load PNR data.'
+            t('seatMap.loadPnrError')
           ),
           modalClassName: 'seatmap-modal-class',
         });

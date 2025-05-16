@@ -28,5 +28,7 @@
     "seatMap.legend.occupied": "belegt",
     "seatMap.legend.unavailable": "nicht verfügbar",
     "seatMap.button.close": "Schließen",
-    "seatMap.button.save": "Speichern"
+    "seatMap.button.save": "Speichern",
+    "seatMap.noSegmentsInPNR": "❌ Keine aktive Buchung mit Flugsegmenten gefunden.",
+    "seatMap.loadPnrError": "❌ Laden der PNR-Daten fehlgeschlagen."
 }

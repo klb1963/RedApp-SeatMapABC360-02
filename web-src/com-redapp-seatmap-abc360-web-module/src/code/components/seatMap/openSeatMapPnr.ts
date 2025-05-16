@@ -17,6 +17,7 @@ import { handleSaveSeats } from './handleSaveSeats';
 import { actions } from './panels/actions';
 import SeatMapComponentPnr from './SeatMapComponentPnr';
 import { quicketConfig } from '../../utils/quicketConfig';
+import { t } from '../../Context';
 
 export async function openSeatMapPnr(store: any): Promise<void> {
   const modals = getService(PublicModalsService);
@@ -27,7 +28,7 @@ export async function openSeatMapPnr(store: any): Promise<void> {
     if (!pnrData || !pnrData.segments?.length) {
       modals.showReactModal({
         header: 'Seat Map ABC 360',
-        component: React.createElement('div', { style: { padding: '1rem' } }, 'No active PNR with flight segments.'),
+        component: React.createElement('div', { style: { padding: '1rem' } }, t('seatMap.noSegments')),
         modalClassName: 'seatmap-modal-class'
       });
       return;
@@ -70,10 +71,10 @@ export async function openSeatMapPnr(store: any): Promise<void> {
           return {
             nameNumber: pax?.nameNumber || '',
             seatLabel: seat.seatLabel,
-            segmentNumber: activeFlight?.value || '1' // ⚠️ значение ID сегмента
+            segmentNumber: activeFlight?.value || '1'
           };
         });
-        return handleSaveSeats(); // убрал аргумент
+        return handleSaveSeats();
       };
 
     modals.showReactModal({
@@ -96,7 +97,7 @@ export async function openSeatMapPnr(store: any): Promise<void> {
 
     modals.showReactModal({
       header: 'SeatMap Error',
-      component: React.createElement('div', { style: { padding: '1rem', color: 'red' } }, 'Failed to load PNR data.'),
+      component: React.createElement('div', { style: { padding: '1rem', color: 'red' } }, t('seatMap.loadPnrError')),
       modalClassName: 'seatmap-modal-class'
     });
   }

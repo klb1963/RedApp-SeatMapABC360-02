@@ -28,5 +28,7 @@
     "seatMap.legend.occupied": "occupied",
     "seatMap.legend.unavailable": "unavailable",
     "seatMap.button.close": "Close",
-    "seatMap.button.save": "Save"
+    "seatMap.button.save": "Save",
+    "seatMap.noSegmentsInPNR": "❌ No active PNR with flight segments.",
+    "seatMap.loadPnrError": "❌ Failed to load PNR data."
 }

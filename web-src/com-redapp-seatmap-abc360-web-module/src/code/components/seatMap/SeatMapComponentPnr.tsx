@@ -43,7 +43,7 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
   if (!flightSegments.length) {
     return (
       <div style={{ padding: '1rem', color: 'red' }}>
-        ❌ No flight segments available
+        {t('seatMap.noSegments')} {/* i18n */}
       </div>
     );
   }
