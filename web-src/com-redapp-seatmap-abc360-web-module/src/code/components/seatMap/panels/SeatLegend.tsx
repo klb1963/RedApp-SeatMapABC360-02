@@ -26,6 +26,9 @@ const SeatLegend: React.FC = () => (
       <li>🟧 — {t('seatMap.legend.availableFee')}</li> {/* i18n */}
       <li>⬜️ — {t('seatMap.legend.occupied')}</li> {/* i18n */}
       <li>🛑 — {t('seatMap.legend.unavailable')}</li> {/* i18n */}
+      <li>🚼 — {t('seatMap.legend.stroller')}</li> {/* i18n */}
+      <li>🚻 — {t('seatMap.legend.lavatory')}</li> {/* i18n */}
+      <li>🍴 — {t('seatMap.legend.galley')}</li> {/* i18n */}
     </ul>
   </div>
 );

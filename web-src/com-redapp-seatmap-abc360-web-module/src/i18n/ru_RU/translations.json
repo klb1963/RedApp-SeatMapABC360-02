@@ -30,5 +30,9 @@
     "seatMap.button.close": "Закрыть",
     "seatMap.button.save": "Сохранить",
     "seatMap.noSegmentsInPNR": "❌ Нет активного бронирования с сегментами рейса.",
-    "seatMap.loadPnrError": "❌ Не удалось загрузить данные PNR."
+    "seatMap.loadPnrError": "❌ Не удалось загрузить данные PNR.",
+    "seatMap.legend.stroller": "Место для коляски",
+    "seatMap.legend.lavatory": "Туалет",
+    "seatMap.legend.galley": "Кухня"
+
 }

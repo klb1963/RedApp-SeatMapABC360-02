@@ -30,5 +30,8 @@
     "seatMap.button.close": "Schließen",
     "seatMap.button.save": "Speichern",
     "seatMap.noSegmentsInPNR": "❌ Keine aktive Buchung mit Flugsegmenten gefunden.",
-    "seatMap.loadPnrError": "❌ Laden der PNR-Daten fehlgeschlagen."
+    "seatMap.loadPnrError": "❌ Laden der PNR-Daten fehlgeschlagen.",
+    "seatMap.legend.stroller": "Kinderwagenbereich",
+    "seatMap.legend.lavatory": "Toilette",
+    "seatMap.legend.galley": "Bordküche"
 }
