@@ -39,7 +39,7 @@ export const PassengerPanel: React.FC<Props> = ({
 }) => {
   return (
     <div>
-      <strong>{t('seatMap.passengers')}</strong> {/* i18n */}
+      {/* <strong>{t('seatMap.passengers')}</strong> */}
 
       {boardingComplete && (
         <div style={{
@@ -51,43 +51,52 @@ export const PassengerPanel: React.FC<Props> = ({
           fontWeight: 'bold',
           color: '#006633'
         }}>
-          {t('seatMap.boardingComplete')} {/* i18n */}
+          {t('seatMap.boardingComplete')}
         </div>
       )}
 
-      <div style={{ margin: '1rem 0' }}>
-        {passengers.map((p) => {
-          const passengerId = String(p.id);
-          const seat = selectedSeats.find(s => s.passengerId === passengerId);
-          return (
-            <div key={p.id} style={{ marginBottom: '1rem' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <input
-                  type="radio"
-                  name="activePassenger"
-                  value={p.id}
-                  checked={selectedPassengerId === passengerId}
-                  onChange={() => setSelectedPassengerId(passengerId)}
-                />
-                {p.label || `${p.givenName} ${p.surname}`}
-              </label>
-              <div>
-                {t('seatMap.seat')}: <strong>{seat?.seatLabel || t('seatMap.seatNotAssigned')}</strong> {/* i18n */}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      <table style={{ width: '100%', marginTop: '1rem', borderCollapse: 'collapse' }}>
+        <thead>
+          <tr>
+            <th style={{ textAlign: 'left', paddingBottom: '0.5rem' }}>{t('seatMap.passengers')}</th>
+            <th style={{ textAlign: 'left', paddingBottom: '0.5rem' }}>{t('seatMap.seat')}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {passengers.map((p) => {
+            const passengerId = String(p.id);
+            const seat = selectedSeats.find(s => s.passengerId === passengerId);
 
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div>
-          {t('seatMap.seatsAssigned')}: {/* i18n */}
-          {' '}
-          {passengers.filter(p => selectedSeats.some(s => s.passengerId === String(p.id))).length}
-          {' '}{t('seatMap.of')} {passengers.length} {/* i18n */}
+            return (
+              <tr key={p.id} style={{ borderBottom: '1px solid #ccc' }}>
+                <td style={{ padding: '0.5rem 0' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <input
+                      type="radio"
+                      name="activePassenger"
+                      value={p.id}
+                      checked={selectedPassengerId === passengerId}
+                      onChange={() => setSelectedPassengerId(passengerId)}
+                    />
+                    {p.label || `${p.givenName} ${p.surname}`}
+                  </label>
+                </td>
+                <td style={{ padding: '0.5rem 0' }}>
+                  <strong>{seat?.seatLabel || t('seatMap.seatNotAssigned')}</strong>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+
+      <div style={{ marginTop: '1.5rem' }}>
+        <div style={{ marginBottom: '1rem' }}>
+          ✅ {t('seatMap.seatsAssigned')}: {passengers.filter(p => selectedSeats.some(s => s.passengerId === String(p.id))).length} {t('seatMap.of')} {passengers.length}
         </div>
-        <button onClick={handleResetSeat}>{t('seatMap.resetAll')}</button> {/* i18n */}
+        <button onClick={handleResetSeat} style={{ marginTop: '10px' }}>🔁 {t('seatMap.resetAll')}</button>
       </div>
     </div>
   );
+
 };

@@ -116,8 +116,9 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     const flight = generateFlightData(segment, initialSegmentIndex, cabinClass);
     const availabilityData = availability || [];
 
+    // ⛔️ reset seats
     const passengerList = cleanPassengers.map((p, i) =>
-      createPassengerPayload(p, i, selectedPassengerId, selectedSeats)
+      createPassengerPayload(p, i, selectedPassengerId, []) 
     );
 
     const message: SeatMapMessagePayload = {

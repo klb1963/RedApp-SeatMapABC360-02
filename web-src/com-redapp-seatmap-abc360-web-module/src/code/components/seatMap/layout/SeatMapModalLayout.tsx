@@ -11,7 +11,6 @@
  */
 
 import * as React from 'react';
-import { t } from '../../../Context';
 
 interface SeatMapModalLayoutProps {
   flightInfo: React.ReactNode;
