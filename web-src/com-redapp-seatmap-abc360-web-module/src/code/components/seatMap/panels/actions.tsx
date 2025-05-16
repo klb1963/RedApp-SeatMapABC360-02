@@ -13,6 +13,8 @@
 
 import { Button } from 'react-bootstrap';
 import * as React from 'react';
+import { t } from '../../../Context'; 
+
 
 // Функция возвращает массив JSX-кнопок для модального окна
 export const actions = (
@@ -20,9 +22,9 @@ export const actions = (
   onClickCancel: () => void
 ): JSX.Element[] => [
   <Button key="cancel" className="btn-secondary" onClick={onClickCancel}>
-    Close
+    {t('seatMap.button.close')}
   </Button>,
   <Button key="submit" className="btn-success" onClick={onButtonSubmit}>
-    Save
+    {t('seatMap.button.save')}
   </Button>
 ];

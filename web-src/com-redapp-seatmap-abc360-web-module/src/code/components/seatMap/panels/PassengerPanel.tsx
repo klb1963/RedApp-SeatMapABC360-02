@@ -39,7 +39,7 @@ export const PassengerPanel: React.FC<Props> = ({
 }) => {
   return (
     <div>
-      <strong>Passengers</strong>
+      <strong>{t('seatMap.passengers')}</strong> {/* i18n */}
 
       {boardingComplete && (
         <div style={{
@@ -51,7 +51,7 @@ export const PassengerPanel: React.FC<Props> = ({
           fontWeight: 'bold',
           color: '#006633'
         }}>
-          {t('seatMap.boardingComplete')}
+          {t('seatMap.boardingComplete')} {/* i18n */}
         </div>
       )}
 
@@ -72,7 +72,7 @@ export const PassengerPanel: React.FC<Props> = ({
                 {p.label || `${p.givenName} ${p.surname}`}
               </label>
               <div>
-                Seat: <strong>{seat?.seatLabel || '—'}</strong>
+                {t('seatMap.seat')}: <strong>{seat?.seatLabel || t('seatMap.seatNotAssigned')}</strong> {/* i18n */}
               </div>
             </div>
           );
@@ -81,11 +81,12 @@ export const PassengerPanel: React.FC<Props> = ({
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          ✅ Seats assigned:{' '}
+          {t('seatMap.seatsAssigned')}: {/* i18n */}
+          {' '}
           {passengers.filter(p => selectedSeats.some(s => s.passengerId === String(p.id))).length}
-          {' '}of {passengers.length}
+          {' '}{t('seatMap.of')} {passengers.length} {/* i18n */}
         </div>
-        <button onClick={handleResetSeat}>🔁 Reset all</button>
+        <button onClick={handleResetSeat}>{t('seatMap.resetAll')}</button> {/* i18n */}
       </div>
     </div>
   );
