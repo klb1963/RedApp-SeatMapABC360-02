@@ -17,6 +17,7 @@ import { ISoapApiService } from 'sabre-ngv-communication/interfaces/ISoapApiServ
 import { PassengerOption } from '../utils/parcePnrData';
 import { parseSeatMapResponse } from '../utils/parseSeatMapResponse';
 import { AgentProfileService } from 'sabre-ngv-app/app/services/impl/AgentProfileService';
+import { sendXmlToUploader } from './sendXmlToUploader';
 
 // ✈️ Interface for the flight segment passed into the seat map request
 interface FlightSegment {
@@ -103,6 +104,13 @@ export const loadSeatMapFromSabre = async (
 
     // 📥 Get raw XML response and parse it for availability info
     const rawXml = response.value;
+
+    try {
+      await sendXmlToUploader(rawXml);
+    } catch (err) {
+      console.warn('⚠️ Failed to send EnhancedSeatMap XML to external uploader:', err);
+    }
+
     const xmlDoc = new DOMParser().parseFromString(rawXml, 'application/xml');
     const { availability } = parseSeatMapResponse(xmlDoc);
 

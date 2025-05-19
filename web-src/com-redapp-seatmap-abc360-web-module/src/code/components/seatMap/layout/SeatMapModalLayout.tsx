@@ -11,15 +11,18 @@
  */
 
 import * as React from 'react';
+import { GalleryPanel } from '../panels/GalleryPanel';
 
 interface SeatMapModalLayoutProps {
   flightInfo: React.ReactNode;
+  galleryPanel?: React.ReactNode; 
   passengerPanel: React.ReactNode;
   children: React.ReactNode; // iframe
 }
 
 const SeatMapModalLayout: React.FC<SeatMapModalLayoutProps> = ({
   flightInfo,
+  galleryPanel,
   passengerPanel,
   children
 }) => {
@@ -35,7 +38,7 @@ const SeatMapModalLayout: React.FC<SeatMapModalLayoutProps> = ({
     }}>
       {/* Left side — flight info */}
       <div style={{
-        width: '32%',
+        width: '40%',
         minWidth: '250px',
         background: '#f8f8f8',
         padding: '1rem',
@@ -43,6 +46,11 @@ const SeatMapModalLayout: React.FC<SeatMapModalLayoutProps> = ({
         overflowY: 'auto'
       }}>
         {flightInfo}
+        {galleryPanel && (
+          <div style={{ marginTop: '2rem' }}>
+            {galleryPanel}
+          </div>
+        )}
       </div>
 
       {/* Center — iframe with seat map */}
@@ -62,7 +70,7 @@ const SeatMapModalLayout: React.FC<SeatMapModalLayoutProps> = ({
 
       {/* Right side — passengers panel */}
       <div style={{
-        width: '32%',
+        width: '30%',
         minWidth: '250px',
         background: '#f8f8f8',
         padding: '1rem',
