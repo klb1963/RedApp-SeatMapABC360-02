@@ -21,6 +21,7 @@ import { generateFlightData } from '../../utils/generateFlightData';
 import SeatLegend from './panels/SeatLegend';
 import { PassengerOption } from '../../utils/parcePnrData';
 import { t } from '../../Context'; // ✅ i18n translate
+import { GalleryPanel } from './panels/GalleryPanel';
 
 interface SeatMapComponentPnrProps {
   config: any;
@@ -55,6 +56,11 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
   );
 
   const segment = flightSegments[segmentIndex];
+
+    // 🖼️ Aircraft gallery panel
+  // const galleryPanel = (
+  //   <GalleryPanel />
+  // );
 
   const flightInfo = (
     <div>
@@ -159,6 +165,7 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
         onSeatChange={(updatedSeats) => setSelectedSeats(updatedSeats)}
         selectedSeats={selectedSeats}
         flightInfo={flightInfo}
+        // galleryPanel={<GalleryPanel/>}
       />
     </div>
   );

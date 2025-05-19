@@ -27,6 +27,8 @@ import { useOnIframeLoad } from './hooks/useOnIframeLoad';
 import { useSeatSelectionHandler } from './hooks/useSeatSelectionHandler';
 import { PassengerPanel } from './panels/PassengerPanel';
 
+import { GalleryPanel } from './panels/GalleryPanel';
+
 // Global type declaration for optional debug use
 declare global {
   interface Window {
@@ -52,6 +54,7 @@ interface SeatMapComponentBaseProps {
   passengerPanel?: React.ReactNode;
   selectedSeats?: SelectedSeat[];
   flightInfo?: React.ReactNode;
+  galleryPanel?: React.ReactNode;
 }
 
 // 🧮 Ensure each passenger has unique id and value fields
@@ -73,7 +76,8 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   passengers,
   generateFlightData,
   onSeatChange,
-  flightInfo
+  flightInfo,
+  galleryPanel
 }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null); // reference to the iframe
   const [boardingComplete, setBoardingComplete] = useState(false); // boarding status
@@ -202,6 +206,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   return (
     <SeatMapModalLayout
       flightInfo={flightInfo}
+      galleryPanel={galleryPanel}
       passengerPanel={passengerPanel}
     >
       <div
