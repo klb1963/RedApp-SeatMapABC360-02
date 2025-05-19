@@ -56,12 +56,22 @@ export const PassengerPanel: React.FC<Props> = ({
       )}
 
       <table style={{ width: '100%', marginTop: '1rem', borderCollapse: 'collapse' }}>
+
         <thead>
           <tr>
-            <th style={{ textAlign: 'left', paddingBottom: '0.5rem' }}>{t('seatMap.passengers')}</th>
-            <th style={{ textAlign: 'left', paddingBottom: '0.5rem' }}>{t('seatMap.seat')}</th>
+            <th style={{ textAlign: 'left', paddingBottom: '0.5rem' }}>
+              {t('seatMap.passengers')} ({passengers.length})
+            </th>
+            <th style={{ textAlign: 'left', paddingBottom: '0.5rem' }}>
+              {t('seatMap.assignedSeats')}: {
+                passengers.filter(p =>
+                  selectedSeats.some(s => s.passengerId === String(p.id))
+                ).length
+              }
+            </th>
           </tr>
         </thead>
+
         <tbody>
           {passengers.map((p) => {
             const passengerId = String(p.id);
@@ -91,10 +101,9 @@ export const PassengerPanel: React.FC<Props> = ({
       </table>
 
       <div style={{ marginTop: '1.5rem' }}>
-        <div style={{ marginBottom: '1rem' }}>
-          ✅ {t('seatMap.seatsAssigned')}: {passengers.filter(p => selectedSeats.some(s => s.passengerId === String(p.id))).length} {t('seatMap.of')} {passengers.length}
-        </div>
-        <button onClick={handleResetSeat} style={{ marginTop: '10px' }}>🔁 {t('seatMap.resetAll')}</button>
+        <div style={{ textAlign: 'right' }}>
+          <button onClick={handleResetSeat} style={{ marginTop: '10px'}}>🔁 {t('seatMap.resetAll')}</button>
+        </div>  
       </div>
     </div>
   );

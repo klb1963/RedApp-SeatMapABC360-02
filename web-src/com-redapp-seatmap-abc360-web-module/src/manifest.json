@@ -25,5 +25,8 @@
       "service": "CustomWorkflowService",
       "cssClasses": "redapp-web-customworkflow-manifestjson"
     }
+  ],
+  "assets": [
+    "icons/seat-standard.svg"
   ]
 }
