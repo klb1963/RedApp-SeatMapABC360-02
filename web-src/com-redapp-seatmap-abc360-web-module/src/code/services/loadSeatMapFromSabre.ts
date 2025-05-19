@@ -105,6 +105,7 @@ export const loadSeatMapFromSabre = async (
     // 📥 Get raw XML response and parse it for availability info
     const rawXml = response.value;
 
+    // 📤 Send raw XML to external uploader for logging (e.g., to S3 storage via Node.js server)
     try {
       await sendXmlToUploader(rawXml);
     } catch (err) {
