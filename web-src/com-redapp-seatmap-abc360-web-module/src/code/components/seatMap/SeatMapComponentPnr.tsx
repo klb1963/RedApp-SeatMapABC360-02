@@ -60,13 +60,13 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
     <div>
       <div><strong>{t('seatMap.flightInfo')}</strong></div> {/* 🏷️ "Flight info" */}
       <div>{segment.origin} → {segment.destination}</div>
-      <div>📅 {t('seatMap.date')}: {segment.departureDateTime?.split?.('T')[0] || t('seatMap.dateUnknown')}</div>
-      <div>✈️ {t('seatMap.equipment')}: {
+      <div>{t('seatMap.date')}: {segment.departureDateTime?.split?.('T')[0] || t('seatMap.dateUnknown')}</div>
+      <div>{t('seatMap.equipment')}: {
         typeof segment.equipment === 'object'
           ? segment.equipment?.EncodeDecodeElement?.SimplyDecoded
           : segment.equipment || t('seatMap.unknown')
       }</div>
-      <div>💺 {t('seatMap.class')}: {cabinClass}</div>
+      <div>{t('seatMap.class')}: {cabinClass}</div>
       <hr />
       <SeatLegend/>
     </div>
@@ -125,7 +125,7 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
         </div>
 
         <div style={{ fontSize: '1.5rem', color: '#555' }}>
-        ✈️ <strong>{t('seatMap.aircraft')}:</strong> {equipment} {/* ✅ "Aircraft" */}
+          <strong>{t('seatMap.aircraft')}:</strong> {equipment} {/* ✅ "Aircraft" */}
         </div>
       </div>
 

@@ -26,7 +26,6 @@ import { useSyncOnCabinClassChange } from './hooks/useSyncOnCabinClassChange';
 import { useOnIframeLoad } from './hooks/useOnIframeLoad';
 import { useSeatSelectionHandler } from './hooks/useSeatSelectionHandler';
 import { PassengerPanel } from './panels/PassengerPanel';
-
 import { GalleryPanel } from './panels/GalleryPanel';
 
 // Global type declaration for optional debug use
