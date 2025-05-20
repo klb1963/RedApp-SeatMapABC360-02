@@ -16,6 +16,7 @@ import * as React from 'react';
 import { useState } from 'react';
 import SeatMapComponentBase from './SeatMapComponentBase';
 import { generateFlightData } from '../../utils/generateFlightData';
+import { FlightInfoPanel } from './panels/FlidhtInfoPanel';
 import SeatLegend from './panels/SeatLegend';
 
 interface SeatMapComponentShoppingProps {
@@ -24,34 +25,55 @@ interface SeatMapComponentShoppingProps {
 }
 
 const SeatMapComponentShopping: React.FC<SeatMapComponentShoppingProps> = ({ config, data }) => {
-  // 📦 Safely extract the list of flight segments
   const flightSegments = Array.isArray(data?.flightSegments) ? data.flightSegments : [];
 
-  // 🎚️ Manage selected cabin class and flight segment
+  // console.log('[🛍️ SHOPPING] Raw flightSegments:', data?.flightSegments);
+
   const [cabinClass, setCabinClass] = useState<'Y' | 'S' | 'C' | 'F' | 'A'>('Y');
   const [segmentIndex, setSegmentIndex] = useState(0);
 
-  // 📌 Currently selected segment
-  const currentSegment = flightSegments[segmentIndex] || {};
+  // Uppak data
+  const currentSegmentRaw = flightSegments[segmentIndex] || {};
 
-  // ✈️ Normalize equipment name for readability
+  // 📌 Normalized data 
+  const airlineName =
+  currentSegmentRaw.marketingCarrier ||
+  currentSegmentRaw.marketingAirline?.EncodeDecodeElement?.Code ||
+  currentSegmentRaw.marketingAirline ||
+  'n/a';
+  const flightNumber = currentSegmentRaw.flightNumber || currentSegmentRaw.FlightNumber || '—';
+  const fromCode = currentSegmentRaw.origin || currentSegmentRaw.OriginLocation?.EncodeDecodeElement?.Code || '—';
+  const toCode = currentSegmentRaw.destination || currentSegmentRaw.DestinationLocation?.EncodeDecodeElement?.Code || '—';
+  const fromCity = ''; // городов нет в Shopping
+  const toCity = '';
+  const date = currentSegmentRaw.departureDateTime?.split?.('T')[0] || currentSegmentRaw.DepartureDateTime?.split?.('T')[0] || 'not specified';
+  const duration = currentSegmentRaw.duration || 'n/a';
   const equipment =
-    typeof currentSegment.equipment === 'object'
-      ? currentSegment.equipment?.EncodeDecodeElement?.SimplyDecoded
-      : currentSegment.equipment || 'Unknown';
+    typeof currentSegmentRaw.equipment === 'object'
+      ? currentSegmentRaw.equipment?.EncodeDecodeElement?.SimplyDecoded
+      : currentSegmentRaw.Equipment?.EncodeDecodeElement?.SimplyDecoded || currentSegmentRaw.equipment || 'n/a';
+
+  // 🧾 Segment info
+  const flightInfo = (
+    <>
+      <FlightInfoPanel
+        airlineName={airlineName}
+        flightNumber={flightNumber}
+        fromCode={fromCode}
+        fromCity={fromCity}
+        toCode={toCode}
+        toCity={toCity}
+        date={date}
+        duration={duration}
+        equipment={equipment}
+      />
+      <SeatLegend />
+    </>
+  );
 
   return (
     <div style={{ padding: '1rem' }}>
-      {/* 🔁 Segment selector and aircraft type display */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '1rem',
-          marginBottom: '1rem',
-        }}
-      >
+      <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1rem' }}>
         <div>
           <label style={{ marginRight: '0.5rem' }}>Segment:</label>
           <select
@@ -66,13 +88,11 @@ const SeatMapComponentShopping: React.FC<SeatMapComponentShoppingProps> = ({ con
           </select>
         </div>
 
-        {/* ✈️ Aircraft information */}
         <div style={{ fontSize: '1.5rem', color: '#555' }}>
-          ✈️ <strong>Aircraft:</strong> {equipment}
+          <strong>Aircraft:</strong> {equipment}
         </div>
       </div>
 
-      {/* 👔 Cabin class selector */}
       <div style={{ marginBottom: '1rem' }}>
         <label style={{ marginRight: '0.5rem' }}>Cabin class:</label>
         <select
@@ -87,7 +107,6 @@ const SeatMapComponentShopping: React.FC<SeatMapComponentShoppingProps> = ({ con
         </select>
       </div>
 
-      {/* 🧩 Seat map rendering */}
       <SeatMapComponentBase
         config={config}
         flightSegments={flightSegments}
@@ -103,21 +122,10 @@ const SeatMapComponentShopping: React.FC<SeatMapComponentShoppingProps> = ({ con
             index
           )
         }
-        availability={[]}     // 👥 No seat availability data in the Shopping step
-        passengers={[]}       // 👤 No passengers yet (PNR not created)
+        availability={[]}
+        passengers={[]}
         showSegmentSelector={false}
-        flightInfo={
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div>
-              <strong>Flight info:</strong>
-              <div>{currentSegment.origin} → {currentSegment.destination}</div>
-              <div>Date: {currentSegment.departureDateTime || 'not specified'}</div>
-              <div>Equipment: {currentSegment.equipment?.EncodeDecodeElement?.SimplyDecoded || 'Unknown'}</div>
-              <div>Class: {cabinClass}</div>
-            </div>
-            <SeatLegend />
-          </div>
-        }
+        flightInfo={flightInfo}
       />
     </div>
   );
