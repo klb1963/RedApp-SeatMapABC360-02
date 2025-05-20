@@ -106,11 +106,11 @@ export const loadSeatMapFromSabre = async (
     const rawXml = response.value;
 
     // 📤 Send raw XML to external uploader for logging (e.g., to S3 storage via Node.js server)
-    try {
-      await sendXmlToUploader(rawXml);
-    } catch (err) {
-      console.warn('⚠️ Failed to send EnhancedSeatMap XML to external uploader:', err);
-    }
+    // try {
+    //   await sendXmlToUploader(rawXml);
+    // } catch (err) {
+    //   console.warn('⚠️ Failed to send EnhancedSeatMap XML to external uploader:', err);
+    // }
 
     const xmlDoc = new DOMParser().parseFromString(rawXml, 'application/xml');
     const { availability } = parseSeatMapResponse(xmlDoc);
