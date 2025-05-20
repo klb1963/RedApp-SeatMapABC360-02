@@ -11,7 +11,6 @@
  */
 
 import * as React from 'react';
-import { GalleryPanel } from '../panels/GalleryPanel';
 
 interface SeatMapModalLayoutProps {
   flightInfo: React.ReactNode;
@@ -46,13 +45,8 @@ const SeatMapModalLayout: React.FC<SeatMapModalLayoutProps> = ({
         overflowY: 'auto'
       }}>
         {flightInfo}
-        {galleryPanel && (
-          <div style={{ marginTop: '2rem' }}>
-            {galleryPanel}
-          </div>
-        )}
+        {galleryPanel}
       </div>
-
       {/* Center — iframe with seat map */}
       <div
         style={{

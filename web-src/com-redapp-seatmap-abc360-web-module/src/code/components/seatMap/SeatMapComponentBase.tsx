@@ -206,8 +206,8 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   return (
     <SeatMapModalLayout
       flightInfo={flightInfo}
-      galleryPanel={galleryPanel}
       passengerPanel={passengerPanel}
+      galleryPanel={<GalleryPanel />} // 👈 подключаем сюда
     >
       <div
         style={{
