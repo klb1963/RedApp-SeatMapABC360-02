@@ -41,7 +41,7 @@ export const PassengerPanel: React.FC<Props> = ({
     <div>
       {/* <strong>{t('seatMap.passengers')}</strong> */}
 
-      {boardingComplete && (
+      {boardingComplete && false && (
         <div style={{
           backgroundColor: '#e6ffe6',
           padding: '0.75rem',
@@ -60,9 +60,9 @@ export const PassengerPanel: React.FC<Props> = ({
         <thead>
           <tr>
             <th style={{ textAlign: 'left', paddingBottom: '0.5rem' }}>
-              {t('seatMap.passengers')} ({passengers.length})
+              {t('seatMap.passengers')}: {passengers.length}
             </th>
-            <th style={{ textAlign: 'left', paddingBottom: '0.5rem' }}>
+            <th style={{ textAlign: 'right', paddingBottom: '0.5rem' }}>
               {t('seatMap.assignedSeats')}: {
                 passengers.filter(p =>
                   selectedSeats.some(s => s.passengerId === String(p.id))
@@ -91,7 +91,7 @@ export const PassengerPanel: React.FC<Props> = ({
                     {p.label || `${p.givenName} ${p.surname}`}
                   </label>
                 </td>
-                <td style={{ padding: '0.5rem 0' }}>
+                <td style={{ padding: '0.5rem 0', textAlign: 'right' }}>
                   <strong>{seat?.seatLabel || t('seatMap.seatNotAssigned')}</strong>
                 </td>
               </tr>

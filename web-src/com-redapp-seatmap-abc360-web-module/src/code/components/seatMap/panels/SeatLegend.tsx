@@ -104,7 +104,9 @@ const SeatLegend: React.FC = () => {
 
   return (
     <div style={{ marginBottom: '1rem' }}>
-      <strong>{t('seatMap.legendTitle')}:</strong>
+      <div style={{ paddingLeft: '1rem', marginTop: '1rem' }}>
+        <strong>{t('seatMap.legendTitle')}:</strong>
+      </div>
       <div style={{
         display: 'grid',
         gridTemplateColumns: '1fr 1fr',
