@@ -13,7 +13,7 @@
  */
 
 import * as React from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import SeatMapComponentBase from './SeatMapComponentBase';
 import { generateFlightData } from '../../utils/generateFlightData';
 import { FlightInfoPanel } from './panels/FlidhtInfoPanel';
@@ -32,7 +32,7 @@ const SeatMapComponentShopping: React.FC<SeatMapComponentShoppingProps> = ({ con
   const [cabinClass, setCabinClass] = useState<'Y' | 'S' | 'C' | 'F' | 'A'>('Y');
   const [segmentIndex, setSegmentIndex] = useState(0);
 
-  // Uppak data
+  // Unpak data
   const currentSegmentRaw = flightSegments[segmentIndex] || {};
 
   // 📌 Normalized data 
@@ -70,6 +70,24 @@ const SeatMapComponentShopping: React.FC<SeatMapComponentShoppingProps> = ({ con
       <SeatLegend />
     </>
   );
+
+  // 💾 Save enriched segments to sessionStorage for use in Pricing
+  useEffect(() => {
+    const enriched = flightSegments.map((seg: any) => ({
+      ...seg,
+      marketingCarrier: seg.marketingAirline || seg.marketingCarrier || 'n/a',
+      departureDateTime: seg.departureDate || seg.departureDateTime || '',
+      equipment:
+        typeof seg.equipment === 'object'
+          ? seg.equipment?.EncodeDecodeElement?.SimplyDecoded
+          : seg.equipment || '',
+      origin: seg.origin || seg.OriginLocation?.EncodeDecodeElement?.Code || 'n/a',
+      destination: seg.destination || seg.DestinationLocation?.EncodeDecodeElement?.Code || 'n/a',
+    }));
+
+    sessionStorage.setItem('shoppingSegments', JSON.stringify(enriched));
+    console.log('[🛍️ Shopping] Saved shoppingSegments to sessionStorage:', enriched);
+  }, [flightSegments]);
 
   return (
     <div style={{ padding: '1rem' }}>

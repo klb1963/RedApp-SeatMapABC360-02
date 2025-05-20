@@ -41,7 +41,7 @@ export const FlightInfoPanel: React.FC<FlightInfoPanelProps> = ({
       </div>
       <div>Date: {date}</div>
       <div>Duration: {duration || '—'}</div>
-      <div>Equipment type: {equipment}</div>
+      <div>Equipment: {equipment}</div>
     </div>
   );
 };

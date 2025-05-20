@@ -17,10 +17,11 @@
  */
 
 import * as React from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import SeatMapComponentBase from './SeatMapComponentBase';
 import { generateFlightData } from '../../utils/generateFlightData';
 import SeatLegend from './panels/SeatLegend';
+import { FlightInfoPanel } from './panels/FlidhtInfoPanel';
 
 interface SeatMapComponentPricingProps {
   config: any;
@@ -31,63 +32,73 @@ interface SeatMapComponentPricingProps {
 const SeatMapComponentPricing: React.FC<SeatMapComponentPricingProps> = ({
   config,
   flightSegments,
-  selectedSegmentIndex
+  selectedSegmentIndex,
 }) => {
-  // 🔁 Cabin class selection (defaults to Economy)
+  const shoppingSegments = JSON.parse(sessionStorage.getItem('shoppingSegments') || '[]');
+
+  // 🔁 Segment index (default — from props)
+  const [segmentIndex, setSegmentIndex] = useState<number>(selectedSegmentIndex);
   const [cabinClass, setCabinClass] = useState<'Y' | 'S' | 'C' | 'F' | 'A'>('Y');
 
-  // 📦 Extract selected segment
-  const segment = flightSegments[selectedSegmentIndex];
+  const segment = shoppingSegments[segmentIndex] || {};
 
-  // ✈️ Normalize equipment name
   const equipment =
     typeof segment?.equipment === 'object'
       ? segment.equipment?.EncodeDecodeElement?.SimplyDecoded
-      : segment?.equipment || 'неизвестно';
+      : segment?.equipment || 'Not Available';
 
-  // 📅 Format departure date
-  const departureDate = segment?.departureDate?.toISOString().split('T')[0] || 'not specified';
+  const airlineName = segment?.marketingAirline || 'n/a';
+  const flightNumber = segment?.flightNumber || '—';
+  const fromCode = segment?.origin || '—';
+  const toCode = segment?.destination || '—';
+  const departureDate =
+    segment?.departureDateTime?.split?.('T')[0] || segment?.departureDate || 'not specified';
+  const duration = segment?.ElapsedTime
+    ? `${Math.floor(segment.ElapsedTime / 60)}:${String(segment.ElapsedTime % 60).padStart(2, '0')}`
+    : 'n/a';
 
-  // 🧩 Compose header info block (above map)
-  const flightInfo = segment && (
-    <div>
-      <strong>Flight info:</strong>
-      <div>{segment.origin} → {segment.destination}</div>
-      <div>Date: {departureDate}</div>
-      <div>Equipment: {equipment}</div>
-      <div>Class: {cabinClass}</div>
-      <div style={{ marginTop: '1rem' }}>
-        <SeatLegend />
-      </div>
-    </div>
+  const flightInfo = (
+    <>
+      <FlightInfoPanel
+        airlineName={airlineName}
+        flightNumber={flightNumber}
+        fromCode={fromCode}
+        fromCity=""
+        toCode={toCode}
+        toCity=""
+        date={departureDate}
+        duration={duration}
+        equipment={equipment}
+      />
+      <SeatLegend />
+    </>
   );
 
   return (
     <div style={{ padding: '1rem' }}>
-      {/* 🔝 Segment info header */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '1rem',
-          marginBottom: '1rem',
-          flexWrap: 'wrap'
-        }}
-      >
+      {/* 🔝 Segment info */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
         <div>
-          <label style={{ marginRight: '0.5rem' }}>Сегмент:</label>
-          <span>
-            {segment?.origin} → {segment?.destination}, рейс {segment?.flightNumber}
-          </span>
+          <label style={{ marginRight: '0.5rem' }}>Segment:</label>
+          <select
+            value={segmentIndex}
+            onChange={(e) => setSegmentIndex(Number(e.target.value))}
+          >
+            {shoppingSegments.map((seg: any, idx: number) => (
+              <option key={idx} value={idx}>
+                {seg.origin} → {seg.destination}, Flight {seg.flightNumber}
+              </option>
+            ))}
+          </select>
         </div>
         <div style={{ fontSize: '1.5rem', color: '#555' }}>
-          ✈️ <strong>Equipment:</strong> {equipment}
+          <strong>Equipment:</strong> {equipment}
         </div>
       </div>
 
-      {/* 👔 Cabin class selector */}
+      {/* 🎫 Cabin class */}
       <div style={{ marginBottom: '1rem' }}>
-        <label style={{ marginRight: '0.5rem' }}>Класс обслуживания:</label>
+        <label style={{ marginRight: '0.5rem' }}>Cabin class:</label>
         <select
           value={cabinClass}
           onChange={(e) => setCabinClass(e.target.value as 'Y' | 'S' | 'C' | 'F' | 'A')}
@@ -100,22 +111,19 @@ const SeatMapComponentPricing: React.FC<SeatMapComponentPricingProps> = ({
         </select>
       </div>
 
-      {/* 📌 Render seat map with selected cabin class */}
+      {/* 🗺️ Seat Map */}
       <SeatMapComponentBase
         config={config}
-        flightSegments={flightSegments}
-        initialSegmentIndex={selectedSegmentIndex}
+        flightSegments={shoppingSegments}
+        initialSegmentIndex={segmentIndex}
         cabinClass={cabinClass}
-        generateFlightData={(segment, index, cabin) =>
-          generateFlightData(
-            { ...segment, cabinClass: cabin, equipment: segment.equipment },
-            index
-          )
+        generateFlightData={(seg, index, cabin) =>
+          generateFlightData({ ...seg, cabinClass: cabin, equipment: seg.equipment }, index)
         }
-        availability={[]} // no dynamic seat data
-        passengers={[]}   // no passengers in Pricing mode
+        availability={[]}
+        passengers={[]}
         showSegmentSelector={false}
-        flightInfo={flightInfo} // header info + legend
+        flightInfo={flightInfo}
       />
     </div>
   );
