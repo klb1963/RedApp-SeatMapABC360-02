@@ -19,7 +19,7 @@
 import * as React from 'react';
 import { t } from '../../../Context';
 
-const SeatLegend: React.FC = () => {
+export const SeatLegend: React.FC = () => {
   const firstColumnItems = [
     {
       color: '#325aaa',

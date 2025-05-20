@@ -20,7 +20,8 @@ import SeatMapComponentBase from './SeatMapComponentBase';
 import { generateFlightData } from '../../utils/generateFlightData';
 import SeatLegend from './panels/SeatLegend';
 import { PassengerOption } from '../../utils/parcePnrData';
-import { t } from '../../Context'; // ✅ i18n translate
+import { FlightInfoPanel } from './panels/FlidhtInfoPanel';
+import { t } from '../../Context';
 
 interface SeatMapComponentPnrProps {
   config: any;
@@ -31,7 +32,6 @@ interface SeatMapComponentPnrProps {
   showSegmentSelector?: boolean;
 }
 
-// Displays seat map component in PNR context
 const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
   config,
   flightSegments = [],
@@ -43,7 +43,7 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
   if (!flightSegments.length) {
     return (
       <div style={{ padding: '1rem', color: 'red' }}>
-        {t('seatMap.noSegments')} {/* i18n */}
+        {t('seatMap.noSegments')}
       </div>
     );
   }
@@ -56,26 +56,41 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
 
   const segment = flightSegments[segmentIndex];
 
+  // Extract flight info fields
+  const airlineName = segment.marketingCarrier || '—';
+  const flightNumber = segment.flightNumber || '—';
+  const fromCode = segment.origin || '—';
+  const fromCity = segment.originCityName || '';
+  const toCode = segment.destination || '—';
+  const toCity = segment.destinationCityName || '';
+  const date = segment.departureDateTime?.split?.('T')[0] || t('seatMap.dateUnknown');
+  const duration = segment.duration || '';
+  const equipmentText =
+    typeof segment.equipment === 'object'
+      ? segment.equipment?.EncodeDecodeElement?.SimplyDecoded
+      : segment.equipment || t('seatMap.unknown');
+
   const flightInfo = (
-    <div>
-      <div><strong>{t('seatMap.flightInfo')}</strong></div> {/* 🏷️ "Flight info" */}
-      <div>{segment.origin} → {segment.destination}</div>
-      <div>{t('seatMap.date')}: {segment.departureDateTime?.split?.('T')[0] || t('seatMap.dateUnknown')}</div>
-      <div>{t('seatMap.equipment')}: {
-        typeof segment.equipment === 'object'
-          ? segment.equipment?.EncodeDecodeElement?.SimplyDecoded
-          : segment.equipment || t('seatMap.unknown')
-      }</div>
-      <div>{t('seatMap.class')}: {cabinClass}</div>
-      <hr />
-      <SeatLegend/>
-    </div>
+    <>
+      <FlightInfoPanel
+        airlineName={airlineName}
+        flightNumber={flightNumber}
+        fromCode={fromCode}
+        fromCity={fromCity}
+        toCode={toCode}
+        toCity={toCity}
+        date={date}
+        duration={duration}
+        equipment={equipmentText}
+      />
+      <SeatLegend />
+    </>
   );
 
   const equipment =
     typeof segment?.equipment === 'object'
       ? segment.equipment?.EncodeDecodeElement?.SimplyDecoded
-      : segment?.equipment || t('seatMap.unknown'); // ✅ Localized fallback
+      : segment?.equipment || t('seatMap.unknown');
 
   // State: selected passenger IDs
   const [selectedPassengerIds, setSelectedPassengerIds] = useState<string[]>(
@@ -93,14 +108,12 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
     );
   };
 
-  // Filter passengers based on selected IDs
   const selectedPassengers = Array.isArray(passengers)
     ? passengers.filter((p) => selectedPassengerIds.includes(p.id))
     : [];
 
   return (
     <div style={{ padding: '1rem' }}>
-      {/* 🔝 Segment and aircraft info in one row */}
       <div
         style={{
           display: 'flex',
@@ -111,7 +124,7 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
         }}
       >
         <div>
-          <label style={{ marginRight: '0.5rem' }}>{t('seatMap.segment')}:</label> {/* ✅ "Segment" */}
+          <label style={{ marginRight: '0.5rem' }}>{t('seatMap.segment')}:</label>
           <select value={segmentIndex} onChange={(e) => {
             setSegmentIndex(Number(e.target.value));
             setCabinClass('Y');
@@ -125,11 +138,10 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
         </div>
 
         <div style={{ fontSize: '1.5rem', color: '#555' }}>
-          <strong>{t('seatMap.aircraft')}:</strong> {equipment} {/* ✅ "Aircraft" */}
+          <strong>{t('seatMap.aircraft')}:</strong> {equipment}
         </div>
       </div>
 
-      {/* 👔 Cabin class selector */}
       <div style={{ marginBottom: '1rem' }}>
         <label style={{ marginRight: '0.5rem' }}>{t('seatMap.cabinClass')}:</label>
         <select
@@ -144,7 +156,6 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
         </select>
       </div>
 
-      {/* 🧩 Seat map */}
       <SeatMapComponentBase
         config={config}
         flightSegments={flightSegments}
@@ -159,7 +170,6 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
         onSeatChange={(updatedSeats) => setSelectedSeats(updatedSeats)}
         selectedSeats={selectedSeats}
         flightInfo={flightInfo}
-        // galleryPanel={<GalleryPanel/>}
       />
     </div>
   );

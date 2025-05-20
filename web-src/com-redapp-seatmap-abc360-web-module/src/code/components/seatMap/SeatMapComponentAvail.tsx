@@ -14,6 +14,7 @@ import * as React from 'react';
 import SeatMapComponentBase from './SeatMapComponentBase';
 import { getFlightFromSabreData } from './transformers/getFlightFromSabreData';
 import SeatLegend from './panels/SeatLegend';
+import { FlightInfoPanel } from './panels/FlidhtInfoPanel';
 
 type CabinClassForLibrary = 'E' | 'P' | 'B' | 'F' | 'ALL';
 
@@ -25,6 +26,8 @@ interface SeatMapComponentAvailProps {
 const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, data }) => {
   // Extract raw data from props
   const rawSegments = data.flightSegments || [];
+  console.log('📦 Raw segments from props:', rawSegments); // 👈 вот сюда
+
   const availability = data.availability || [];
   const passengers = data.passengers || [];
 
@@ -39,7 +42,8 @@ const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, d
     departureDateTime: seg.departureDate || seg.DepartureDateTime || '',
     origin: seg.origin || seg.OriginLocation?.EncodeDecodeElement?.Code || '???',
     destination: seg.destination || seg.DestinationLocation?.EncodeDecodeElement?.Code || '???',
-    equipment: seg.Equipment?.EncodeDecodeElement?.SimplyDecoded || seg.equipment || ''
+    equipment: seg.Equipment?.EncodeDecodeElement?.SimplyDecoded || seg.equipment || '',
+    duration: seg.ElapsedTime ? `${Math.floor(seg.ElapsedTime / 60)}:${String(seg.ElapsedTime % 60).padStart(2, '0')}` : ''
   }));
 
   // Handler when segment is changed via dropdown
@@ -59,16 +63,31 @@ const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, d
   };
 
   // Info block displayed above the seat map
+  const airlineName = segment.marketingAirline || '—';
+  const flightNumber = segment.flightNumber || '—';
+  const fromCode = segment.origin || '—';
+  const fromCity = ''; // в availability обычно городов нет
+  const toCode = segment.destination || '—';
+  const toCity = '';
+  const date = segment.departureDateTime?.split?.('T')[0] || 'not specified';
+  const duration = segment.duration || '';
+  const equipmentText = segment.equipment || 'unknown';
+  
   const flightInfo = (
-    <div>
-      <div><strong>{segment?.marketingAirline} {segment?.flightNumber}</strong></div>
-      <div>{segment?.origin} → {segment?.destination}</div>
-      <div>📅 Date: {segment?.departureDateTime?.split('T')[0] || 'not specified'}</div>
-      <div>✈️ Equipment: {segment?.equipment || 'unknown'}</div>
-      <div>💺 Class: {cabinClass || 'not specified'}</div>
-      <hr />
+    <>
+      <FlightInfoPanel
+        airlineName={airlineName}
+        flightNumber={flightNumber}
+        fromCode={fromCode}
+        fromCity={fromCity}
+        toCode={toCode}
+        toCity={toCity}
+        date={date}
+        duration={duration}
+        equipment={equipmentText}
+      />
       <SeatLegend />
-    </div>
+    </>
   );
 
   return (
@@ -76,7 +95,7 @@ const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, d
       {/* Segment selector */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
         <div>
-          <label>Сегмент:</label>
+          <label>Segment:</label>
           <select value={segmentIndex} onChange={handleSegmentChange}>
             {normalizedSegments.map((seg: any, idx: number) => (
               <option key={idx} value={idx}>
@@ -88,14 +107,14 @@ const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, d
 
         {/* Display aircraft type */}
         <div style={{ fontSize: '1.5rem', color: '#555' }}>
-          ✈️ <strong>Самолёт:</strong> {normalizedSegments?.[segmentIndex]?.equipment || 'неизвестно'}
+           <strong>Equipment:</strong> {normalizedSegments?.[segmentIndex]?.equipment || 'unknown'}
         </div>
       </div>
 
       <br />
 
       {/* Cabin class selector */}
-      <label>Класс обслуживания:</label>
+      <label>Class:</label>
       <select
         value={cabinClass}
         onChange={(e) => setCabinClass(e.target.value as CabinClassForLibrary)}
