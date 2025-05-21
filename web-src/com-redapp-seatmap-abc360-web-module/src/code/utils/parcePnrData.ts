@@ -25,7 +25,7 @@ export interface PassengerOption extends Option<string> {
   surname: string;
   seatAssignment?: string;
   nameNumber?: string; // Sabre NameAssocId + .1 (e.g. "2.1")
-  passengerColor?: string;
+  passengerColor?: string; // color for passenger icon (circle) 
 }
 
 /**

@@ -39,5 +39,8 @@
     "seatMap.assignedSeats": "Assigned seats",
     "seatMap.legend.occupied": "Occupied",
     "seatMap.legend.paid": "Paid seat",
-    "seatMap.legend.available": "Available"
+    "seatMap.legend.available": "Available",
+    "seatMap.legend.baby": "Baby",
+    "seatMap.legend.bar": "Bar",
+    "seatMap.legend.pray": "Pray"
 }
