@@ -33,11 +33,11 @@ export const FlightInfoPanel: React.FC<FlightInfoPanelProps> = ({
       borderRadius: '4px',
       marginBottom: '1rem'
     }}>
-        <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>
-            {airlineName}&nbsp;{flightNumber}
+        <div style={{ fontSize: '1.5rem'}}>
+            Flight: {airlineName}&nbsp;{flightNumber}
         </div>
       <div style={{ margin: '0.5rem 0' }}>
-        {fromCode} {fromCity} → {toCode} {toCity}
+        Rout: {fromCode} {fromCity} → {toCode} {toCity}
       </div>
       <div>Date: {date}</div>
       <div>Duration: {duration || '—'}</div>

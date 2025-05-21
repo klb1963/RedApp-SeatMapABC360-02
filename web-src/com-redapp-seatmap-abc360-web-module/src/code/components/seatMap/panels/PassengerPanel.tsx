@@ -60,14 +60,18 @@ export const PassengerPanel: React.FC<Props> = ({
         <thead>
           <tr>
             <th style={{ textAlign: 'left', paddingBottom: '0.5rem' }}>
-              {t('seatMap.passengers')}: {passengers.length}
+              {t('seatMap.passengers')}:
+              <span style={{ marginLeft: '1.5rem' }}>{passengers.length}</span>
             </th>
             <th style={{ textAlign: 'right', paddingBottom: '0.5rem' }}>
-              {t('seatMap.assignedSeats')}: {
-                passengers.filter(p =>
-                  selectedSeats.some(s => s.passengerId === String(p.id))
-                ).length
-              }
+              {t('seatMap.assignedSeats')}:
+              <span style={{ marginLeft: '1.5rem' }}>
+                {
+                  passengers.filter(p =>
+                    selectedSeats.some(s => s.passengerId === String(p.id))
+                  ).length
+                }
+              </span>
             </th>
           </tr>
         </thead>
@@ -104,7 +108,7 @@ export const PassengerPanel: React.FC<Props> = ({
 
       <div style={{ marginTop: '1.5rem' }}>
         <div style={{ textAlign: 'right' }}>
-          <button onClick={handleResetSeat} style={{ marginTop: '10px'}}>🔁 {t('seatMap.resetAll')}</button>
+          <button onClick={handleResetSeat} style={{ marginTop: '10px', borderRadius: '6px'}}> {t('seatMap.resetAll')}</button>
         </div>  
       </div>
     </div>

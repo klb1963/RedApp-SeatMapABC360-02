@@ -213,7 +213,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          height: '100%',
+          height: '600px',
           width: '100%',
           overflow: 'auto',
         }}
@@ -224,10 +224,11 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
           src="https://quicket.io/react-proxy-app/"
           onLoad={handleIframeLoad}
           style={{
-            width: '1400px', // фикс ширина
-            height: '100%',
+            width: '460px', 
+            height: '600px',
             border: 'none',
-          }}
+            overflow: 'hidden' 
+           }}
         />
       </div>
     </SeatMapModalLayout>

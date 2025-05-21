@@ -4,7 +4,7 @@ import * as React from 'react';
 
 export const GalleryPanel: React.FC = () => {
   return (
-    <div style={{ marginTop: '1rem' }}>
+    <div style={{ marginTop: '1rem', marginLeft: '10px'  }}>
       <strong>Aircraft gallery:</strong>
       <div style={{ marginTop: '0.5rem', border: '1px solid #ccc', height: '200px' }}>
         <iframe

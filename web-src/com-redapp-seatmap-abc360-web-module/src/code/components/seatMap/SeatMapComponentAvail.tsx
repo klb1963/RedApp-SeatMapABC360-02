@@ -11,6 +11,7 @@
  */
 
 import * as React from 'react';
+import {useMemo } from 'react';
 import SeatMapComponentBase from './SeatMapComponentBase';
 import { getFlightFromSabreData } from './transformers/getFlightFromSabreData';
 import SeatLegend from './panels/SeatLegend';
@@ -92,7 +93,7 @@ const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, d
 
   return (
     <div style={{ padding: '1rem' }}>
-
+  
       {/* Segment selector */}
       <div style={{
         display: 'flex',
@@ -101,7 +102,6 @@ const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, d
         gap: '1rem',
         marginBottom: '1rem'
       }}>
-        {/* Segment */}
         <div style={{ position: 'relative' }}>
           <label style={{ marginRight: '0.5rem' }}>Segment:</label>
           <select
@@ -117,54 +117,69 @@ const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, d
               MozAppearance: 'none',
               outline: 'none',
               cursor: 'pointer',
-              minWidth: '200px', // ← фикс ширина, чтобы стрелка не съехала
+              minWidth: '200px',
             }}
           >
             {normalizedSegments.map((seg: any, idx: number) => (
               <option key={idx} value={idx}>
-                {seg.origin} → {seg.destination}, flight {seg.flightNumber}
+                {seg.origin} → {seg.destination}, {seg.flightNumber}
               </option>
             ))}
           </select>
-          <div
-            style={{
-              position: 'absolute',
-              right: '8px',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              pointerEvents: 'none',
-              fontSize: '1.5rem',
-              color: '#234E55',
-            }}
-          >
-            ▼
+          <div style={{
+            position: 'absolute',
+            right: '8px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            pointerEvents: 'none',
+            fontSize: '1.5rem',
+            color: '#234E55',
+          }}>
+             {/* ▼ */}
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              style={{
+                position: 'absolute',
+                right: '8px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                pointerEvents: 'none',
+                color: '#234E55'
+              }}
+            >
+              <path d="M7 10l5 5 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+
           </div>
         </div>
-
-        {/* Equipment info */}
+  
+        {/* Equipment */}
         <div>
-          <span style={{ color: '#555' }}>
-            <strong>Equipment:</strong> {segment?.equipment}
+          <span style={{ color: '#555', fontSize: '1.5rem' }}>
+            <strong>Equipment type:</strong> {segment?.equipment}
           </span>
         </div>
       </div>
-
-
+  
       {/* Cabin class selector */}
-
       <div style={{ position: 'relative', display: 'inline-block', marginTop: '0rem' }}>
-
         <label style={{ marginRight: '0.5rem' }}>Cabin class:</label>
-
         <div style={{ position: 'relative', display: 'inline-block' }}>
           <select
-            value={cabinClass}
-            onChange={(e) => setCabinClass(e.target.value as CabinClassForLibrary)}
+            value={cabinClass ?? 'A'}
+            onChange={(e) => {
+              const value = e.target.value;
+              setCabinClass(value === 'A' ? undefined : value as CabinClassForLibrary);
+            }}
             style={{
               border: 'none',
               background: 'transparent',
               fontSize: '1.5rem',
-              padding: '0.25rem 2rem 0.25rem 0.5rem', // увеличен right-padding
+              padding: '0.25rem 2rem 0.25rem 0.5rem',
               appearance: 'none',
               WebkitAppearance: 'none',
               MozAppearance: 'none',
@@ -179,40 +194,55 @@ const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, d
             <option value="F">First</option>
             <option value="A">All Cabins</option>
           </select>
+          <div style={{
+            position: 'absolute',
+            right: '6px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            pointerEvents: 'none',
+            fontSize: '1.5rem',
+            color: '#234E55',
+          }}>
+            {/* ▼ */}
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              style={{
+                position: 'absolute',
+                right: '8px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                pointerEvents: 'none',
+                color: '#234E55'
+              }}
+            >
+              <path d="M7 10l5 5 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
 
-          {/* Стрелка ▼ */}
-          <div
-            style={{
-              position: 'absolute',
-              right: '6px', // ⬅️ немного левее
-              top: '50%',
-              transform: 'translateY(-50%)',
-              pointerEvents: 'none',
-              fontSize: '1.5rem', // чуть компактнее
-              color: '#234E55',
-            }}
-          >
-            ▼
           </div>
         </div>
-
       </div>
 
-      <br /><br />
-
-      {/* Render SeatMap with selected data */}
+      <br />
+  
+      {/* Seat Map */}
       <SeatMapComponentBase
         config={config}
         flightSegments={[normalizedSegments[segmentIndex]]}
         initialSegmentIndex={0}
         cabinClass={cabinClass}
         generateFlightData={() => {
-          const enrichedSegment = {
-            ...segment,
-            cabinClass: cabinClass === 'ALL' ? undefined : cabinClass,
-            equipment: segment.equipment
-          };
-          return getFlightFromSabreData({ flightSegments: [enrichedSegment] }, 0);
+          const seg = normalizedSegments[segmentIndex];
+          return getFlightFromSabreData({
+            flightSegments: [{
+              ...seg,
+              cabinClass,
+              equipment: seg.equipment
+            }]
+          }, 0);
         }}
         availability={availability}
         passengers={passengers}
@@ -221,6 +251,8 @@ const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, d
       />
     </div>
   );
+  
+  
 };
 
 export default SeatMapComponentAvail;
