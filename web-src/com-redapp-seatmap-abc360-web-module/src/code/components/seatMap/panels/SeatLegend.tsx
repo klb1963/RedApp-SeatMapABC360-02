@@ -7,10 +7,12 @@
  * 
  * A simple visual guide explaining the meaning of seat colors and icons
  * used in the SeatMap UI:
- * - Available
- * - Available for a fee
- * - Unavailable
- * - Occupied
+ * - Standard
+ * - More comfort
+ * - Some issues
+ * - Mixed features
+ * - Reduced comfort
+ * - Oqupied
  * 
  * Displayed alongside the seat map to help agents interpret seating options.
  */
@@ -22,15 +24,15 @@ import { t } from '../../../Context';
 export const SeatLegend: React.FC = () => {
   const firstColumnItems = [
     {
-      color: '#325aaa',
+      color: 'rgb(50, 90, 170)',
       label: t('seatMap.legend.standard'),
     },
     {
-      color: '#30a83e',
+      color: 'rgb(48, 168, 62)',
       label: t('seatMap.legend.comfort'),
     },
     {
-      color: '#b6b133',
+      color: 'rgb(182, 177, 51)',
       label: t('seatMap.legend.beaware'),
     },
     {
@@ -41,6 +43,19 @@ export const SeatLegend: React.FC = () => {
       color: 'rgb(184,60,50)',
       label: t('seatMap.legend.reduced-comfort'),
     },
+    {
+      color: 'rgb(128, 128, 128)',
+      label: t('seatMap.legend.occupied'),
+    },
+    {
+      color: 'rgb(255, 165, 0)',
+      label: t('seatMap.legend.paid'),
+    },
+    {
+      color: 'rgb(0, 255, 34)',
+      label: t('seatMap.legend.available'),
+    },
+
   ];
 
   const secondColumnItems = [

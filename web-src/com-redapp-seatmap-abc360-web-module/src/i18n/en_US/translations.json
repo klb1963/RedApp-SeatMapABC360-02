@@ -36,5 +36,8 @@
     "seatMap.legend.galley": "Galley (kitchen)",
     "seatMap.legend.switch-deck": "Switch deck",
     "seatMap.legend.stairs": "Stairs",
-    "seatMap.assignedSeats": "Assigned seats"
+    "seatMap.assignedSeats": "Assigned seats",
+    "seatMap.legend.occupied": "Occupied",
+    "seatMap.legend.paid": "Paid seat",
+    "seatMap.legend.available": "Available"
 }
