@@ -92,39 +92,111 @@ const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, d
 
   return (
     <div style={{ padding: '1rem' }}>
+
       {/* Segment selector */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-        <div>
-          <label>Segment:</label>
-          <select value={segmentIndex} onChange={handleSegmentChange}>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: '1rem',
+        marginBottom: '1rem'
+      }}>
+        {/* Segment */}
+        <div style={{ position: 'relative' }}>
+          <label style={{ marginRight: '0.5rem' }}>Segment:</label>
+          <select
+            value={segmentIndex}
+            onChange={handleSegmentChange}
+            style={{
+              border: 'none',
+              background: 'transparent',
+              fontSize: '1.5rem',
+              padding: '0.25rem 1.5rem 0.25rem 0.5rem',
+              appearance: 'none',
+              WebkitAppearance: 'none',
+              MozAppearance: 'none',
+              outline: 'none',
+              cursor: 'pointer',
+              minWidth: '200px', // ← фикс ширина, чтобы стрелка не съехала
+            }}
+          >
             {normalizedSegments.map((seg: any, idx: number) => (
               <option key={idx} value={idx}>
-                {seg.origin} → {seg.destination}, рейс {seg.flightNumber}
+                {seg.origin} → {seg.destination}, flight {seg.flightNumber}
               </option>
             ))}
           </select>
+          <div
+            style={{
+              position: 'absolute',
+              right: '8px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              pointerEvents: 'none',
+              fontSize: '1.5rem',
+              color: '#234E55',
+            }}
+          >
+            ▼
+          </div>
         </div>
 
-        {/* Display aircraft type */}
-        <div style={{ fontSize: '1.5rem', color: '#555' }}>
-           <strong>Equipment:</strong> {normalizedSegments?.[segmentIndex]?.equipment || 'unknown'}
+        {/* Equipment info */}
+        <div>
+          <span style={{ color: '#555' }}>
+            <strong>Equipment:</strong> {segment?.equipment}
+          </span>
         </div>
       </div>
 
-      <br />
 
       {/* Cabin class selector */}
-      <label>Class:</label>
-      <select
-        value={cabinClass}
-        onChange={(e) => setCabinClass(e.target.value as CabinClassForLibrary)}
-      >
-        <option value="E">Economy</option>
-        <option value="P">Premium Economy</option>
-        <option value="B">Business</option>
-        <option value="F">First</option>
-        <option value="ALL">All Cabins</option>
-      </select>
+
+      <div style={{ position: 'relative', display: 'inline-block', marginTop: '0rem' }}>
+
+        <label style={{ marginRight: '0.5rem' }}>Cabin class:</label>
+
+        <div style={{ position: 'relative', display: 'inline-block' }}>
+          <select
+            value={cabinClass}
+            onChange={(e) => setCabinClass(e.target.value as CabinClassForLibrary)}
+            style={{
+              border: 'none',
+              background: 'transparent',
+              fontSize: '1.5rem',
+              padding: '0.25rem 2rem 0.25rem 0.5rem', // увеличен right-padding
+              appearance: 'none',
+              WebkitAppearance: 'none',
+              MozAppearance: 'none',
+              outline: 'none',
+              cursor: 'pointer',
+              minWidth: '180px',
+            }}
+          >
+            <option value="Y">Economy</option>
+            <option value="S">Premium Economy</option>
+            <option value="C">Business</option>
+            <option value="F">First</option>
+            <option value="A">All Cabins</option>
+          </select>
+
+          {/* Стрелка ▼ */}
+          <div
+            style={{
+              position: 'absolute',
+              right: '6px', // ⬅️ немного левее
+              top: '50%',
+              transform: 'translateY(-50%)',
+              pointerEvents: 'none',
+              fontSize: '1.5rem', // чуть компактнее
+              color: '#234E55',
+            }}
+          >
+            ▼
+          </div>
+        </div>
+
+      </div>
 
       <br /><br />
 

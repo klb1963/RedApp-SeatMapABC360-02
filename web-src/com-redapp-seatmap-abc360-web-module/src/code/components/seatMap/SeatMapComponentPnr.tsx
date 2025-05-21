@@ -114,46 +114,108 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
 
   return (
     <div style={{ padding: '1rem' }}>
+      {/* Segment selector */}
       <div
         style={{
           display: 'flex',
           alignItems: 'center',
+          flexWrap: 'wrap',
           gap: '1rem',
-          marginBottom: '1rem',
-          flexWrap: 'wrap'
+          marginBottom: '1rem'
         }}
       >
-        <div>
+        {/* Segment */}
+        <div style={{ position: 'relative' }}>
           <label style={{ marginRight: '0.5rem' }}>{t('seatMap.segment')}:</label>
-          <select value={segmentIndex} onChange={(e) => {
-            setSegmentIndex(Number(e.target.value));
-            setCabinClass('Y');
-          }}>
+          <select
+            value={segmentIndex}
+            onChange={(e) => {
+              setSegmentIndex(Number(e.target.value));
+              setCabinClass('Y');
+            }}
+            style={{
+              border: 'none',
+              background: 'transparent',
+              fontSize: '1.5rem',
+              padding: '0.25rem 1.5rem 0.25rem 0.5rem',
+              appearance: 'none',
+              WebkitAppearance: 'none',
+              MozAppearance: 'none',
+              outline: 'none',
+              cursor: 'pointer',
+              minWidth: '200px',
+            }}
+          >
             {flightSegments.map((seg: any, idx: number) => (
               <option key={idx} value={idx}>
                 {seg.origin} → {seg.destination}, flight {seg.flightNumber}
               </option>
             ))}
           </select>
+          <div
+            style={{
+              position: 'absolute',
+              right: '8px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              pointerEvents: 'none',
+              fontSize: '1.5rem',
+              color: '#234E55',
+            }}
+          >
+            ▼
+          </div>
         </div>
 
+        {/* Equipment */}
         <div style={{ fontSize: '1.5rem', color: '#555' }}>
           <strong>{t('seatMap.aircraft')}:</strong> {equipment}
         </div>
       </div>
 
-      <div style={{ marginBottom: '1rem' }}>
+      {/* Cabin class selector */}
+      <div style={{ position: 'relative', display: 'inline-block', marginTop: '0rem' }}>
         <label style={{ marginRight: '0.5rem' }}>{t('seatMap.cabinClass')}:</label>
-        <select
-          value={cabinClass}
-          onChange={(e) => setCabinClass(e.target.value as 'Y' | 'S' | 'C' | 'F' | 'A')}
-        >
-          <option value="Y">{t('seatMap.cabin.economy')}</option>
-          <option value="S">{t('seatMap.cabin.premiumEconomy')}</option>
-          <option value="C">{t('seatMap.cabin.business')}</option>
-          <option value="F">{t('seatMap.cabin.first')}</option>
-          <option value="A">{t('seatMap.cabin.all')}</option>
-        </select>
+
+        <div style={{ position: 'relative', display: 'inline-block' }}>
+          <select
+            value={cabinClass}
+            onChange={(e) => setCabinClass(e.target.value as 'Y' | 'S' | 'C' | 'F' | 'A')}
+            style={{
+              border: 'none',
+              background: 'transparent',
+              fontSize: '1.5rem',
+              padding: '0.25rem 2rem 0.25rem 0.5rem',
+              appearance: 'none',
+              WebkitAppearance: 'none',
+              MozAppearance: 'none',
+              outline: 'none',
+              cursor: 'pointer',
+              minWidth: '180px',
+            }}
+          >
+            <option value="Y">{t('seatMap.cabin.economy')}</option>
+            <option value="S">{t('seatMap.cabin.premiumEconomy')}</option>
+            <option value="C">{t('seatMap.cabin.business')}</option>
+            <option value="F">{t('seatMap.cabin.first')}</option>
+            <option value="A">{t('seatMap.cabin.all')}</option>
+          </select>
+
+          {/* Arrow */}
+          <div
+            style={{
+              position: 'absolute',
+              right: '6px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              pointerEvents: 'none',
+              fontSize: '1.5rem',
+              color: '#234E55',
+            }}
+          >
+            ▼
+          </div>
+        </div>
       </div>
 
       <SeatMapComponentBase
