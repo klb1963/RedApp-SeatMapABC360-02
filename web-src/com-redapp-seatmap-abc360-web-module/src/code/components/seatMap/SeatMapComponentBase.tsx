@@ -27,8 +27,6 @@ import { useOnIframeLoad } from './hooks/useOnIframeLoad';
 import { useSeatSelectionHandler } from './hooks/useSeatSelectionHandler';
 import { PassengerPanel } from './panels/PassengerPanel';
 import { GalleryPanel } from './panels/GalleryPanel';
-import { SeatLegend } from './panels/SeatLegend';
-import { FlightInfoPanel } from './panels/FlidhtInfoPanel';
 
 // Global type declaration for optional debug use
 declare global {

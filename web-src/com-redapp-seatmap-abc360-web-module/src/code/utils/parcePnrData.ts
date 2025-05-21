@@ -11,6 +11,8 @@
  */
 
 import { Option } from 'sabre-ngv-UIComponents/advancedDropdown/interfaces/Option';
+import { getPassengerColor } from '../components/seatMap/helpers/getPassengerColor';
+
 
 /**
  * PassengerOption — structured passenger model
@@ -23,6 +25,7 @@ export interface PassengerOption extends Option<string> {
   surname: string;
   seatAssignment?: string;
   nameNumber?: string; // Sabre NameAssocId + .1 (e.g. "2.1")
+  passengerColor?: string;
 }
 
 /**
@@ -124,6 +127,10 @@ export const parsePnrData = (xmlDoc: XMLDocument): PnrData => {
       equipment
     });
   }
+
+  passengers.forEach((p, i) => {
+    p.passengerColor = getPassengerColor(i);
+  });
 
   return { passengers, segments };
 };

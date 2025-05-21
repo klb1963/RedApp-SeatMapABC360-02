@@ -92,7 +92,9 @@ export const PassengerPanel: React.FC<Props> = ({
                   </label>
                 </td>
                 <td style={{ padding: '0.5rem 0', textAlign: 'right' }}>
-                  <strong>{seat?.seatLabel || t('seatMap.seatNotAssigned')}</strong>
+                  <strong style={{ color: p.passengerColor || 'black' }}>
+                    {seat?.seatLabel || t('seatMap.seatNotAssigned')}
+                  </strong>
                 </td>
               </tr>
             );
