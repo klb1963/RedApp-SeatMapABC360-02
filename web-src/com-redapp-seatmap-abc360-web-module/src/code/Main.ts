@@ -37,14 +37,25 @@ import { openSeatMapPnr } from './components/seatMap/openSeatMapPnr';
 import { AgentProfileService } from 'sabre-ngv-app/app/services/impl/AgentProfileService';
 import { ShowAgentProfile } from './services/ShowAgentProfile';
 
+import { SeatMapSabreModal } from './components/seatMap/layout/SeatMapSabreModal';
+import SeatMapComponentBase from './components/seatMap/SeatMapComponentBase';
+import { generateFlightData } from './utils/generateFlightData';
+import { SabreStyledModalContent } from './components/test/SabreStyledModalContent';
+
+
+
 import { t } from './Context'; // i18n
 
 export class Main extends Module {
     init(): void {
         super.init();
-        registerService(CustomWorkflowService);
 
-         //делаем кнопку Command Helper Button
+      // Внутри метода init() или как новый метод
+      const ls = getService(LayerService);
+
+      registerService(CustomWorkflowService);
+
+      //делаем кнопку Command Helper Button
       const onClick = (isOpen: boolean) => {
         console.log('Command Helper Button onClick', isOpen);
         // insert logic here
@@ -117,6 +128,27 @@ export class Main extends Module {
           false
         ),
 
+        new RedAppSidePanelButton(
+          "🧪 OPEN SABRE MODAL",
+          "btn-secondary side-panel-button",
+          () => {
+            const publicModalsService = getService(PublicModalsService);
+            publicModalsService.showReactModal({
+              header: 'Seat Map',
+              component: React.createElement(SabreStyledModalContent),
+              modalClassName: 'modal-fullScreen modal-open',
+            });
+          },
+          false
+        ),
+
+        new RedAppSidePanelButton(
+          "🧪 Open Sabre Modal Two",
+          "btn-secondary side-panel-button",
+          () => { this.showSabreModal(); }, // ← вызываем метод
+          false
+        ),
+       
       ]);
 
       xp.addConfig("redAppSidePanel", sidepanelMenu);
@@ -295,5 +327,23 @@ export class Main extends Module {
 
         });
       }
+
+      //=================================
+
+      private showSabreModal = (): void => {
+        const ls = getService(LayerService);
+        ls.showOnLayer(
+          () =>
+            React.createElement(
+              'div',
+              { style: { padding: '2rem', color: '#fff' } },
+              '✅ Sabre модальное окно открыто во всю ширину'
+            ),
+          {
+            display: 'areaView',
+            position: 42,
+          }
+        );
+      };
 
 }
