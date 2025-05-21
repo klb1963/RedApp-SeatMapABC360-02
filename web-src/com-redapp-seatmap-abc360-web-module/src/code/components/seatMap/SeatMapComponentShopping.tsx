@@ -91,12 +91,26 @@ const SeatMapComponentShopping: React.FC<SeatMapComponentShoppingProps> = ({ con
 
   return (
     <div style={{ padding: '1rem' }}>
+
       <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1rem' }}>
-        <div>
+        {/* Segment */}
+        <div style={{ position: 'relative' }}>
           <label style={{ marginRight: '0.5rem' }}>Segment:</label>
           <select
             value={segmentIndex}
             onChange={(e) => setSegmentIndex(Number(e.target.value))}
+            style={{
+              border: 'none',
+              background: 'transparent',
+              fontSize: '1.5rem',
+              padding: '0.25rem 1.5rem 0.25rem 0.5rem',
+              appearance: 'none',
+              WebkitAppearance: 'none',
+              MozAppearance: 'none',
+              outline: 'none',
+              cursor: 'pointer',
+              minWidth: '200px',
+            }}
           >
             {flightSegments.map((seg: any, idx: number) => (
               <option key={idx} value={idx}>
@@ -104,25 +118,69 @@ const SeatMapComponentShopping: React.FC<SeatMapComponentShoppingProps> = ({ con
               </option>
             ))}
           </select>
+          <div
+            style={{
+              position: 'absolute',
+              right: '8px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              pointerEvents: 'none',
+              fontSize: '1.5rem',
+              color: '#234E55',
+            }}
+          >
+            ▼
+          </div>
         </div>
 
+        {/* Equipment */}
         <div style={{ fontSize: '1.5rem', color: '#555' }}>
           <strong>Aircraft:</strong> {equipment}
         </div>
       </div>
 
-      <div style={{ marginBottom: '1rem' }}>
+      {/* Cabin class selector */}
+      <div style={{ position: 'relative', display: 'inline-block', marginBottom: '1rem' }}>
         <label style={{ marginRight: '0.5rem' }}>Cabin class:</label>
-        <select
-          value={cabinClass}
-          onChange={(e) => setCabinClass(e.target.value as 'Y' | 'S' | 'C' | 'F' | 'A')}
-        >
-          <option value="Y">Economy</option>
-          <option value="S">Premium Economy</option>
-          <option value="C">Business</option>
-          <option value="F">First</option>
-          <option value="A">All Cabins</option>
-        </select>
+
+        <div style={{ position: 'relative', display: 'inline-block' }}>
+          <select
+            value={cabinClass}
+            onChange={(e) => setCabinClass(e.target.value as 'Y' | 'S' | 'C' | 'F' | 'A')}
+            style={{
+              border: 'none',
+              background: 'transparent',
+              fontSize: '1.5rem',
+              padding: '0.25rem 2rem 0.25rem 0.5rem',
+              appearance: 'none',
+              WebkitAppearance: 'none',
+              MozAppearance: 'none',
+              outline: 'none',
+              cursor: 'pointer',
+              minWidth: '180px',
+            }}
+          >
+            <option value="Y">Economy</option>
+            <option value="S">Premium Economy</option>
+            <option value="C">Business</option>
+            <option value="F">First</option>
+            <option value="A">All Cabins</option>
+          </select>
+
+          <div
+            style={{
+              position: 'absolute',
+              right: '6px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              pointerEvents: 'none',
+              fontSize: '1.5rem',
+              color: '#234E55',
+            }}
+          >
+            ▼
+          </div>
+        </div>
       </div>
 
       <SeatMapComponentBase
