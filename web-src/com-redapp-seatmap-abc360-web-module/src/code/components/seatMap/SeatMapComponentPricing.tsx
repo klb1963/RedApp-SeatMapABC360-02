@@ -22,6 +22,7 @@ import SeatMapComponentBase from './SeatMapComponentBase';
 import { generateFlightData } from '../../utils/generateFlightData';
 import SeatLegend from './panels/SeatLegend';
 import { FlightInfoPanel } from './panels/FlidhtInfoPanel';
+import { t } from '../../Context';
 
 interface SeatMapComponentPricingProps {
   config: any;
@@ -56,6 +57,13 @@ const SeatMapComponentPricing: React.FC<SeatMapComponentPricingProps> = ({
   const duration = segment?.ElapsedTime
     ? `${Math.floor(segment.ElapsedTime / 60)}:${String(segment.ElapsedTime % 60).padStart(2, '0')}`
     : 'n/a';
+    const equipmentType = typeof segment.equipment === 'object'
+      ? segment.equipment?.EquipmentType || '—'
+      : '—';
+    const aircraftDescription = typeof segment.equipment === 'object'
+      ? segment.equipment?.EncodeDecodeElement?.SimplyDecoded || t('seatMap.unknown')
+      : t('seatMap.unknown');
+
 
   const flightInfo = (
     <>
@@ -68,7 +76,8 @@ const SeatMapComponentPricing: React.FC<SeatMapComponentPricingProps> = ({
         toCity=""
         date={departureDate}
         duration={duration}
-        equipment={equipment}
+        equipmentType={equipmentType}
+        aircraft={aircraftDescription}
       />
       <SeatLegend />
     </>

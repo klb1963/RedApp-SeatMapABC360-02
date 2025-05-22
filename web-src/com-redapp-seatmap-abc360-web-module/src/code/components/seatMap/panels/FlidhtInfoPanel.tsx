@@ -11,7 +11,8 @@ interface FlightInfoPanelProps {
   toCity: string;
   date: string;
   duration: string;
-  equipment: string;
+  equipmentType: string;
+  aircraft: string;
 }
 
 export const FlightInfoPanel: React.FC<FlightInfoPanelProps> = ({
@@ -23,7 +24,8 @@ export const FlightInfoPanel: React.FC<FlightInfoPanelProps> = ({
   toCity,
   date,
   duration,
-  equipment
+  equipmentType,
+  aircraft
 }) => {
   return (
     <div style={{
@@ -33,15 +35,16 @@ export const FlightInfoPanel: React.FC<FlightInfoPanelProps> = ({
       borderRadius: '4px',
       marginBottom: '1rem'
     }}>
-        <div style={{ fontSize: '1.5rem'}}>
-            Flight: {airlineName}&nbsp;{flightNumber}
-        </div>
+      <div style={{ fontSize: '1.5rem' }}>
+        Flight: {airlineName}&nbsp;{flightNumber}
+      </div>
       <div style={{ margin: '0.5rem 0' }}>
         Rout: {fromCode} {fromCity} → {toCode} {toCity}
       </div>
       <div>Date: {date}</div>
       <div>Duration: {duration || '—'}</div>
-      <div>Equipment: {equipment}</div>
+      <div>Equipment type: {equipmentType}</div>
+      <div>Aircraft: {aircraft}</div>
     </div>
   );
 };

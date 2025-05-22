@@ -18,6 +18,7 @@ import SeatMapComponentBase from './SeatMapComponentBase';
 import { generateFlightData } from '../../utils/generateFlightData';
 import { FlightInfoPanel } from './panels/FlidhtInfoPanel';
 import SeatLegend from './panels/SeatLegend';
+import { t } from '../../Context';
 
 interface SeatMapComponentShoppingProps {
   config: any;
@@ -48,10 +49,12 @@ const SeatMapComponentShopping: React.FC<SeatMapComponentShoppingProps> = ({ con
   const toCity = '';
   const date = currentSegmentRaw.departureDateTime?.split?.('T')[0] || currentSegmentRaw.DepartureDateTime?.split?.('T')[0] || 'not specified';
   const duration = currentSegmentRaw.duration || 'n/a';
-  const equipment =
-    typeof currentSegmentRaw.equipment === 'object'
-      ? currentSegmentRaw.equipment?.EncodeDecodeElement?.SimplyDecoded
-      : currentSegmentRaw.Equipment?.EncodeDecodeElement?.SimplyDecoded || currentSegmentRaw.equipment || 'n/a';
+  const equipmentType = typeof currentSegmentRaw.equipment === 'object'
+    ? currentSegmentRaw.equipment?.EquipmentType || '—'
+    : '—';
+  const aircraftDescription = typeof currentSegmentRaw.equipment === 'object'
+    ? currentSegmentRaw.equipment?.EncodeDecodeElement?.SimplyDecoded || t('seatMap.unknown')
+    : t('seatMap.unknown');
 
   // 🧾 Segment info
   const flightInfo = (
@@ -65,7 +68,8 @@ const SeatMapComponentShopping: React.FC<SeatMapComponentShoppingProps> = ({ con
         toCity={toCity}
         date={date}
         duration={duration}
-        equipment={equipment}
+        equipmentType={equipmentType}
+        aircraft={aircraftDescription}
       />
       <SeatLegend />
     </>
@@ -114,28 +118,35 @@ const SeatMapComponentShopping: React.FC<SeatMapComponentShoppingProps> = ({ con
           >
             {flightSegments.map((seg: any, idx: number) => (
               <option key={idx} value={idx}>
-                {seg.origin || '???'} → {seg.destination || '???'}, Flight {seg.flightNumber || '---'}
+                {seg.origin || '???'} → {seg.destination || '???'}, {seg.flightNumber || '---'}
               </option>
             ))}
           </select>
-          <div
+
+          {/* ▼ */}
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
             style={{
               position: 'absolute',
               right: '8px',
               top: '50%',
               transform: 'translateY(-50%)',
               pointerEvents: 'none',
-              fontSize: '1.5rem',
-              color: '#234E55',
+              color: '#234E55'
             }}
           >
-            ▼
-          </div>
+            <path d="M7 10l5 5 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+
         </div>
 
         {/* Equipment */}
         <div style={{ fontSize: '1.5rem', color: '#555' }}>
-          <strong>Aircraft:</strong> {equipment}
+          <strong>Equipment type:</strong> {equipmentType}
         </div>
       </div>
 
@@ -166,7 +177,6 @@ const SeatMapComponentShopping: React.FC<SeatMapComponentShoppingProps> = ({ con
             <option value="F">First</option>
             <option value="A">All Cabins</option>
           </select>
-
           <div
             style={{
               position: 'absolute',
@@ -178,7 +188,26 @@ const SeatMapComponentShopping: React.FC<SeatMapComponentShoppingProps> = ({ con
               color: '#234E55',
             }}
           >
-            ▼
+
+          {/* ▼ */}
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              style={{
+                position: 'absolute',
+                right: '8px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                pointerEvents: 'none',
+                color: '#234E55'
+              }}
+            >
+              <path d="M7 10l5 5 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+
           </div>
         </div>
       </div>

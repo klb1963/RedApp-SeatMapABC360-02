@@ -11,11 +11,11 @@
  */
 
 import * as React from 'react';
-import {useMemo } from 'react';
 import SeatMapComponentBase from './SeatMapComponentBase';
 import { getFlightFromSabreData } from './transformers/getFlightFromSabreData';
 import SeatLegend from './panels/SeatLegend';
 import { FlightInfoPanel } from './panels/FlidhtInfoPanel';
+import { t } from '../../Context';
 
 type CabinClassForLibrary = 'E' | 'P' | 'B' | 'F' | 'ALL';
 
@@ -72,7 +72,12 @@ const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, d
   const toCity = '';
   const date = segment.departureDateTime?.split?.('T')[0] || 'not specified';
   const duration = segment.duration || '';
-  const equipmentText = segment.equipment || 'unknown';
+  const equipmentType = typeof segment.equipment === 'object'
+    ? segment.equipment?.EquipmentType || '—'
+    : '—';
+  const aircraftDescription = typeof segment.equipment === 'object'
+    ? segment.equipment?.EncodeDecodeElement?.SimplyDecoded || t('seatMap.unknown')
+    : t('seatMap.unknown');
   
   const flightInfo = (
     <>
@@ -85,7 +90,8 @@ const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, d
         toCity={toCity}
         date={date}
         duration={duration}
-        equipment={equipmentText}
+        equipmentType={equipmentType}
+        aircraft={aircraftDescription}
       />
       <SeatLegend />
     </>
@@ -135,6 +141,7 @@ const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, d
             fontSize: '1.5rem',
             color: '#234E55',
           }}>
+
              {/* ▼ */}
             <svg
               width="24"
@@ -203,6 +210,7 @@ const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, d
             fontSize: '1.5rem',
             color: '#234E55',
           }}>
+
             {/* ▼ */}
             <svg
               width="24"

@@ -65,10 +65,12 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
   const toCity = segment.destinationCityName || '';
   const date = segment.departureDateTime?.split?.('T')[0] || t('seatMap.dateUnknown');
   const duration = segment.duration || '';
-  const equipmentText =
-    typeof segment.equipment === 'object'
-      ? segment.equipment?.EncodeDecodeElement?.SimplyDecoded
-      : segment.equipment || t('seatMap.unknown');
+  const equipmentType = typeof segment.equipment === 'object'
+    ? segment.equipment?.EquipmentType || '—'
+    : '—';
+  const aircraftDescription = typeof segment.equipment === 'object'
+    ? segment.equipment?.EncodeDecodeElement?.SimplyDecoded || t('seatMap.unknown')
+    : t('seatMap.unknown');
 
   const flightInfo = (
     <>
@@ -81,7 +83,8 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
         toCity={toCity}
         date={date}
         duration={duration}
-        equipment={equipmentText}
+        equipmentType={equipmentType}
+        aircraft={aircraftDescription}
       />
       <SeatLegend />
     </>
@@ -148,7 +151,7 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
           >
             {flightSegments.map((seg: any, idx: number) => (
               <option key={idx} value={idx}>
-                {seg.origin} → {seg.destination}, flight {seg.flightNumber}
+                {seg.origin} → {seg.destination}, {seg.flightNumber}
               </option>
             ))}
           </select>
@@ -163,13 +166,31 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
               color: '#234E55',
             }}
           >
-            ▼
+            {/* ▼ */}
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            style={{
+              position: 'absolute',
+              right: '8px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              pointerEvents: 'none',
+              color: '#234E55'
+            }}
+          >
+            <path d="M7 10l5 5 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+
           </div>
         </div>
 
         {/* Equipment */}
         <div style={{ fontSize: '1.5rem', color: '#555' }}>
-          <strong>{t('seatMap.aircraft')}:</strong> {equipment}
+          <strong>{t('seatMap.equipmentType')}:</strong> {equipment}
         </div>
       </div>
 
@@ -191,7 +212,7 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
               MozAppearance: 'none',
               outline: 'none',
               cursor: 'pointer',
-              minWidth: '180px',
+              minWidth: '175px',
             }}
           >
             <option value="Y">{t('seatMap.cabin.economy')}</option>
@@ -201,20 +222,25 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
             <option value="A">{t('seatMap.cabin.all')}</option>
           </select>
 
-          {/* Arrow */}
-          <div
+          {/* ▼ */}
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
             style={{
               position: 'absolute',
-              right: '6px',
+              right: '8px',
               top: '50%',
               transform: 'translateY(-50%)',
               pointerEvents: 'none',
-              fontSize: '1.5rem',
-              color: '#234E55',
+              color: '#234E55'
             }}
           >
-            ▼
-          </div>
+            <path d="M7 10l5 5 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+
         </div>
       </div>
 
