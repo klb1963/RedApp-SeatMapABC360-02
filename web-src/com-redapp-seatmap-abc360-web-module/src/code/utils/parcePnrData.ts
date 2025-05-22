@@ -40,6 +40,7 @@ export interface SegmentOption extends Option<string> {
   marketingFlightNumber: string;
   bookingClass: string;
   equipment: string;
+  segmentNumber: string; // ✅ новое поле
 }
 
 /**
@@ -124,7 +125,8 @@ export const parsePnrData = (xmlDoc: XMLDocument): PnrData => {
       marketingCarrier,
       marketingFlightNumber,
       bookingClass,
-      equipment
+      equipment,
+      segmentNumber: String(i + 1) // ✅ синтетическая нумерация "1", "2", ...
     });
   }
 

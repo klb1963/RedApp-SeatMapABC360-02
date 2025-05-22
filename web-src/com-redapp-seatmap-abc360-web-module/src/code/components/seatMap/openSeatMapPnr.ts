@@ -19,8 +19,9 @@ import SeatMapComponentPnr from './SeatMapComponentPnr';
 import { quicketConfig } from '../../utils/quicketConfig';
 import { t } from '../../Context';
 
-export async function openSeatMapPnr(store: any): Promise<void> {
+export async function openSeatMapPnr(): Promise<void> {
   const modals = getService(PublicModalsService);
+  const selectedSeatsRef = { current: [] };
 
   try {
     const { parsedData: pnrData } = await loadPnrDetailsFromSabre();
@@ -50,9 +51,9 @@ export async function openSeatMapPnr(store: any): Promise<void> {
     const passengers = pnrData.passengers || [];
     const mappedPassengers = passengers.map((p) => ({
       ...p,
-      id: p.value,             // 🔑 unique ID (например, "2")
-      value: p.value,          // 🔁 for compability with UI-components
-      nameNumber: p.nameNumber      // ✅ NameNumber, example "2.1"
+      id: p.value,
+      value: p.value,
+      nameNumber: p.nameNumber
     }));
 
     const selectedSegmentIndex = 0;
@@ -62,30 +63,28 @@ export async function openSeatMapPnr(store: any): Promise<void> {
 
     const onClickCancel = () => modals.closeReactModal();
 
+    const handleSubmit = async () => {
+      const selected = selectedSeatsRef.current;
 
-    // 🆕 ENRICH before sending
-    const handleSubmit = () => {
-        const selected = store.getState().selectedSeats || [];
-        const enriched = selected.map(seat => {
-          const pax = mappedPassengers.find(p => p.id === seat.passengerId);
-          return {
-            nameNumber: pax?.nameNumber || '',
-            seatLabel: seat.seatLabel,
-            segmentNumber: activeFlight?.value || '1'
-          };
-        });
-        return handleSaveSeats();
-      };
+      if (!selected?.length) {
+        alert('❗ Не выбрано ни одного места.');
+        return;
+      }
+
+      await handleSaveSeats(selected);
+    };
 
     modals.showReactModal({
       header: 'Seat Map ABC 360',
-
       component: React.createElement(SeatMapComponentPnr, {
         config: quicketConfig,
         flightSegments,
         selectedSegmentIndex,
         availability,
-        passengers: mappedPassengers
+        passengers: mappedPassengers,
+        onSeatChange: (updatedSeats) => {
+          selectedSeatsRef.current = updatedSeats;
+        }
       }),
       onSubmit: handleSubmit,
       actions: actions(handleSubmit, onClickCancel),

@@ -27,6 +27,7 @@ export function createPassengerPayload(
   selectedSeats: SelectedSeat[]
 ) {
   const pid = String(passenger.id ?? index);
+  // const pid = passenger.nameNumber ?? `pax-${index}`;
   const seat = selectedSeats.find(s => s.passengerId === pid) || null;
   const readOnly = pid !== selectedPassengerId;
   const initials = getInitials(passenger);
