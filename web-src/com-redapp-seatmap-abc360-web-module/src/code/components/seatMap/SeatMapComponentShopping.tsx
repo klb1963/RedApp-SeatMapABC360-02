@@ -13,7 +13,7 @@
  */
 
 import * as React from 'react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import SeatMapComponentBase from './SeatMapComponentBase';
 import { generateFlightData } from '../../utils/generateFlightData';
 import { FlightInfoPanel } from './panels/FlidhtInfoPanel';
@@ -32,8 +32,10 @@ const SeatMapComponentShopping: React.FC<SeatMapComponentShoppingProps> = ({ con
   const [cabinClass, setCabinClass] = useState<'Y' | 'S' | 'C' | 'F' | 'A'>('Y');
   const [segmentIndex, setSegmentIndex] = useState(0);
 
-  const currentSegmentRaw = flightSegments[segmentIndex] || {};
-  const normalized = normalizeSegment(currentSegmentRaw);
+  // ✅ Используем useMemo для перерасчета normalized при смене сегмента
+  const normalized = useMemo(() => {
+    return normalizeSegment(flightSegments[segmentIndex] || {});
+  }, [flightSegments, segmentIndex]);
 
   const {
     marketingAirline,
@@ -68,16 +70,23 @@ const SeatMapComponentShopping: React.FC<SeatMapComponentShoppingProps> = ({ con
     </>
   );
 
+  console.log('🛍️ Shopping received data:', data);
+  console.log('🛍️ Shopping flightSegments:', flightSegments);
+  console.log('🛍️ Shopping normalized:', normalized);
+
+  // ✅ Логирование enriched и сохранение сегментов в sessionStorage
   useEffect(() => {
     const enriched = flightSegments.map((seg: any) => {
       const n = normalizeSegment(seg);
       return {
         ...seg,
         marketingCarrier: n.marketingAirline,
+        marketingAirlineName: n.marketingAirlineName,
         departureDateTime: n.departureDateTime,
-        equipment: n.aircraftDescription,
+        equipment: n.equipmentType,
         origin: n.origin,
-        destination: n.destination
+        destination: n.destination,
+        duration: n.duration
       };
     });
 
