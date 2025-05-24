@@ -38,7 +38,8 @@ const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, d
   const rawSegment = rawSegments[segmentIndex];
   console.log('📦 [Availability] rawSegment:', rawSegment);
   console.log('[🧪 Check rawSegment.duration]', rawSegment.duration, '| ElapsedTime:', rawSegment.ElapsedTime);
-  const normalized = normalizeSegment(rawSegment);
+
+  const normalized = normalizeSegment(rawSegment, { padFlightNumber: false });
 
   const {
     marketingAirline,
@@ -108,7 +109,7 @@ const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, d
             }}
           >
             {rawSegments.map((seg: any, idx: number) => {
-              const s = normalizeSegment(seg);
+              const s = normalizeSegment(seg, { padFlightNumber: false });
               return (
                 <option key={idx} value={idx}>
                   {s.origin} → {s.destination}, {s.flightNumber}

@@ -34,7 +34,7 @@ const SeatMapComponentShopping: React.FC<SeatMapComponentShoppingProps> = ({ con
 
   // ✅ Используем useMemo для перерасчета normalized при смене сегмента
   const normalized = useMemo(() => {
-    return normalizeSegment(flightSegments[segmentIndex] || {});
+    return normalizeSegment(flightSegments[segmentIndex] || {}, { padFlightNumber: false });
   }, [flightSegments, segmentIndex]);
 
   const {
@@ -116,7 +116,7 @@ const SeatMapComponentShopping: React.FC<SeatMapComponentShoppingProps> = ({ con
             }}
           >
             {flightSegments.map((seg: any, idx: number) => {
-              const s = normalizeSegment(seg);
+              const s = normalizeSegment(seg, { padFlightNumber: false });
               return (
                 <option key={idx} value={idx}>
                   {s.origin} → {s.destination}, {s.flightNumber}

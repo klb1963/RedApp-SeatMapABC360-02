@@ -42,7 +42,7 @@ const SeatMapComponentPricing: React.FC<SeatMapComponentPricingProps> = ({
   const [cabinClass, setCabinClass] = useState<'Y' | 'S' | 'C' | 'F' | 'A'>('Y');
 
   const rawSegment = shoppingSegments[segmentIndex] || {};
-  const normalized = normalizeSegment(rawSegment);
+  const normalized = normalizeSegment(rawSegment, { padFlightNumber: false });
 
   const {
     marketingAirline,
@@ -106,10 +106,10 @@ const SeatMapComponentPricing: React.FC<SeatMapComponentPricingProps> = ({
             }}
           >
             {shoppingSegments.map((seg: any, idx: number) => {
-              const s = normalizeSegment(seg);
+              const s = normalizeSegment(seg, { padFlightNumber: false });
               return (
                 <option key={idx} value={idx}>
-                  {s.origin} → {s.destination}, Flight {s.flightNumber}
+                  {s.origin} → {s.destination}, {s.flightNumber}
                 </option>
               );
             })}

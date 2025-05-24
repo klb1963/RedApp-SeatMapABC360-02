@@ -73,7 +73,7 @@ export function generateFlightData(
 
   // 🔢 Flight number fallback logic
   const flightNoRaw = segment.flightNumber || segment.marketingFlightNumber || '000';
-  const flightNo = String(flightNoRaw) || '000';
+  const flightNo = String(flightNoRaw).replace(/^0+/, '') || '0';
 
   // 📅 Normalize departure date
   const rawDate = segment.departureDateTime || segment.departureDate || '';

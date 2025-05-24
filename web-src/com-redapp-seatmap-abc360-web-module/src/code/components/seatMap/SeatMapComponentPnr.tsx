@@ -51,10 +51,7 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
 
   const segment = flightSegments?.[segmentIndex];
 
-  // console.log('🔍 Raw segment.equipment =', JSON.stringify(segment?.equipment, null, 2));
-  // console.log('🔍 Raw segment =', JSON.stringify(segment, null, 2)); // Полезно для полного анализа
-
-  const normalizedSegment = normalizeSegment(segment);
+  const normalizedSegment = normalizeSegment(segment, { padFlightNumber: false });
 
   const {
     marketingAirline,
@@ -118,14 +115,17 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
               minWidth: '200px',
             }}
           >
-            {flightSegments.map((seg: any, idx: number) => (
-              <option key={idx} value={idx}>
-                {seg.origin} → {seg.destination}, {seg.flightNumber}
-              </option>
-            ))}
+            {flightSegments.map((seg: any, idx: number) => {
+              const s = normalizeSegment(seg, { padFlightNumber: false });
+              return (
+                <option key={idx} value={idx}>
+                  {s.origin} → {s.destination}, {s.flightNumber}
+                </option>
+              );
+            })}
           </select>
-            {/* ▼ */}
-              <svg
+          {/* ▼ */}
+          <svg
                 width="24"
                 height="24"
                 viewBox="0 0 24 24"

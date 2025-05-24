@@ -24,7 +24,7 @@ const EQUIPMENT_DESCRIPTIONS: Record<string, string> = {
     '747': 'Boeing 747',
   };
 
-export interface NormalizedSegment {
+  export interface NormalizedSegment {
     marketingAirline: string;
     marketingAirlineName: string;
     flightNumber: string;
@@ -37,8 +37,19 @@ export interface NormalizedSegment {
     equipmentType: string;
     aircraftDescription: string;
   }
+
+  export interface NormalizeSegmentOptions {
+    padFlightNumber?: boolean;
+  }
   
-  export function normalizeSegment(seg: any): NormalizedSegment {
+  export function normalizeSegment(
+    seg: any,
+    options: NormalizeSegmentOptions = {}
+  ): NormalizedSegment {
+    const {
+      padFlightNumber = true
+    } = options;
+  
     const marketingAirline =
       seg.marketingCarrier ||
       seg.marketingAirline ||
@@ -46,43 +57,31 @@ export interface NormalizedSegment {
       'XX';
   
     const marketingAirlineName =
-        seg.marketingAirlineName ||
-        seg.MarketingAirline?.EncodeDecodeElement?.SimplyDecoded ||
-        '';
-
+      seg.marketingAirlineName ||
+      seg.MarketingAirline?.EncodeDecodeElement?.SimplyDecoded ||
+      '';
+  
     const rawFlightNumber =
-        seg.flightNumber ||
-        seg.marketingFlightNumber ||
-        seg.FlightNumber ||
-        '0';
-    
-    const flightNumber = String(rawFlightNumber).padStart(4, '0');
+      seg.flightNumber || seg.marketingFlightNumber || seg.FlightNumber || '0';
+  
+      const flightNumber = padFlightNumber
+      ? String(rawFlightNumber).padStart(4, '0')
+      : String(Number(rawFlightNumber) || 0); // гарантирует удаление ведущих нулей
   
     const departureDateTime =
-      seg.departureDateTime ||
-      seg.departureDate ||
-      seg.DepartureDateTime ||
-      '';
+      seg.departureDateTime || seg.departureDate || seg.DepartureDateTime || '';
   
     const origin =
-      seg.origin ||
-      seg.OriginLocation?.EncodeDecodeElement?.Code ||
-      '???';
+      seg.origin || seg.OriginLocation?.EncodeDecodeElement?.Code || '???';
   
     const originCityName =
-      seg.originCityName ||
-      seg.OriginLocation?.cityName ||
-      '';
+      seg.originCityName || seg.OriginLocation?.cityName || '';
   
     const destination =
-      seg.destination ||
-      seg.DestinationLocation?.EncodeDecodeElement?.Code ||
-      '???';
+      seg.destination || seg.DestinationLocation?.EncodeDecodeElement?.Code || '???';
   
     const destinationCityName =
-      seg.destinationCityName ||
-      seg.DestinationLocation?.cityName ||
-      '';
+      seg.destinationCityName || seg.DestinationLocation?.cityName || '';
   
     const rawDuration = seg.duration ?? seg.ElapsedTime;
     const durationMinutes =
@@ -95,23 +94,22 @@ export interface NormalizedSegment {
         ? `${Math.floor(durationMinutes / 60)}h ${durationMinutes % 60}m`
         : 'n/a';
   
-    const equipment =
-      seg.equipment ||
-      seg.Equipment ||
-      {};
+    const equipment = seg.equipment || seg.Equipment || {};
   
     const equipmentType =
-    typeof equipment === 'string'
-    ? equipment
-    : equipment.EquipmentType ||
-        equipment.EncodeDecodeElement?.Code ||
-        equipment.EncodeDecodeElement?.SimplyDecoded || // 🆕 fallback
-        'n/a';
+      typeof equipment === 'string'
+        ? equipment
+        : equipment.EquipmentType ||
+          equipment.EncodeDecodeElement?.Code ||
+          equipment.EncodeDecodeElement?.SimplyDecoded ||
+          'n/a';
   
     const aircraftDescription =
-    typeof equipment === 'string'
+      typeof equipment === 'string'
         ? EQUIPMENT_DESCRIPTIONS[equipment] || equipment
-        : equipment.EncodeDecodeElement?.SimplyDecoded || EQUIPMENT_DESCRIPTIONS[equipment.EquipmentType] || 'n/a';
+        : equipment.EncodeDecodeElement?.SimplyDecoded ||
+          EQUIPMENT_DESCRIPTIONS[equipment.EquipmentType] ||
+          'n/a';
   
     return {
       marketingAirline,
@@ -124,6 +122,6 @@ export interface NormalizedSegment {
       destinationCityName,
       duration,
       equipmentType,
-      aircraftDescription
+      aircraftDescription,
     };
   }
