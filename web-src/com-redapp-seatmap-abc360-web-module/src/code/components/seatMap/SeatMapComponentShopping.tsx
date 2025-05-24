@@ -13,12 +13,13 @@
  */
 
 import * as React from 'react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import SeatMapComponentBase from './SeatMapComponentBase';
 import { generateFlightData } from '../../utils/generateFlightData';
 import { FlightInfoPanel } from './panels/FlidhtInfoPanel';
 import SeatLegend from './panels/SeatLegend';
 import { t } from '../../Context';
+import { normalizeSegment } from '../../utils/normalizeSegment';
 
 interface SeatMapComponentShoppingProps {
   config: any;
@@ -28,45 +29,39 @@ interface SeatMapComponentShoppingProps {
 const SeatMapComponentShopping: React.FC<SeatMapComponentShoppingProps> = ({ config, data }) => {
   const flightSegments = Array.isArray(data?.flightSegments) ? data.flightSegments : [];
 
-  // console.log('[🛍️ SHOPPING] Raw flightSegments:', data?.flightSegments);
-
   const [cabinClass, setCabinClass] = useState<'Y' | 'S' | 'C' | 'F' | 'A'>('Y');
   const [segmentIndex, setSegmentIndex] = useState(0);
 
-  // Unpak data
-  const currentSegmentRaw = flightSegments[segmentIndex] || {};
+  // ✅ Используем useMemo для перерасчета normalized при смене сегмента
+  const normalized = useMemo(() => {
+    return normalizeSegment(flightSegments[segmentIndex] || {});
+  }, [flightSegments, segmentIndex]);
 
-  // 📌 Normalized data 
-  const airlineName =
-  currentSegmentRaw.marketingCarrier ||
-  currentSegmentRaw.marketingAirline?.EncodeDecodeElement?.Code ||
-  currentSegmentRaw.marketingAirline ||
-  'n/a';
-  const flightNumber = currentSegmentRaw.flightNumber || currentSegmentRaw.FlightNumber || '—';
-  const fromCode = currentSegmentRaw.origin || currentSegmentRaw.OriginLocation?.EncodeDecodeElement?.Code || '—';
-  const toCode = currentSegmentRaw.destination || currentSegmentRaw.DestinationLocation?.EncodeDecodeElement?.Code || '—';
-  const fromCity = ''; // городов нет в Shopping
-  const toCity = '';
-  const date = currentSegmentRaw.departureDateTime?.split?.('T')[0] || currentSegmentRaw.DepartureDateTime?.split?.('T')[0] || 'not specified';
-  const duration = currentSegmentRaw.duration || 'n/a';
-  const equipmentType = typeof currentSegmentRaw.equipment === 'object'
-    ? currentSegmentRaw.equipment?.EquipmentType || '—'
-    : '—';
-  const aircraftDescription = typeof currentSegmentRaw.equipment === 'object'
-    ? currentSegmentRaw.equipment?.EncodeDecodeElement?.SimplyDecoded || t('seatMap.unknown')
-    : t('seatMap.unknown');
+  const {
+    marketingAirline,
+    marketingAirlineName,
+    flightNumber,
+    departureDateTime,
+    origin,
+    originCityName,
+    destination,
+    destinationCityName,
+    duration,
+    equipmentType,
+    aircraftDescription
+  } = normalized;
 
-  // 🧾 Segment info
   const flightInfo = (
     <>
       <FlightInfoPanel
-        airlineName={airlineName}
+        airlineCode={marketingAirline}
+        airlineName={marketingAirlineName}
         flightNumber={flightNumber}
-        fromCode={fromCode}
-        fromCity={fromCity}
-        toCode={toCode}
-        toCity={toCity}
-        date={date}
+        fromCode={origin}
+        fromCity={originCityName || ''}
+        toCode={destination}
+        toCity={destinationCityName || ''}
+        date={departureDateTime?.split?.('T')[0] || t('seatMap.dateUnknown')}
         duration={duration}
         equipmentType={equipmentType}
         aircraft={aircraftDescription}
@@ -75,19 +70,25 @@ const SeatMapComponentShopping: React.FC<SeatMapComponentShoppingProps> = ({ con
     </>
   );
 
-  // 💾 Save enriched segments to sessionStorage for use in Pricing
+  console.log('🛍️ Shopping received data:', data);
+  console.log('🛍️ Shopping flightSegments:', flightSegments);
+  console.log('🛍️ Shopping normalized:', normalized);
+
+  // ✅ Логирование enriched и сохранение сегментов в sessionStorage
   useEffect(() => {
-    const enriched = flightSegments.map((seg: any) => ({
-      ...seg,
-      marketingCarrier: seg.marketingAirline || seg.marketingCarrier || 'n/a',
-      departureDateTime: seg.departureDate || seg.departureDateTime || '',
-      equipment:
-        typeof seg.equipment === 'object'
-          ? seg.equipment?.EncodeDecodeElement?.SimplyDecoded
-          : seg.equipment || '',
-      origin: seg.origin || seg.OriginLocation?.EncodeDecodeElement?.Code || 'n/a',
-      destination: seg.destination || seg.DestinationLocation?.EncodeDecodeElement?.Code || 'n/a',
-    }));
+    const enriched = flightSegments.map((seg: any) => {
+      const n = normalizeSegment(seg);
+      return {
+        ...seg,
+        marketingCarrier: n.marketingAirline,
+        marketingAirlineName: n.marketingAirlineName,
+        departureDateTime: n.departureDateTime,
+        equipment: n.equipmentType,
+        origin: n.origin,
+        destination: n.destination,
+        duration: n.duration
+      };
+    });
 
     sessionStorage.setItem('shoppingSegments', JSON.stringify(enriched));
     console.log('[🛍️ Shopping] Saved shoppingSegments to sessionStorage:', enriched);
@@ -95,9 +96,7 @@ const SeatMapComponentShopping: React.FC<SeatMapComponentShoppingProps> = ({ con
 
   return (
     <div style={{ padding: '1rem' }}>
-
       <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1rem' }}>
-        {/* Segment */}
         <div style={{ position: 'relative' }}>
           <label style={{ marginRight: '0.5rem' }}>Segment:</label>
           <select
@@ -116,14 +115,16 @@ const SeatMapComponentShopping: React.FC<SeatMapComponentShoppingProps> = ({ con
               minWidth: '200px',
             }}
           >
-            {flightSegments.map((seg: any, idx: number) => (
-              <option key={idx} value={idx}>
-                {seg.origin || '???'} → {seg.destination || '???'}, {seg.flightNumber || '---'}
-              </option>
-            ))}
+            {flightSegments.map((seg: any, idx: number) => {
+              const s = normalizeSegment(seg);
+              return (
+                <option key={idx} value={idx}>
+                  {s.origin} → {s.destination}, {s.flightNumber}
+                </option>
+              );
+            })}
           </select>
 
-          {/* ▼ */}
           <svg
             width="24"
             height="24"
@@ -141,19 +142,15 @@ const SeatMapComponentShopping: React.FC<SeatMapComponentShoppingProps> = ({ con
           >
             <path d="M7 10l5 5 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-
         </div>
 
-        {/* Equipment */}
         <div style={{ fontSize: '1.5rem', color: '#555' }}>
           <strong>Equipment type:</strong> {equipmentType}
         </div>
       </div>
 
-      {/* Cabin class selector */}
       <div style={{ position: 'relative', display: 'inline-block', marginBottom: '1rem' }}>
         <label style={{ marginRight: '0.5rem' }}>Cabin class:</label>
-
         <div style={{ position: 'relative', display: 'inline-block' }}>
           <select
             value={cabinClass}
@@ -188,8 +185,6 @@ const SeatMapComponentShopping: React.FC<SeatMapComponentShoppingProps> = ({ con
               color: '#234E55',
             }}
           >
-
-          {/* ▼ */}
             <svg
               width="24"
               height="24"
@@ -207,22 +202,21 @@ const SeatMapComponentShopping: React.FC<SeatMapComponentShoppingProps> = ({ con
             >
               <path d="M7 10l5 5 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-
           </div>
         </div>
       </div>
 
       <SeatMapComponentBase
         config={config}
-        flightSegments={flightSegments}
-        initialSegmentIndex={segmentIndex}
+        flightSegments={[normalized]}
+        initialSegmentIndex={0}
         cabinClass={cabinClass}
         generateFlightData={(segment, index, cabin) =>
           generateFlightData(
             {
-              ...segment,
-              cabinClass: cabin,
-              equipment: segment.equipment,
+              ...normalized,
+              cabinClass,
+              equipment: normalized.equipmentType
             },
             index
           )

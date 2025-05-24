@@ -40,7 +40,8 @@ export interface SegmentOption extends Option<string> {
   marketingFlightNumber: string;
   bookingClass: string;
   equipment: string;
-  segmentNumber: string; // ✅ новое поле
+  segmentNumber: string;
+  duration: number;
 }
 
 /**
@@ -116,6 +117,16 @@ export const parsePnrData = (xmlDoc: XMLDocument): PnrData => {
       departureDate = departureDateTime.split('T')[0];
     }
 
+    const rawElapsedTime = segment.getElementsByTagName('stl19:ElapsedTime')[0]?.textContent?.trim();
+    const durationMinutes = rawElapsedTime && rawElapsedTime.includes('.')
+      ? (() => {
+          const [hoursStr, minutesStr] = rawElapsedTime.split('.');
+          const hours = parseInt(hoursStr, 10);
+          const minutes = parseInt(minutesStr.padEnd(2, '0'), 10);
+          return hours * 60 + minutes;
+        })()
+      : undefined;
+
     segments.push({
       label: `${marketingCarrier}${marketingFlightNumber} — ${origin} → ${destination}`,
       value: id,
@@ -126,7 +137,8 @@ export const parsePnrData = (xmlDoc: XMLDocument): PnrData => {
       marketingFlightNumber,
       bookingClass,
       equipment,
-      segmentNumber: String(i + 1) // ✅ синтетическая нумерация "1", "2", ...
+      segmentNumber: String(i + 1), // ✅ синтетическая нумерация "1", "2", ...
+      duration: durationMinutes,
     });
   }
 

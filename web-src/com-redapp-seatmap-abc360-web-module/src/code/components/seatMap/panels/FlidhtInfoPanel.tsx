@@ -3,6 +3,7 @@
 import * as React from 'react';
 
 interface FlightInfoPanelProps {
+  airlineCode: string; 
   airlineName: string;
   flightNumber: string;
   fromCode: string;
@@ -39,7 +40,7 @@ export const FlightInfoPanel: React.FC<FlightInfoPanelProps> = ({
         Flight: {airlineName}&nbsp;{flightNumber}
       </div>
       <div style={{ margin: '0.5rem 0' }}>
-        Rout: {fromCode} {fromCity} → {toCode} {toCity}
+       Rout: {fromCode}{fromCity ? ` (${fromCity})` : ''} → {toCode}{toCity ? ` (${toCity})` : ''}
       </div>
       <div>Date: {date}</div>
       <div>Duration: {duration || '—'}</div>

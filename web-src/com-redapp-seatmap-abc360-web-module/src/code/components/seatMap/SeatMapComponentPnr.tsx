@@ -21,6 +21,7 @@ import { generateFlightData } from '../../utils/generateFlightData';
 import SeatLegend from './panels/SeatLegend';
 import { PassengerOption } from '../../utils/parcePnrData';
 import { FlightInfoPanel } from './panels/FlidhtInfoPanel';
+import { normalizeSegment } from '../../utils/normalizeSegment';
 import { t } from '../../Context';
 
 interface SeatMapComponentPnrProps {
@@ -50,31 +51,37 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
 
   const segment = flightSegments?.[segmentIndex];
 
-  const airlineName = segment?.marketingCarrier || '—';
-  const flightNumber = segment?.flightNumber || '—';
-  const fromCode = segment?.origin || '—';
-  const fromCity = segment?.originCityName || '';
-  const toCode = segment?.destination || '—';
-  const toCity = segment?.destinationCityName || '';
-  const date = segment?.departureDateTime?.split?.('T')[0] || t('seatMap.dateUnknown');
-  const duration = segment?.duration || '';
-  const equipmentType = typeof segment?.equipment === 'object'
-    ? segment.equipment?.EquipmentType || '—'
-    : '—';
-  const aircraftDescription = typeof segment?.equipment === 'object'
-    ? segment.equipment?.EncodeDecodeElement?.SimplyDecoded || t('seatMap.unknown')
-    : t('seatMap.unknown');
+  // console.log('🔍 Raw segment.equipment =', JSON.stringify(segment?.equipment, null, 2));
+  // console.log('🔍 Raw segment =', JSON.stringify(segment, null, 2)); // Полезно для полного анализа
+
+  const normalizedSegment = normalizeSegment(segment);
+
+  const {
+    marketingAirline,
+    marketingAirlineName,
+    flightNumber,
+    departureDateTime,
+    origin,
+    originCityName,
+    destination,
+    destinationCityName,
+    duration,
+    equipmentType,
+    aircraftDescription
+  } = normalizedSegment;
+
 
   const flightInfo = (
     <>
       <FlightInfoPanel
-        airlineName={airlineName}
+        airlineCode={marketingAirline} 
+        airlineName={marketingAirlineName}
         flightNumber={flightNumber}
-        fromCode={fromCode}
-        fromCity={fromCity}
-        toCode={toCode}
-        toCity={toCity}
-        date={date}
+        fromCode={origin}
+        fromCity={originCityName}
+        toCode={destination}
+        toCity={destinationCityName}
+        date={departureDateTime?.split?.('T')[0] || t('seatMap.dateUnknown')}
         duration={duration}
         equipmentType={equipmentType}
         aircraft={aircraftDescription}
@@ -117,8 +124,31 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
               </option>
             ))}
           </select>
+            {/* ▼ */}
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                style={{
+                  position: 'absolute',
+                  right: '8px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  pointerEvents: 'none',
+                  color: '#234E55'
+                }}
+              >
+                <path
+                  d="M7 10l5 5 5-5"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
         </div>
-
         <div style={{ fontSize: '1.5rem', color: '#555' }}>
           <strong>{t('seatMap.equipmentType')}:</strong> {equipmentType}
         </div>
@@ -137,7 +167,7 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
             appearance: 'none',
             outline: 'none',
             cursor: 'pointer',
-            minWidth: '175px',
+            minWidth: '180px',
           }}
         >
           <option value="Y">{t('seatMap.cabin.economy')}</option>
@@ -146,6 +176,31 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
           <option value="F">{t('seatMap.cabin.first')}</option>
           <option value="A">{t('seatMap.cabin.all')}</option>
         </select>
+
+        {/* ▼ */}
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          style={{
+            position: 'absolute',
+            right: '8px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            pointerEvents: 'none',
+            color: '#234E55'
+          }}
+        >
+          <path
+            d="M7 10l5 5 5-5"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
       </div>
 
       {segment && (
