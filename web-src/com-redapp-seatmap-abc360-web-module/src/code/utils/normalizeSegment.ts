@@ -9,9 +9,9 @@ export interface NormalizedSegment {
     originCityName: string;
     destination: string;
     destinationCityName: string;
-    duration: string;                 // Пример: "1h 15m"
-    equipmentType: string;            // Пример: "321"
-    aircraftDescription: string;      // Пример: "AIRBUS A321"
+    duration: string;                 // Пример: "6h 0m"
+    equipmentType: string;            // Пример: "388"
+    aircraftDescription: string;      // Пример: "AIRBUS A380"
   }
   
   export function normalizeSegment(seg: any): NormalizedSegment {
@@ -21,8 +21,7 @@ export interface NormalizedSegment {
       'XX';
   
     const marketingAirlineName =
-      seg.MarketingAirline?.EncodeDecodeElement?.SimplyDecoded ||
-      '';
+      seg.MarketingAirline?.EncodeDecodeElement?.SimplyDecoded || '';
   
     const flightNumber =
       seg.flightNumber ||
@@ -51,35 +50,37 @@ export interface NormalizedSegment {
       seg.DestinationLocation?.EncodeDecodeElement?.Code ||
       '???';
   
-    const destinationCityName =
-      seg.destinationCityName ||
-      seg.DestinationLocation?.cityName ||
-      '';
-  
-    const durationMinutes = seg.ElapsedTime || seg.duration || 0;
-    let duration = '';
-    if (durationMinutes > 0) {
-      const hours = Math.floor(durationMinutes / 60);
-      const minutes = durationMinutes % 60;
-      duration =
-        (hours ? `${hours}h` : '') +
-        (hours && minutes ? ' ' : '') +
-        (minutes ? `${minutes}m` : '');
-    }
-  
+      const destinationCityName =
+          seg.destinationCityName ||
+          seg.DestinationLocation?.cityName ||
+          '';
+
+
+    // 🔁 Duration (в минутах, извлекается либо как число, либо из ElapsedTime)
+    const rawDuration = seg.duration ?? seg.ElapsedTime;
+    const durationMinutes = typeof rawDuration === 'number' ? rawDuration : parseInt(rawDuration || '', 10) || 0;
+
+    const duration =
+        durationMinutes > 0
+            ? `${Math.floor(durationMinutes / 60)}h ${durationMinutes % 60}m`
+            : 'n/a';
+
     const equipment =
-      seg.equipment ||
-      seg.Equipment ||
-      {};
+        seg.equipment ||
+        seg.Equipment ||
+        {};
   
     const equipmentType =
-      equipment.EquipmentType ||
-      equipment.EncodeDecodeElement?.Code ||
-      '—';
+      typeof equipment === 'string'
+        ? equipment
+        : equipment.EquipmentType ||
+          equipment.EncodeDecodeElement?.Code ||
+          '—';
   
     const aircraftDescription =
-      equipment.EncodeDecodeElement?.SimplyDecoded ||
-      'Unknown aircraft';
+      typeof equipment === 'string'
+        ? equipment
+        : equipment.EncodeDecodeElement?.SimplyDecoded || 'n/a';
   
     return {
       marketingAirline,

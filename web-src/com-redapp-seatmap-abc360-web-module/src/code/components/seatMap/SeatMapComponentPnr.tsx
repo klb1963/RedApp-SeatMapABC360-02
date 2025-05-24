@@ -51,6 +51,9 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
 
   const segment = flightSegments?.[segmentIndex];
 
+  // console.log('🔍 Raw segment.equipment =', JSON.stringify(segment?.equipment, null, 2));
+  // console.log('🔍 Raw segment =', JSON.stringify(segment, null, 2)); // Полезно для полного анализа
+
   const normalizedSegment = normalizeSegment(segment);
 
   const {

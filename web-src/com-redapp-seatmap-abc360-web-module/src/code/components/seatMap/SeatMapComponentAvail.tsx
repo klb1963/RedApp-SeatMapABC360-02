@@ -36,6 +36,8 @@ const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, d
   const [cabinClass, setCabinClass] = React.useState<CabinClassForLibrary>('E');
 
   const rawSegment = rawSegments[segmentIndex];
+  console.log('📦 [Availability] rawSegment:', rawSegment);
+  console.log('[🧪 Check rawSegment.duration]', rawSegment.duration, '| ElapsedTime:', rawSegment.ElapsedTime);
   const normalized = normalizeSegment(rawSegment);
 
   const {
