@@ -19,6 +19,7 @@ import * as React from 'react';
 import { PassengerOption } from '../../../utils/parcePnrData';
 import { SelectedSeat } from '../SeatMapComponentBase';
 import { t } from '../../../Context';
+import { CreatePnrButton } from './CreatePnrButton';
 
 interface Props {
   passengers: PassengerOption[];
