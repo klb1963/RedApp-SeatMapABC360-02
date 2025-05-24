@@ -1,11 +1,13 @@
 // file: /code/components/seatMap/handleSaveSeats.ts
 
+// file: /code/components/seatMap/handleSaveSeats.ts
+
 import { getService } from '../../Context';
 import { ISoapApiService } from 'sabre-ngv-communication/interfaces/ISoapApiService';
 import { PnrPublicService } from 'sabre-ngv-app/app/services/impl/PnrPublicService';
 import { PublicModalsService } from 'sabre-ngv-modals/services/PublicModalService';
 import { loadPnrDetailsFromSabre } from '../../services/loadPnrDetailsFromSabre';
-import { SelectedSeat } from '../seatMap/SeatMapComponentBase';
+import { SelectedSeat } from './SeatMapComponentBase';
 
 export const handleSaveSeats = async (selectedSeats: SelectedSeat[]): Promise<void> => {
   const soap = getService(ISoapApiService);
@@ -13,78 +15,69 @@ export const handleSaveSeats = async (selectedSeats: SelectedSeat[]): Promise<vo
   const modalService = getService(PublicModalsService);
 
   try {
+    // Load current PNR data from Sabre
     const { parsedData } = await loadPnrDetailsFromSabre();
     const passengers = parsedData.passengers || [];
     const segments = parsedData.segments || [];
 
-    const segmentNumber = segments[0]?.value || '1';
+    // Fallback to SegmentNumber "1" if not available
+    const segmentNumber = segments[0]?.segmentNumber || '1';
 
-    console.log('🧪 selectedSeats:', selectedSeats);
-    console.log('🧪 parsedData.passengers:', passengers.map(p => ({
-      id: p.id,
-      nameNumber: p.nameNumber
-    })));
+    // Build XML for each seat assignment
+    const seatElements = selectedSeats.map((seat) => {
+      const pax = passengers.find(p => p.id === seat.passengerId || p.nameNumber === seat.passengerId);
+      if (!pax || !seat.seatLabel) return '';
 
-    const seatTags = passengers.map(pax => {
-      const match = selectedSeats.find(
-        s => s.passengerId === pax.id || s.passengerId === pax.nameNumber
-      );
-      if (!match) return '';
-      return `<Seat NameNumber="${pax.nameNumber}" Number="${match.seatLabel}" SegmentNumber="${segmentNumber}" />`;
+      return `
+        <Seat BoardingPass="true">
+          <NameSelect NameNumber="${pax.nameNumber}" />
+          <SeatSelect Number="${seat.seatLabel}" />
+          <SegmentSelect Number="${segmentNumber}" />
+        </Seat>
+      `.trim();
     }).filter(Boolean).join('\n');
 
-    if (!seatTags.trim()) {
-      console.warn('⚠️ Нет подходящих мест для обновления PNR.');
-      alert('Невозможно сохранить — не выбрано ни одного места.');
+    // Abort if no seat elements were built
+    if (!seatElements) {
+      alert('❗ No seats selected.');
       return;
     }
 
+    // Build SOAP payload for AirSeatLLSRQ
     const xml = `
-      <UpdatePassengerNameRecordRQ Version="2.0.0"
+      <AirSeatRQ Version="2.1.1"
         xmlns="http://webservices.sabre.com/sabreXML/2011/10"
         xmlns:xs="http://www.w3.org/2001/XMLSchema"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-        <SpecialReqDetails>
-          <AirSeatRQ>
-            <Seats>
-              ${seatTags}
-            </Seats>
-          </AirSeatRQ>
-        </SpecialReqDetails>
-        <PostProcessing RedisplayReservation="true" />
-        <ReceivedFrom>LEONID</ReceivedFrom>
-      </UpdatePassengerNameRecordRQ>
+        <Seats>
+          ${seatElements}
+        </Seats>
+      </AirSeatRQ>
     `.trim();
 
-    console.log('📌 FINAL payload for Sabre:\n', xml);
-    console.log('🧪 SegmentNumber from parsedData:', segments[0]);
-    console.log('🧪 All selectedSeats:', selectedSeats);
-    console.log('🧪 All passengers:', passengers);
+    console.log('📤 Sending AirSeatLLSRQ:\n', xml);
 
-    console.log('📤 UpdatePassengerNameRecordRQ XML:\n', xml);
-
+    // Send SOAP request using Sabre SDK
     const response = await soap.callSws({
-      action: 'UpdatePassengerNameRecordRQ',
+      action: 'AirSeatLLSRQ',
       payload: xml,
       authTokenType: 'SESSION'
     });
 
-    console.log('📩 Ответ от Sabre:\n', response.value);
+    console.log('📩 Sabre response:\n', response.value);
 
-    // 💬 Показываем и XML, и ответ для отладки
-    alert(`📤 Sent XML:\n${xml}\n\n📩 Sabre Response:\n${response.value}`);
-
+    // Check response for success
     if (response.value.includes('<Success')) {
-      console.log('✅ Успешное обновление мест через UpdatePassengerNameRecordRQ.');
+      console.log('✅ Seat assignment succeeded.');
       await pnrService.refreshData();
       modalService.closeReactModal();
     } else {
-      console.warn('⚠️ Ответ не содержит <Success>. Проверь данные.');
-      alert('Ответ от Sabre не содержит <Success>. Сохранение не выполнено.');
+      console.warn('⚠️ Sabre did not return <Success>.');
+      alert('Seat assignment failed. Check console for details.');
     }
 
   } catch (error) {
-    console.error('❌ Ошибка при сохранении мест:', error);
-    alert('Ошибка при сохранении мест. См. консоль.');
+    console.error('❌ Error during AirSeatLLSRQ:', error);
+    alert('An error occurred while assigning seats. See console for details.');
   }
 };
