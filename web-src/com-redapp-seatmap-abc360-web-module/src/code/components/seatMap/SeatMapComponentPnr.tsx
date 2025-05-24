@@ -16,7 +16,7 @@
 
 import * as React from 'react';
 import { useState } from 'react';
-import SeatMapComponentBase from './SeatMapComponentBase';
+import SeatMapComponentBase, { SelectedSeat } from './SeatMapComponentBase';
 import { generateFlightData } from '../../utils/generateFlightData';
 import SeatLegend from './panels/SeatLegend';
 import { PassengerOption } from '../../utils/parcePnrData';
@@ -30,6 +30,7 @@ interface SeatMapComponentPnrProps {
   availability?: any[];
   passengers?: PassengerOption[];
   showSegmentSelector?: boolean;
+  onSeatChange?: (updatedSeats: SelectedSeat[]) => void;
 }
 
 const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
@@ -38,37 +39,29 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
   selectedSegmentIndex = 0,
   availability = [],
   passengers = [],
-  showSegmentSelector = true
+  showSegmentSelector = true,
+  onSeatChange
 }) => {
-  if (!flightSegments.length) {
-    return (
-      <div style={{ padding: '1rem', color: 'red' }}>
-        {t('seatMap.noSegments')}
-      </div>
-    );
-  }
-
-  // Segment and cabin class state
   const [segmentIndex, setSegmentIndex] = useState<number>(selectedSegmentIndex);
   const [cabinClass, setCabinClass] = useState<'Y' | 'S' | 'C' | 'F' | 'A'>(
     flightSegments[segmentIndex]?.cabinClass || 'Y'
   );
+  const [selectedSeats, setSelectedSeats] = useState<SelectedSeat[]>([]);
 
-  const segment = flightSegments[segmentIndex];
+  const segment = flightSegments?.[segmentIndex];
 
-  // Extract flight info fields
-  const airlineName = segment.marketingCarrier || '—';
-  const flightNumber = segment.flightNumber || '—';
-  const fromCode = segment.origin || '—';
-  const fromCity = segment.originCityName || '';
-  const toCode = segment.destination || '—';
-  const toCity = segment.destinationCityName || '';
-  const date = segment.departureDateTime?.split?.('T')[0] || t('seatMap.dateUnknown');
-  const duration = segment.duration || '';
-  const equipmentType = typeof segment.equipment === 'object'
+  const airlineName = segment?.marketingCarrier || '—';
+  const flightNumber = segment?.flightNumber || '—';
+  const fromCode = segment?.origin || '—';
+  const fromCity = segment?.originCityName || '';
+  const toCode = segment?.destination || '—';
+  const toCity = segment?.destinationCityName || '';
+  const date = segment?.departureDateTime?.split?.('T')[0] || t('seatMap.dateUnknown');
+  const duration = segment?.duration || '';
+  const equipmentType = typeof segment?.equipment === 'object'
     ? segment.equipment?.EquipmentType || '—'
     : '—';
-  const aircraftDescription = typeof segment.equipment === 'object'
+  const aircraftDescription = typeof segment?.equipment === 'object'
     ? segment.equipment?.EncodeDecodeElement?.SimplyDecoded || t('seatMap.unknown')
     : t('seatMap.unknown');
 
@@ -90,44 +83,15 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
     </>
   );
 
-  const equipment =
-    typeof segment?.equipment === 'object'
-      ? segment.equipment?.EncodeDecodeElement?.SimplyDecoded
-      : segment?.equipment || t('seatMap.unknown');
-
-  // State: selected passenger IDs
-  const [selectedPassengerIds, setSelectedPassengerIds] = useState<string[]>(
-    Array.isArray(passengers) ? passengers.map((p) => p.id) : []
-  );
-
-  // State: selected seats for all passengers
-  const [selectedSeats, setSelectedSeats] = useState<
-    { passengerId: string; seatLabel: string }[]
-  >([]);
-
-  const handleTogglePassenger = (id: string) => {
-    setSelectedPassengerIds((prev) =>
-      prev.includes(id) ? prev.filter((pid) => pid !== id) : [...prev, id]
-    );
-  };
-
-  const selectedPassengers = Array.isArray(passengers)
-    ? passengers.filter((p) => selectedPassengerIds.includes(p.id))
-    : [];
-
   return (
     <div style={{ padding: '1rem' }}>
-      {/* Segment selector */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '1rem',
-          marginBottom: '1rem'
-        }}
-      >
-        {/* Segment */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: '1rem',
+        marginBottom: '1rem'
+      }}>
         <div style={{ position: 'relative' }}>
           <label style={{ marginRight: '0.5rem' }}>{t('seatMap.segment')}:</label>
           <select
@@ -142,8 +106,6 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
               fontSize: '1.5rem',
               padding: '0.25rem 1.5rem 0.25rem 0.5rem',
               appearance: 'none',
-              WebkitAppearance: 'none',
-              MozAppearance: 'none',
               outline: 'none',
               cursor: 'pointer',
               minWidth: '200px',
@@ -155,110 +117,57 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
               </option>
             ))}
           </select>
-          <div
-            style={{
-              position: 'absolute',
-              right: '8px',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              pointerEvents: 'none',
-              fontSize: '1.5rem',
-              color: '#234E55',
-            }}
-          >
-            {/* ▼ */}
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            style={{
-              position: 'absolute',
-              right: '8px',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              pointerEvents: 'none',
-              color: '#234E55'
-            }}
-          >
-            <path d="M7 10l5 5 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-
-          </div>
         </div>
 
-        {/* Equipment */}
         <div style={{ fontSize: '1.5rem', color: '#555' }}>
-          <strong>{t('seatMap.equipmentType')}:</strong> {equipment}
+          <strong>{t('seatMap.equipmentType')}:</strong> {equipmentType}
         </div>
       </div>
 
-      {/* Cabin class selector */}
       <div style={{ position: 'relative', display: 'inline-block', marginTop: '0rem' }}>
         <label style={{ marginRight: '0.5rem' }}>{t('seatMap.cabinClass')}:</label>
-
-        <div style={{ position: 'relative', display: 'inline-block' }}>
-          <select
-            value={cabinClass}
-            onChange={(e) => setCabinClass(e.target.value as 'Y' | 'S' | 'C' | 'F' | 'A')}
-            style={{
-              border: 'none',
-              background: 'transparent',
-              fontSize: '1.5rem',
-              padding: '0.25rem 2rem 0.25rem 0.5rem',
-              appearance: 'none',
-              WebkitAppearance: 'none',
-              MozAppearance: 'none',
-              outline: 'none',
-              cursor: 'pointer',
-              minWidth: '175px',
-            }}
-          >
-            <option value="Y">{t('seatMap.cabin.economy')}</option>
-            <option value="S">{t('seatMap.cabin.premiumEconomy')}</option>
-            <option value="C">{t('seatMap.cabin.business')}</option>
-            <option value="F">{t('seatMap.cabin.first')}</option>
-            <option value="A">{t('seatMap.cabin.all')}</option>
-          </select>
-
-          {/* ▼ */}
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            style={{
-              position: 'absolute',
-              right: '8px',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              pointerEvents: 'none',
-              color: '#234E55'
-            }}
-          >
-            <path d="M7 10l5 5 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-
-        </div>
+        <select
+          value={cabinClass}
+          onChange={(e) => setCabinClass(e.target.value as 'Y' | 'S' | 'C' | 'F' | 'A')}
+          style={{
+            border: 'none',
+            background: 'transparent',
+            fontSize: '1.5rem',
+            padding: '0.25rem 2rem 0.25rem 0.5rem',
+            appearance: 'none',
+            outline: 'none',
+            cursor: 'pointer',
+            minWidth: '175px',
+          }}
+        >
+          <option value="Y">{t('seatMap.cabin.economy')}</option>
+          <option value="S">{t('seatMap.cabin.premiumEconomy')}</option>
+          <option value="C">{t('seatMap.cabin.business')}</option>
+          <option value="F">{t('seatMap.cabin.first')}</option>
+          <option value="A">{t('seatMap.cabin.all')}</option>
+        </select>
       </div>
 
-      <SeatMapComponentBase
-        config={config}
-        flightSegments={flightSegments}
-        initialSegmentIndex={segmentIndex}
-        showSegmentSelector={false}
-        cabinClass={cabinClass}
-        generateFlightData={(segment, index, cabin) =>
-          generateFlightData(segment, index, cabin)
-        }
-        availability={Array.isArray(availability) ? availability : []}
-        passengers={selectedPassengers}
-        onSeatChange={(updatedSeats) => setSelectedSeats(updatedSeats)}
-        selectedSeats={selectedSeats}
-        flightInfo={flightInfo}
-      />
+      {segment && (
+        <SeatMapComponentBase
+          config={config}
+          flightSegments={flightSegments}
+          initialSegmentIndex={segmentIndex}
+          showSegmentSelector={showSegmentSelector}
+          cabinClass={cabinClass}
+          availability={Array.isArray(availability) ? availability : []}
+          passengers={passengers}
+          onSeatChange={(updatedSeats) => {
+            setSelectedSeats(updatedSeats);
+            onSeatChange?.(updatedSeats);
+          }}
+          selectedSeats={selectedSeats}
+          flightInfo={flightInfo}
+          generateFlightData={(segment, index, cabin) =>
+            generateFlightData(segment, index, cabin)
+          }
+        />
+      )}
     </div>
   );
 };

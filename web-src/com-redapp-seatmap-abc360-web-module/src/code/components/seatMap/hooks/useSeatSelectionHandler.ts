@@ -67,15 +67,11 @@ export const useSeatSelectionHandler = ({
       if (!Array.isArray(seatArray)) return;
 
       const updated = seatArray
-        .filter(p => p.id && p.seat?.seatLabel)
-        .map(p => {
-          const index = Number(p.id);
-          const realId = cleanPassengers[index]?.value || String(p.id);
-          return {
-            passengerId: realId,
-            seatLabel: p.seat.seatLabel.toUpperCase()
-          };
-        });
+      .filter(p => p.id && p.seat?.seatLabel)
+      .map(p => ({
+        passengerId: String(p.id),
+        seatLabel: p.seat.seatLabel.toUpperCase()
+      }));
 
       setSelectedSeats(prev => {
         const withoutOld = prev.filter(s => !updated.some(u => u.passengerId === s.passengerId));

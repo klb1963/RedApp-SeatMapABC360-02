@@ -133,7 +133,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
       currentDeckIndex: '0'
     };
 
-    const targetOrigin = new URL(iframe.src).origin;
+    const targetOrigin = 'https://quicket.io';
     iframe.contentWindow?.postMessage(message, targetOrigin);
     console.log('🔁 PostMessage after Reset all');
   };
@@ -188,7 +188,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     setBoardingComplete,
     onSeatChange
   });
-
+  
   // === 👥 Passenger control panel ===
   const passengerPanel = (
     <PassengerPanel
@@ -213,7 +213,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          height: '600px',
+          height: '100%',
           width: '100%',
           overflow: 'auto',
         }}
@@ -225,7 +225,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
           onLoad={handleIframeLoad}
           style={{
             width: '460px', 
-            height: '600px',
+            height: '100%',
             border: 'none',
             overflow: 'hidden' 
            }}

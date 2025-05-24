@@ -133,7 +133,7 @@ export class Main extends Module {
 
   openSeatMapABC360(): void {
     getService(PublicModalsService).closeReactModal(); // ✅ Close any open modals
-    openSeatMapPnr(this.localStore.store); // delegate 
+    openSeatMapPnr(); // delegate 
   }
 
   // ========== open showAgentProfile =====================
