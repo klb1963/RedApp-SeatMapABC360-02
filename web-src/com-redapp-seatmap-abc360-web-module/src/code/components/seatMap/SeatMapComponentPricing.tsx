@@ -17,12 +17,13 @@
  */
 
 import * as React from 'react';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import SeatMapComponentBase from './SeatMapComponentBase';
 import { generateFlightData } from '../../utils/generateFlightData';
 import SeatLegend from './panels/SeatLegend';
 import { FlightInfoPanel } from './panels/FlidhtInfoPanel';
 import { t } from '../../Context';
+import { normalizeSegment } from '../../utils/normalizeSegment';
 
 interface SeatMapComponentPricingProps {
   config: any;
@@ -37,44 +38,37 @@ const SeatMapComponentPricing: React.FC<SeatMapComponentPricingProps> = ({
 }) => {
   const shoppingSegments = JSON.parse(sessionStorage.getItem('shoppingSegments') || '[]');
 
-  // 🔁 Segment index (default — from props)
   const [segmentIndex, setSegmentIndex] = useState<number>(selectedSegmentIndex);
   const [cabinClass, setCabinClass] = useState<'Y' | 'S' | 'C' | 'F' | 'A'>('Y');
 
-  const segment = shoppingSegments[segmentIndex] || {};
+  const rawSegment = shoppingSegments[segmentIndex] || {};
+  const normalized = normalizeSegment(rawSegment);
 
-  const equipment =
-    typeof segment?.equipment === 'object'
-      ? segment.equipment?.EncodeDecodeElement?.SimplyDecoded
-      : segment?.equipment || 'Not Available';
-
-  const airlineName = segment?.marketingAirline || 'n/a';
-  const flightNumber = segment?.flightNumber || '—';
-  const fromCode = segment?.origin || '—';
-  const toCode = segment?.destination || '—';
-  const departureDate =
-    segment?.departureDateTime?.split?.('T')[0] || segment?.departureDate || 'not specified';
-  const duration = segment?.ElapsedTime
-    ? `${Math.floor(segment.ElapsedTime / 60)}:${String(segment.ElapsedTime % 60).padStart(2, '0')}`
-    : 'n/a';
-    const equipmentType = typeof segment.equipment === 'object'
-      ? segment.equipment?.EquipmentType || '—'
-      : '—';
-    const aircraftDescription = typeof segment.equipment === 'object'
-      ? segment.equipment?.EncodeDecodeElement?.SimplyDecoded || t('seatMap.unknown')
-      : t('seatMap.unknown');
-
+  const {
+    marketingAirline,
+    marketingAirlineName,
+    flightNumber,
+    departureDateTime,
+    origin,
+    originCityName,
+    destination,
+    destinationCityName,
+    duration,
+    equipmentType,
+    aircraftDescription
+  } = normalized;
 
   const flightInfo = (
     <>
       <FlightInfoPanel
-        airlineName={airlineName}
+        airlineCode={marketingAirline}
+        airlineName={marketingAirlineName}
         flightNumber={flightNumber}
-        fromCode={fromCode}
-        fromCity=""
-        toCode={toCode}
-        toCity=""
-        date={departureDate}
+        fromCode={origin}
+        fromCity={originCityName || ''}
+        toCode={destination}
+        toCity={destinationCityName || ''}
+        date={departureDateTime?.split?.('T')[0] || t('seatMap.dateUnknown')}
         duration={duration}
         equipmentType={equipmentType}
         aircraft={aircraftDescription}
@@ -85,8 +79,6 @@ const SeatMapComponentPricing: React.FC<SeatMapComponentPricingProps> = ({
 
   return (
     <div style={{ padding: '1rem' }}>
-  
-      {/* 🔝 Segment info */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
@@ -113,11 +105,14 @@ const SeatMapComponentPricing: React.FC<SeatMapComponentPricingProps> = ({
               minWidth: '200px',
             }}
           >
-            {shoppingSegments.map((seg: any, idx: number) => (
-              <option key={idx} value={idx}>
-                {seg.origin} → {seg.destination}, Flight {seg.flightNumber}
-              </option>
-            ))}
+            {shoppingSegments.map((seg: any, idx: number) => {
+              const s = normalizeSegment(seg);
+              return (
+                <option key={idx} value={idx}>
+                  {s.origin} → {s.destination}, Flight {s.flightNumber}
+                </option>
+              );
+            })}
           </select>
           <div
             style={{
@@ -133,14 +128,14 @@ const SeatMapComponentPricing: React.FC<SeatMapComponentPricingProps> = ({
             ▼
           </div>
         </div>
-  
+
         {/* Equipment display */}
         <div style={{ fontSize: '1.5rem', color: '#555' }}>
-          <strong>Equipment:</strong> {equipment}
+          <strong>Equipment:</strong> {equipmentType}
         </div>
       </div>
-  
-      {/* 🎫 Cabin class selector */}
+
+      {/* Cabin class selector */}
       <div style={{ position: 'relative', display: 'inline-block', marginBottom: '1rem' }}>
         <label style={{ marginRight: '0.5rem' }}>Cabin class:</label>
         <div style={{ position: 'relative', display: 'inline-block' }}>
@@ -181,15 +176,14 @@ const SeatMapComponentPricing: React.FC<SeatMapComponentPricingProps> = ({
           </div>
         </div>
       </div>
-  
-      {/* 🗺️ Seat Map */}
+
       <SeatMapComponentBase
         config={config}
-        flightSegments={shoppingSegments}
-        initialSegmentIndex={segmentIndex}
+        flightSegments={[normalized]}
+        initialSegmentIndex={0}
         cabinClass={cabinClass}
         generateFlightData={(seg, index, cabin) =>
-          generateFlightData({ ...seg, cabinClass: cabin, equipment: seg.equipment }, index)
+          generateFlightData({ ...normalized, cabinClass, equipment: normalized.equipmentType }, index)
         }
         availability={[]}
         passengers={[]}
@@ -198,7 +192,6 @@ const SeatMapComponentPricing: React.FC<SeatMapComponentPricingProps> = ({
       />
     </div>
   );
- 
 };
 
 export default SeatMapComponentPricing;

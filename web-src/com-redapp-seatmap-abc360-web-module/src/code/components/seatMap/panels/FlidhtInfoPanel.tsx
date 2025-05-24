@@ -3,6 +3,7 @@
 import * as React from 'react';
 
 interface FlightInfoPanelProps {
+  airlineCode: string; 
   airlineName: string;
   flightNumber: string;
   fromCode: string;

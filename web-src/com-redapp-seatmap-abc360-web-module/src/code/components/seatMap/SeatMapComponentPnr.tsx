@@ -21,6 +21,7 @@ import { generateFlightData } from '../../utils/generateFlightData';
 import SeatLegend from './panels/SeatLegend';
 import { PassengerOption } from '../../utils/parcePnrData';
 import { FlightInfoPanel } from './panels/FlidhtInfoPanel';
+import { normalizeSegment } from '../../utils/normalizeSegment';
 import { t } from '../../Context';
 
 interface SeatMapComponentPnrProps {
@@ -50,31 +51,34 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
 
   const segment = flightSegments?.[segmentIndex];
 
-  const airlineName = segment?.marketingCarrier || '—';
-  const flightNumber = segment?.flightNumber || '—';
-  const fromCode = segment?.origin || '—';
-  const fromCity = segment?.originCityName || '';
-  const toCode = segment?.destination || '—';
-  const toCity = segment?.destinationCityName || '';
-  const date = segment?.departureDateTime?.split?.('T')[0] || t('seatMap.dateUnknown');
-  const duration = segment?.duration || '';
-  const equipmentType = typeof segment?.equipment === 'object'
-    ? segment.equipment?.EquipmentType || '—'
-    : '—';
-  const aircraftDescription = typeof segment?.equipment === 'object'
-    ? segment.equipment?.EncodeDecodeElement?.SimplyDecoded || t('seatMap.unknown')
-    : t('seatMap.unknown');
+  const normalizedSegment = normalizeSegment(segment);
+
+  const {
+    marketingAirline,
+    marketingAirlineName,
+    flightNumber,
+    departureDateTime,
+    origin,
+    originCityName,
+    destination,
+    destinationCityName,
+    duration,
+    equipmentType,
+    aircraftDescription
+  } = normalizedSegment;
+
 
   const flightInfo = (
     <>
       <FlightInfoPanel
-        airlineName={airlineName}
+        airlineCode={marketingAirline} 
+        airlineName={marketingAirlineName}
         flightNumber={flightNumber}
-        fromCode={fromCode}
-        fromCity={fromCity}
-        toCode={toCode}
-        toCity={toCity}
-        date={date}
+        fromCode={origin}
+        fromCity={originCityName}
+        toCode={destination}
+        toCity={destinationCityName}
+        date={departureDateTime?.split?.('T')[0] || t('seatMap.dateUnknown')}
         duration={duration}
         equipmentType={equipmentType}
         aircraft={aircraftDescription}
