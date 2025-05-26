@@ -31,11 +31,12 @@ import { PricingView } from './components/views/SaetMapPricingView';
 
 import { SampleComponent } from './views/SampleComponent';
 
-import { CreatePNR } from './components/pnrServices/CreatePNR';
 import { loadPnrDetailsFromSabre } from './services/loadPnrDetailsFromSabre';
 import { openSeatMapPnr } from './components/seatMap/openSeatMapPnr';
 import { AgentProfileService } from 'sabre-ngv-app/app/services/impl/AgentProfileService';
 import { ShowAgentProfile } from './services/ShowAgentProfile';
+
+import { createPnrForm } from './components/seatMap/forms/CreatePnrForm';
 
 import { t } from './Context'; // i18n
 
@@ -83,9 +84,9 @@ export class Main extends Module {
 
       const sidepanelMenu = new RedAppSidePanelConfig([
         new RedAppSidePanelButton(
-          "Create PNR",
+          "Create Test PNR",
           "btn-secondary side-panel-button",
-          () => { this.showForm(); },
+          () => { this.showCreatePnrForm(); },
           false
         ),
 
@@ -123,10 +124,9 @@ export class Main extends Module {
 
     } // end of init
 
-  //============= create PNR form =======
-  showForm(): void {
-    const ls = getService(LayerService);
-    ls.showOnLayer(CreatePNR, { display: "areaView", position: 42 });
+  //============= create Teast PNR form =======
+  showCreatePnrForm(): void {
+    createPnrForm();
   }
 
   //============= open SeatMap ABC 360 with PNR data =====

@@ -42,6 +42,7 @@ export interface SegmentOption extends Option<string> {
   equipment: string;
   segmentNumber: string;
   duration: number;
+  airlineName?: string;
 }
 
 /**
@@ -108,6 +109,7 @@ export const parsePnrData = (xmlDoc: XMLDocument): PnrData => {
     const departureDateTime = segment.getElementsByTagName('stl19:DepartureDateTime')[0]?.textContent?.trim() || '';
     const marketingFlightNumber = segment.getElementsByTagName('stl19:MarketingFlightNumber')[0]?.textContent?.trim() || '';
     const marketingCarrier = segment.getElementsByTagName('stl19:MarketingAirlineCode')[0]?.textContent?.trim() || 'UNKNOWN';
+    const airlineName = segment.getElementsByTagName('stl19:OperatingAirlineShortName')[0]?.textContent?.trim() || '';
     const bookingClass = segment.getElementsByTagName('stl19:OperatingClassOfService')[0]?.textContent?.trim() || '';
     const equipment = segment.getElementsByTagName('stl19:EquipmentType')[0]?.textContent?.trim() || '';
 
@@ -134,6 +136,7 @@ export const parsePnrData = (xmlDoc: XMLDocument): PnrData => {
       destination,
       departureDate,
       marketingCarrier,
+      airlineName,
       marketingFlightNumber,
       bookingClass,
       equipment,

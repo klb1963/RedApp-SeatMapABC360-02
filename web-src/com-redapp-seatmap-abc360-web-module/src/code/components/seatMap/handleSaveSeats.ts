@@ -1,7 +1,5 @@
 // file: /code/components/seatMap/handleSaveSeats.ts
 
-// file: /code/components/seatMap/handleSaveSeats.ts
-
 import { getService } from '../../Context';
 import { ISoapApiService } from 'sabre-ngv-communication/interfaces/ISoapApiService';
 import { PnrPublicService } from 'sabre-ngv-app/app/services/impl/PnrPublicService';
@@ -20,6 +18,8 @@ export const handleSaveSeats = async (selectedSeats: SelectedSeat[]): Promise<vo
     const passengers = parsedData.passengers || [];
     const segments = parsedData.segments || [];
 
+    console.log('SEGMENTS:', segments);
+
     // Fallback to SegmentNumber "1" if not available
     const segmentNumber = segments[0]?.segmentNumber || '1';
 
@@ -29,7 +29,7 @@ export const handleSaveSeats = async (selectedSeats: SelectedSeat[]): Promise<vo
       if (!pax || !seat.seatLabel) return '';
 
       return `
-        <Seat BoardingPass="true">
+        <Seat BoardingPass="false">
           <NameSelect NameNumber="${pax.nameNumber}" />
           <SeatSelect Number="${seat.seatLabel}" />
           <SegmentSelect Number="${segmentNumber}" />
@@ -66,14 +66,27 @@ export const handleSaveSeats = async (selectedSeats: SelectedSeat[]): Promise<vo
 
     console.log('📩 Sabre response:\n', response.value);
 
-    // Check response for success
-    if (response.value.includes('<Success')) {
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(response.value, 'application/xml');
+
+    // Ищем по локальному имени, игнорируя префиксы
+    const appResults = xmlDoc.getElementsByTagNameNS(
+      'http://services.sabre.com/STL/v01', // 👈 исправлено
+      'ApplicationResults'
+    )[0];
+
+    const statusAttr = appResults?.getAttribute('status');
+
+    console.log('📄 HERE IS appResults:', appResults?.outerHTML);
+    console.log('🔍 Status attribute from ApplicationResults:', statusAttr);
+
+    if (statusAttr === 'Complete') {
       console.log('✅ Seat assignment succeeded.');
       await pnrService.refreshData();
       modalService.closeReactModal();
     } else {
-      console.warn('⚠️ Sabre did not return <Success>.');
-      alert('Seat assignment failed. Check console for details.');
+      console.warn('⚠️ ApplicationResults status is not Complete.');
+      alert('Seat assignment may have failed. Check console for details.');
     }
 
   } catch (error) {

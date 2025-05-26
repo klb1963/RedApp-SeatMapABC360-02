@@ -56,10 +56,11 @@ const EQUIPMENT_DESCRIPTIONS: Record<string, string> = {
       seg.MarketingAirline?.EncodeDecodeElement?.Code ||
       'XX';
   
-    const marketingAirlineName =
+      const marketingAirlineName =
       seg.marketingAirlineName ||
+      capitalize(seg.airlineName) ||
       seg.MarketingAirline?.EncodeDecodeElement?.SimplyDecoded ||
-      '';
+      'n/a';
   
     const rawFlightNumber =
       seg.flightNumber || seg.marketingFlightNumber || seg.FlightNumber || '0';
@@ -124,4 +125,10 @@ const EQUIPMENT_DESCRIPTIONS: Record<string, string> = {
       equipmentType,
       aircraftDescription,
     };
+
+    function capitalize(input?: string): string {
+      if (!input) return '';
+      return input.charAt(0).toUpperCase() + input.slice(1).toLowerCase();
+    }
+
   }

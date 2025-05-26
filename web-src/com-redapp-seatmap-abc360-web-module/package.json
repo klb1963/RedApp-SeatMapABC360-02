@@ -18,7 +18,9 @@
     "sabre-ngv-custom-forms": "*",
     "sabre-ngv-UIComponents": "*",
     "sabre-ngv-pricing": "*",
-    "sabre-ngv-communication": "*"
+    "sabre-ngv-communication": "*",
+    "sabre-ngv-pos-cdm": "*",
+    "sabre-ngv-commsg": "*"
   },
   "devDependencies": {},
   "optionalDependencies": {},
@@ -33,7 +35,9 @@
       "sabre-ngv-custom-forms": "*",
       "sabre-ngv-UIComponents": "*",
       "sabre-ngv-pricing": "*",
-      "sabre-ngv-communication": "*"
+      "sabre-ngv-communication": "*",
+      "sabre-ngv-pos-cdm": "*",
+      "sabre-ngv-commsg": "*"
     },
     "concierge_version_min": "7.5.18",
     "runtimeDependencies": {},
