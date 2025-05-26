@@ -38,6 +38,16 @@ declare global {
 export interface SelectedSeat {
   passengerId: string;
   seatLabel: string;
+  passengerType: string;
+  passengerLabel: string;
+  passengerColor: string;
+  initials: string;
+  readOnly?: boolean;
+  abbr?: string;
+  seat: {
+    seatLabel: string;
+    price: string;
+  };
 }
 
 interface SeatMapComponentBaseProps {
@@ -48,6 +58,11 @@ interface SeatMapComponentBaseProps {
   cabinClass: string;
   availability: any[];
   passengers: PassengerOption[];
+  assignedSeats?: {
+    passengerId: string;
+    seat: string;
+    segmentNumber: string;
+  }[];
   generateFlightData: (segment: any, index: number, cabin: string) => FlightData;
   onSeatChange?: (seats: SelectedSeat[]) => void;
   passengerPanel?: React.ReactNode;
@@ -76,16 +91,58 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   generateFlightData,
   onSeatChange,
   flightInfo,
+  assignedSeats,
   galleryPanel
 }) => {
+
   const iframeRef = useRef<HTMLIFrameElement>(null); // reference to the iframe
   const [boardingComplete, setBoardingComplete] = useState(false); // boarding status
 
   // ✅ Normalize passenger IDs on initial load
   const [cleanPassengers] = useState(() => ensurePassengerIds(passengers));
 
-  // 🪑 State for selected seats
+  //===================================================
+  // 🪑 State for selected seats — начальная пустая инициализация
   const [selectedSeats, setSelectedSeats] = useState<SelectedSeat[]>([]);
+
+  // ✅ Если selectedSeats пустой, но есть assignedSeats — инициализируем selectedSeats
+  useEffect(() => {
+    if (selectedSeats.length === 0 && assignedSeats?.length) {
+      const enriched = assignedSeats.map((s) => {
+        const pax = passengers.find(
+          (p) => p.id === s.passengerId || p.nameNumber === s.passengerId
+        );
+
+        const fullName = pax?.label || '';
+        const initials = pax
+          ? `${pax.givenName?.[0] || ''}${pax.surname?.[0] || ''}`.toUpperCase()
+          : '';
+        const abbr = pax?.surname?.slice(0, 2).toUpperCase() || '';
+        const passengerColor = pax?.passengerColor || '';
+
+        return {
+          passengerId: s.passengerId,
+          seatLabel: s.seat,
+          passengerType: 'ADT',
+          passengerLabel: fullName,
+          passengerColor,
+          initials,
+          abbr,
+          readOnly: true,
+          seat: {
+            seatLabel: s.seat,
+            price: 'USD 0',
+          },
+        };
+      });
+
+      setSelectedSeats(enriched);
+      onSeatChange?.(enriched);
+      console.log('🪑 selectedSeats инициализированы из assignedSeats');
+    }
+  }, [assignedSeats, selectedSeats.length, passengers]);
+
+  //===================================================
 
   // 🔁 Sync selected seats to a global variable for debugging/testing
   useEffect(() => {

@@ -27,23 +27,33 @@ interface ShowPnrInfoProps {
 export const ShowPnrInfo: React.FC<ShowPnrInfoProps> = ({ pnrData, rawXml }) => {
     return (
         <div style={{ padding: '1rem', maxHeight: '80vh', overflowY: 'auto' }}>
-            {/* === 🧳 Pessengers === */}
-            <h3>🧳 Passenger List</h3>
+        <h3>🧳 Passenger List</h3>
             <ul>
-                {pnrData.passengers.map((passenger: any, index: number) => (
-                    <li key={index}>
-                        <strong>{passenger.surname}/{passenger.givenName}</strong>
-                        {' — '}
-                        <span style={{ color: '#555' }}>
-                            Seat: <strong>{passenger.seatAssignment || 'not assigned'}</strong>
-                        </span>
-                        {passenger.nameNumber && (
-                            <span style={{ marginLeft: '1rem', color: '#999' }}>
-                                NameNumber: <code>{passenger.nameNumber}</code>
-                            </span>
-                        )}
-                    </li>
-                ))}
+            {pnrData.passengers.map((passenger: any, index: number) => {
+                // 🧩 Назначенное место из assignedSeats (если найдено)
+                const seatFromAssigned = pnrData.assignedSeats?.find(
+                (s: any) => s.passengerId === passenger.id || s.passengerId === passenger.nameNumber
+                )?.seat;
+
+                return (
+                <li key={index}>
+                    <strong>{passenger.surname}/{passenger.givenName}</strong>
+                    {' — '}
+                    <span style={{ color: '#555' }}>
+                    Seat:
+                    <strong>
+                        {' '}
+                        {seatFromAssigned || passenger.seatAssignment || 'not assigned'}
+                    </strong>
+                    </span>
+                    {passenger.nameNumber && (
+                    <span style={{ marginLeft: '1rem', color: '#999' }}>
+                        NameNumber: <code>{passenger.nameNumber}</code>
+                    </span>
+                    )}
+                </li>
+                );
+            })}
             </ul>
 
             {/* === ✈️ Segments === */}

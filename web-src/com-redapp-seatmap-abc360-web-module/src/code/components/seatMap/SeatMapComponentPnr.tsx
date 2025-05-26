@@ -30,6 +30,11 @@ interface SeatMapComponentPnrProps {
   selectedSegmentIndex?: number;
   availability?: any[];
   passengers?: PassengerOption[];
+  assignedSeats?: {
+    passengerId: string;
+    seat: string;
+    segmentNumber: string;
+  }[];
   showSegmentSelector?: boolean;
   onSeatChange?: (updatedSeats: SelectedSeat[]) => void;
 }
@@ -40,6 +45,7 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
   selectedSegmentIndex = 0,
   availability = [],
   passengers = [],
+  assignedSeats = [],
   showSegmentSelector = true,
   onSeatChange
 }) => {
@@ -86,6 +92,9 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
       <SeatLegend />
     </>
   );
+
+  console.log('🟡 Assigned seats at PNR level:', assignedSeats);
+  console.log('🟡 Passengers at PNR level:', passengers);
 
   return (
     <div style={{ padding: '1rem' }}>
@@ -218,6 +227,7 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
           }}
           selectedSeats={selectedSeats}
           flightInfo={flightInfo}
+          assignedSeats={assignedSeats}
           generateFlightData={(segment, index, cabin) =>
             generateFlightData(segment, index, cabin)
           }

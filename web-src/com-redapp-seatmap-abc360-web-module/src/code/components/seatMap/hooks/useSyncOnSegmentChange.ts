@@ -19,6 +19,7 @@ import { PassengerOption } from '../../../utils/parcePnrData';
 import { FlightData } from '../../../utils/generateFlightData';
 import { createPassengerPayload } from '../helpers/createPassengerPayload';
 import { SeatMapMessagePayload } from '../types/SeatMapMessagePayload';
+import { SelectedSeat } from '../SeatMapComponentBase';
 
 interface Props {
   config: any;
@@ -28,7 +29,7 @@ interface Props {
   availability: any[];
   passengers: PassengerOption[];
   selectedPassengerId: string;
-  selectedSeats: { passengerId: string; seatLabel: string }[];
+  selectedSeats: SelectedSeat[];
   iframeRef: React.RefObject<HTMLIFrameElement>;
   generateFlightData: (segment: any, index: number, cabin: string) => FlightData;
 }

@@ -82,6 +82,7 @@ export async function openSeatMapPnr(): Promise<void> {
         selectedSegmentIndex,
         availability,
         passengers: mappedPassengers,
+        assignedSeats: pnrData.assignedSeats,
         onSeatChange: (updatedSeats) => {
           selectedSeatsRef.current = updatedSeats;
         }
