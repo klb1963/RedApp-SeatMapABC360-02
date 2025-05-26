@@ -13,7 +13,6 @@
 import { Option } from 'sabre-ngv-UIComponents/advancedDropdown/interfaces/Option';
 import { getPassengerColor } from '../components/seatMap/helpers/getPassengerColor';
 
-
 /**
  * PassengerOption — structured passenger model
  * used in dropdowns, seat assignment, and PNR-related UI.
@@ -24,8 +23,8 @@ export interface PassengerOption extends Option<string> {
   givenName: string;
   surname: string;
   seatAssignment?: string;
-  nameNumber?: string; // Sabre NameAssocId + .1 (e.g. "2.1")
-  passengerColor?: string; // color for passenger icon (circle) 
+  nameNumber?: string;
+  passengerColor?: string;
 }
 
 /**
@@ -51,21 +50,14 @@ export interface SegmentOption extends Option<string> {
 export interface PnrData {
   passengers: PassengerOption[];
   segments: SegmentOption[];
-  // ✅ Новое поле: список назначенных в PNR мест
   assignedSeats?: {
     passengerId: string;
     seat: string;
-    segmentNumber: string; // пока всегда "1"
+    segmentNumber: string;
   }[];
+  pnrLocator?: string;
 }
 
-/**
- * Parses STL-format XML from GetReservationRS into a normalized
- * object containing passengers and segments.
- *
- * @param xmlDoc - XMLDocument returned from Sabre GetReservationRS
- * @returns Parsed passengers and segments
- */
 export const parsePnrData = (xmlDoc: XMLDocument): PnrData => {
   const passengers: PassengerOption[] = [];
   const segments: SegmentOption[] = [];
@@ -78,11 +70,9 @@ export const parsePnrData = (xmlDoc: XMLDocument): PnrData => {
     const surname = passenger.getElementsByTagName('stl19:LastName')[0]?.textContent?.trim() || '';
     const givenName = passenger.getElementsByTagName('stl19:FirstName')[0]?.textContent?.trim() || '';
 
-    // ✅ Build external ref (NameNumber) from nameAssocId
     const nameAssocId = passenger.getAttribute('nameAssocId') || '';
     const nameNumber = nameAssocId ? `${nameAssocId}.1` : undefined;
 
-    // 🪑 Optional seat assignment
     let seatAssignment = 'not assigned';
 
     const seatNumberNode = passenger
@@ -122,7 +112,6 @@ export const parsePnrData = (xmlDoc: XMLDocument): PnrData => {
     const bookingClass = segment.getElementsByTagName('stl19:OperatingClassOfService')[0]?.textContent?.trim() || '';
     const equipment = segment.getElementsByTagName('stl19:EquipmentType')[0]?.textContent?.trim() || '';
 
-    // 📆 Extract departure date (YYYY-MM-DD)
     let departureDate = '';
     if (departureDateTime.includes('T')) {
       departureDate = departureDateTime.split('T')[0];
@@ -149,7 +138,7 @@ export const parsePnrData = (xmlDoc: XMLDocument): PnrData => {
       marketingFlightNumber,
       bookingClass,
       equipment,
-      segmentNumber: String(i + 1), // ✅ синтетическая нумерация "1", "2", ...
+      segmentNumber: String(i + 1),
       duration: durationMinutes,
     });
   }
@@ -158,24 +147,20 @@ export const parsePnrData = (xmlDoc: XMLDocument): PnrData => {
     p.passengerColor = getPassengerColor(i);
   });
 
-  console.log('[🔍] Raw seat assignments in passengers:', passengers.map(p => ({
-    id: p.id,
-    seat: p.seatAssignment
-  })));
+  const seatAssignments = passengers
+    .filter(p => p.seatAssignment && p.seatAssignment !== 'not assigned')
+    .map(p => ({
+      passengerId: p.id,
+      seat: p.seatAssignment,
+      segmentNumber: '1'
+    }));
 
-// 🎯 Сопоставление назначенных мест для пассажиров
-const seatAssignments = passengers
-  .filter(p => p.seatAssignment && p.seatAssignment !== 'not assigned')
-  .map(p => ({
-    passengerId: p.id,
-    seat: p.seatAssignment,
-    segmentNumber: '1'
-  }));
+  const pnrLocator = xmlDoc.getElementsByTagName('stl19:RecordLocator')[0]?.textContent?.trim() || '';
 
   return {
     passengers,
     segments,
-    assignedSeats: seatAssignments // ✅ добавлено
+    assignedSeats: seatAssignments,
+    pnrLocator
   };
-
 };
