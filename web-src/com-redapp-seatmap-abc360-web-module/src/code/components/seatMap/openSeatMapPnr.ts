@@ -88,7 +88,8 @@ export async function openSeatMapPnr(): Promise<void> {
       }),
       onSubmit: handleSubmit,
       actions: actions(handleSubmit, onClickCancel),
-      modalClassName: 'seatmap-modal-wide'
+      modalClassName: 'seatmap-modal-lower'
+      // modalClassName: 'seatmap-modal-wide'
     });
 
   } catch (error) {
