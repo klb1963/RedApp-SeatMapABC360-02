@@ -51,15 +51,18 @@ export const loadPnrDetailsFromSabre = async (): Promise<{ parsedData: PnrData; 
     // 🧩 Parse the returned STL object into structured JavaScript data
     const parsedData = parsePnrData(response.getParsedValue());
     const rawXml = response.value;
-
-    // ✅ Debug output: passengers with their NameNumber / externalRef
+    
+    console.log('[🧪] XML получен, начинаем парсить');
     console.log('✅ parsedData.passengers:', JSON.stringify(parsedData.passengers, null, 2));
-
+    console.log('[🧪] После парсинга:', parsedData);
     // 🧩 Debug output: all flight segments
     console.log('🧩 Segments from parsed PNR Data [RAW]:', parsedData.segments);
 
     // 📤 Return both structured and raw versions
     return { parsedData, rawXml };
+
+    
+   
 
   } catch (error) {
     console.error('❌ Error in loadPnrDetailsFromSabre:', error);

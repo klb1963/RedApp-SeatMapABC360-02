@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { loadPnrDetailsFromSabre } from '../../../services/loadPnrDetailsFromSabre';
 import { PassengerOption } from '../../../utils/parcePnrData';
 import { SelectedSeat } from '../SeatMapComponentBase';
+import { createSelectedSeat } from '../helpers/createSelectedSeat';
 
 interface UseInitPnrDataProps {
   setPassengers: (p: PassengerOption[]) => void;
@@ -35,14 +36,14 @@ export const useInitPnrData = ({
         setFlightSegments(segments);
         setSelectedSegmentIndex(0);
 
-        const freshSeats = passengers.map((p) => ({
-          passengerId: p.nameNumber,
-          seatLabel: null
-        }));
+
+        const freshSeats = passengers.map((p) =>
+          createSelectedSeat(p, '', false)
+        );
         setSelectedSeats(freshSeats);
 
         const passengerIds = passengers.map((p) => String(p.id));
-        setSelectedPassengerIds(passengerIds); // ✅ финальная и единственная установка
+        setSelectedPassengerIds(passengerIds);
       } catch (error) {
         console.error('❌ Ошибка при инициализации данных PNR:', error);
       }

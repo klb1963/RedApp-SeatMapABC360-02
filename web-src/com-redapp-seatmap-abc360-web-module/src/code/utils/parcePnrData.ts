@@ -51,6 +51,12 @@ export interface SegmentOption extends Option<string> {
 export interface PnrData {
   passengers: PassengerOption[];
   segments: SegmentOption[];
+  // ✅ Новое поле: список назначенных в PNR мест
+  assignedSeats?: {
+    passengerId: string;
+    seat: string;
+    segmentNumber: string; // пока всегда "1"
+  }[];
 }
 
 /**
@@ -77,14 +83,17 @@ export const parsePnrData = (xmlDoc: XMLDocument): PnrData => {
     const nameNumber = nameAssocId ? `${nameAssocId}.1` : undefined;
 
     // 🪑 Optional seat assignment
-    let seatAssignment: string = 'not assigned';
-    const seatsNode = passenger.getElementsByTagName('stl19:Seats')[0];
-    if (seatsNode) {
-      const seatNode = seatsNode.getElementsByTagName('stl19:Seat')[0];
-      const assignment = seatNode?.getAttribute('Assignment')?.trim();
-      if (assignment) {
-        seatAssignment = assignment;
-      }
+    let seatAssignment = 'not assigned';
+
+    const seatNumberNode = passenger
+      .getElementsByTagName('stl19:Seats')[0]
+      ?.getElementsByTagName('stl19:PreReservedSeats')[0]
+      ?.getElementsByTagName('stl19:PreReservedSeat')[0]
+      ?.getElementsByTagName('stl19:SeatNumber')[0];
+
+    const seatText = seatNumberNode?.textContent?.trim();
+    if (seatText) {
+      seatAssignment = seatText;
     }
 
     passengers.push({
@@ -149,5 +158,24 @@ export const parsePnrData = (xmlDoc: XMLDocument): PnrData => {
     p.passengerColor = getPassengerColor(i);
   });
 
-  return { passengers, segments };
+  console.log('[🔍] Raw seat assignments in passengers:', passengers.map(p => ({
+    id: p.id,
+    seat: p.seatAssignment
+  })));
+
+// 🎯 Сопоставление назначенных мест для пассажиров
+const seatAssignments = passengers
+  .filter(p => p.seatAssignment && p.seatAssignment !== 'not assigned')
+  .map(p => ({
+    passengerId: p.id,
+    seat: p.seatAssignment,
+    segmentNumber: '1'
+  }));
+
+  return {
+    passengers,
+    segments,
+    assignedSeats: seatAssignments // ✅ добавлено
+  };
+
 };

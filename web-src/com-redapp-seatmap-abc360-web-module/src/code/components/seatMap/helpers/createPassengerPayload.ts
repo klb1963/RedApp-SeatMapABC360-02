@@ -20,27 +20,38 @@ import { SelectedSeat } from '../SeatMapComponentBase';
 import { getInitials } from '../helpers/getInitials';
 import { getPassengerColor } from '../helpers/getPassengerColor';
 
+/**
+ * Transforms a PassengerOption into a payload accepted by the SeatMap iframe.
+ */
 export function createPassengerPayload(
   passenger: PassengerOption,
   index: number,
   selectedPassengerId: string,
   selectedSeats: SelectedSeat[]
 ) {
-  const pid = String(passenger.id ?? index);
-  // const pid = passenger.nameNumber ?? `pax-${index}`;
-  const seat = selectedSeats.find(s => s.passengerId === pid) || null;
-  const readOnly = pid !== selectedPassengerId;
+  const passengerId = String(passenger.id ?? index);
+  const selected = selectedSeats.find(s => s.passengerId === passengerId) || null;
+
+  const seat = selected
+    ? {
+        seatLabel: selected.seatLabel,
+        price: selected.seat?.price || 'USD 0'
+      }
+    : null;
+
   const initials = getInitials(passenger);
-  const color = getPassengerColor(index);
+  const color = passenger.passengerColor || getPassengerColor(index);
+  const label = passenger.label || `${passenger.surname}/${passenger.givenName}`;
+  const abbr = passenger.surname?.slice(0, 2).toUpperCase() || '';
 
   return {
-    id: pid,
+    id: passengerId,
     passengerType: 'ADT',
     seat,
-    passengerLabel: passenger.label || `${passenger.givenName}/${passenger.surname}`,
+    passengerLabel: label,
     passengerColor: color,
     initials,
-    abbr: initials,
-    readOnly
+    abbr,
+    readOnly: passengerId !== selectedPassengerId && !!seat
   };
 }

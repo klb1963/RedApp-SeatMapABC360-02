@@ -19,6 +19,7 @@
 import { useEffect } from 'react';
 import { PassengerOption } from '../../../utils/parcePnrData';
 import { SelectedSeat } from '../SeatMapComponentBase';
+import { createSelectedSeat } from '../helpers/createSelectedSeat';
 
 interface Props {
   cleanPassengers: PassengerOption[];
@@ -67,11 +68,14 @@ export const useSeatSelectionHandler = ({
       if (!Array.isArray(seatArray)) return;
 
       const updated = seatArray
-      .filter(p => p.id && p.seat?.seatLabel)
-      .map(p => ({
-        passengerId: String(p.id),
-        seatLabel: p.seat.seatLabel.toUpperCase()
-      }));
+        .filter(p => p.id && p.seat?.seatLabel)
+        .map(p => {
+          const passenger = cleanPassengers.find(pass => String(pass.id) === String(p.id));
+          if (!passenger) return null;
+
+          return createSelectedSeat(passenger, p.seat.seatLabel, false);
+        })
+        .filter(Boolean) as SelectedSeat[];
 
       setSelectedSeats(prev => {
         const withoutOld = prev.filter(s => !updated.some(u => u.passengerId === s.passengerId));
