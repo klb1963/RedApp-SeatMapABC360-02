@@ -12,14 +12,10 @@
  * Used to prepare data for the seat map visualization library.
  */
 
-/**
- * === Interfaces for layout and seat positions ===
- */
-
 interface Seat {
   label: string;
-  x: number; // ⬅️ X-coordinate for layout rendering
-  y: number; // ⬇️ Y-coordinate for layout rendering
+  x: number; // X-coordinate for layout rendering
+  y: number; // Y-coordinate for layout rendering
 }
 
 interface Row {
@@ -33,35 +29,46 @@ interface Deck {
   rows: Row[];     // List of rows (with seats)
 }
 
-/**
- * === Interface for availability & pricing ===
- */
+type SeatType = 'available' | 'occupied' | 'paid' | 'blocked';
+
 interface AvailabilityItem {
   label: string;     // e.g. '12A'
   price: number;     // Numeric price
   currency: string;  // e.g. 'USD'
-  color: string;     // Used for coloring seats (e.g. orange, gray)
+  color: string;     // Used for seat rendering
+  type: SeatType;    // Semantic type for legend/logic
 }
 
 /**
- * Determines the seat color based on Sabre attributes
- * - gray: occupied
- * - orange: seat has an offer/price
- * - lightblue: free seat
+ * Maps Sabre seat attributes to a semantic seat type.
  */
-function getSeatColor(seatEl: Element): string {
+function getSeatType(seatEl: Element): SeatType {
   const isOccupied = seatEl.getAttribute('occupiedInd') === 'true';
-  const hasOffer = seatEl.querySelector('Offer');
-  if (isOccupied) return 'gray';
-  if (hasOffer) return 'orange';
-  return 'lightblue';
+  const isBlocked = seatEl.getAttribute('availableInd') === 'false';
+  const offerEl = seatEl.querySelector('Offer TotalAmount');
+  const price = offerEl ? parseFloat(offerEl.textContent || '0') : 0;
+
+  if (isOccupied) return 'occupied';
+  if (isBlocked) return 'blocked';
+  if (offerEl && price > 0) return 'paid';
+  return 'available';
+}
+
+/**
+ * Maps seat type to color (used in UI rendering).
+ */
+function getColorByType(type: SeatType): string {
+  switch (type) {
+    case 'available': return '#0B8A10'; // #0B8A10 #A6ECA6 
+    case 'paid': return '#F4B400'; // olive #A2A233 #F4B400
+    case 'occupied': return '#5f5e5e'; // dark gray #5F5E5E
+    case 'blocked': return 'lightgray';
+    default: return 'white';
+  }
 }
 
 /**
  * Parses EnhancedSeatMapRS XML and extracts both layout and pricing/availability.
- *
- * @param xml - Parsed XMLDocument from Sabre seat map response
- * @returns Object with { layout, availability }
  */
 export function parseSeatMapResponse(xml: Document): {
   layout: { decks: Deck[] };
@@ -72,12 +79,11 @@ export function parseSeatMapResponse(xml: Document): {
   };
   const availability: AvailabilityItem[] = [];
 
-  // 🔍 Find all <Row> elements
   const rowElements = Array.from(xml.querySelectorAll('Row'));
 
   rowElements.forEach((rowEl, rowIndex) => {
     const rowNumber = rowEl.querySelector('RowNumber')?.textContent?.trim() || '';
-    if (!/^\d+$/.test(rowNumber)) return; // Skip invalid rows
+    if (!/^\d+$/.test(rowNumber)) return;
 
     const row: Row = { label: rowNumber, seats: [] };
     const seatElements = Array.from(rowEl.querySelectorAll('Seat'));
@@ -86,32 +92,31 @@ export function parseSeatMapResponse(xml: Document): {
       const seatLabel = seatEl.querySelector('Number')?.textContent?.trim();
       if (!seatLabel) return;
 
-      // 💰 Offer price
       const offerEl = seatEl.querySelector('Offer TotalAmount');
       const price = offerEl ? parseFloat(offerEl.textContent || '0') : 0;
       const currency = offerEl?.getAttribute('currencyCode') || 'USD';
-      const color = getSeatColor(seatEl);
 
-      // 📦 Add seat info to availability array
+      const type = getSeatType(seatEl);
+      const color = getColorByType(type);
+
       availability.push({
         label: `${rowNumber}${seatLabel}`,
         price,
         currency,
-        color
+        color,
+        type
       });
 
-      // 🪑 Add seat to layout
       row.seats.push({
         label: seatLabel,
-        x: 60 + seatIndex * 60, // simple horizontal spacing
-        y: 50 + rowIndex * 40   // simple vertical spacing
+        x: 60 + seatIndex * 60,
+        y: 50 + rowIndex * 40
       });
     });
 
     layout.decks[0].rows.push(row);
   });
 
-  // 🔢 Sort rows numerically by row number
   layout.decks[0].rows.sort((a, b) => parseInt(a.label) - parseInt(b.label));
 
   return { layout, availability };
