@@ -11,7 +11,6 @@
  */
 
 import { Option } from 'sabre-ngv-UIComponents/advancedDropdown/interfaces/Option';
-import { getPassengerColor } from '../components/seatMap/helpers/getPassengerColor';
 
 /**
  * PassengerOption — structured passenger model
@@ -143,28 +142,30 @@ export const parsePnrData = (xmlDoc: XMLDocument): PnrData => {
     });
   }
 
-// === Assign a unique color to each passenger for UI display ===
-  passengers.forEach((p, i) => {
-    p.passengerColor = getPassengerColor(i);
-  });
-
-// === Create a flat list of assigned seats for UI state sync ===
-  const seatAssignments = passengers
-    .filter(p => p.seatAssignment && p.seatAssignment !== 'not assigned')
-    .map(p => ({
-      passengerId: p.id,
-      seat: p.seatAssignment,
-      segmentNumber: '1'
-    }));
-
   // === Retrieve PNR locator from the root element ===
   const pnrLocator = xmlDoc.getElementsByTagName('stl19:RecordLocator')[0]?.textContent?.trim() || '';
 
   return {
     passengers,
     segments,
-    assignedSeats: seatAssignments,
     pnrLocator
   };
-  
+
 };
+
+
+// // === Assign a unique color to each passenger for UI display ===
+// passengers.forEach((p, i) => {
+//   p.passengerColor = getPassengerColor(i);
+// });
+
+// // === Create a flat list of assigned seats for UI state sync ===
+// const seatAssignments = passengers
+//   .filter(p => p.seatAssignment && p.seatAssignment !== 'not assigned')
+//   .map(p => ({
+//     passengerId: p.id,
+//     seat: p.seatAssignment,
+//     segmentNumber: '1'
+//   }));
+
+// assignedSeats: seatAssignments,

@@ -4,8 +4,6 @@
  * Opens the Seat Map modal for PNR context.
  * Loads PNR data, fetches seat availability from Sabre,
  * maps passenger/segment data, and initializes the SeatMapComponentPnr.
- *
- * Triggered by UI events (e.g., button click or tile).
  */
 
 import * as React from 'react';
@@ -18,6 +16,7 @@ import { actions } from './panels/actions';
 import SeatMapComponentPnr from './SeatMapComponentPnr';
 import { quicketConfig } from '../../utils/quicketConfig';
 import { t } from '../../Context';
+import { enrichPassengerData } from '../seatMap/utils/enrichPassengerData';
 
 export async function openSeatMapPnr(): Promise<void> {
   const modals = getService(PublicModalsService);
@@ -48,29 +47,21 @@ export async function openSeatMapPnr(): Promise<void> {
       passengerType: 'ADT'
     }));
 
-    const passengers = pnrData.passengers || [];
-    const mappedPassengers = passengers.map((p) => ({
-      ...p,
-      id: p.value,
-      value: p.value,
-      nameNumber: p.nameNumber
-    }));
+    const { enrichedPassengers, assignedSeats } = enrichPassengerData(pnrData.passengers || []);
 
     const selectedSegmentIndex = 0;
     const activeFlight = flightSegments[selectedSegmentIndex];
 
-    const { availability } = await loadSeatMapFromSabre(activeFlight, passengers);
+    const { availability } = await loadSeatMapFromSabre(activeFlight, enrichedPassengers);
 
     const onClickCancel = () => modals.closeReactModal();
 
     const handleSubmit = async () => {
       const selected = selectedSeatsRef.current;
-
       if (!selected?.length) {
         alert('❗ Не выбрано ни одного места.');
         return;
       }
-
       await handleSaveSeats(selected);
     };
 
@@ -81,8 +72,8 @@ export async function openSeatMapPnr(): Promise<void> {
         flightSegments,
         selectedSegmentIndex,
         availability,
-        passengers: mappedPassengers,
-        assignedSeats: pnrData.assignedSeats,
+        passengers: enrichedPassengers,
+        assignedSeats,
         onSeatChange: (updatedSeats) => {
           selectedSeatsRef.current = updatedSeats;
         }
@@ -90,12 +81,10 @@ export async function openSeatMapPnr(): Promise<void> {
       onSubmit: handleSubmit,
       actions: actions(handleSubmit, onClickCancel),
       modalClassName: 'seatmap-modal-lower'
-      // modalClassName: 'seatmap-modal-wide'
     });
 
   } catch (error) {
     console.error('❌ Failed to load SeatMap from PNR:', error);
-
     modals.showReactModal({
       header: 'SeatMap Error',
       component: React.createElement('div', { style: { padding: '1rem', color: 'red' } }, t('seatMap.loadPnrError')),
