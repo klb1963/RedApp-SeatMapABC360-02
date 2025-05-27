@@ -143,10 +143,12 @@ export const parsePnrData = (xmlDoc: XMLDocument): PnrData => {
     });
   }
 
+// === Assign a unique color to each passenger for UI display ===
   passengers.forEach((p, i) => {
     p.passengerColor = getPassengerColor(i);
   });
 
+// === Create a flat list of assigned seats for UI state sync ===
   const seatAssignments = passengers
     .filter(p => p.seatAssignment && p.seatAssignment !== 'not assigned')
     .map(p => ({
@@ -155,6 +157,7 @@ export const parsePnrData = (xmlDoc: XMLDocument): PnrData => {
       segmentNumber: '1'
     }));
 
+  // === Retrieve PNR locator from the root element ===
   const pnrLocator = xmlDoc.getElementsByTagName('stl19:RecordLocator')[0]?.textContent?.trim() || '';
 
   return {
@@ -163,4 +166,5 @@ export const parsePnrData = (xmlDoc: XMLDocument): PnrData => {
     assignedSeats: seatAssignments,
     pnrLocator
   };
+  
 };

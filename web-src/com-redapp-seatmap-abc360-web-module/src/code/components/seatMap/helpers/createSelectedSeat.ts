@@ -1,7 +1,7 @@
 // file: helpers/createSelectedSeat.ts
 
 import { SelectedSeat } from '../SeatMapComponentBase';
-import { PassengerOption } from '../../../utils/parcePnrData';
+import { PassengerOption } from '../../../utils/parsePnrData';
 
 /**
  * Создаёт объект SelectedSeat из пассажира и seatLabel.

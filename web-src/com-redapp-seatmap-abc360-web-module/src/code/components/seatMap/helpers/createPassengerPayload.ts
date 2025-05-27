@@ -15,7 +15,7 @@
  * required by the seat map rendering library.
  */
 
-import { PassengerOption } from '../../../utils/parcePnrData';
+import { PassengerOption } from '../../../utils/parsePnrData';
 import { SelectedSeat } from '../SeatMapComponentBase';
 import { getInitials } from '../helpers/getInitials';
 import { getPassengerColor } from '../helpers/getPassengerColor';

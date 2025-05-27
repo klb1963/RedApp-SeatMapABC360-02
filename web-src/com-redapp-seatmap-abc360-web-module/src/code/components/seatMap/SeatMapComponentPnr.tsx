@@ -19,7 +19,7 @@ import { useState } from 'react';
 import SeatMapComponentBase, { SelectedSeat } from './SeatMapComponentBase';
 import { generateFlightData } from '../../utils/generateFlightData';
 import SeatLegend from './panels/SeatLegend';
-import { PassengerOption } from '../../utils/parcePnrData';
+import { PassengerOption } from '../../utils/parsePnrData';
 import { FlightInfoPanel } from './panels/FlidhtInfoPanel';
 import { normalizeSegment } from '../../utils/normalizeSegment';
 import { t } from '../../Context';

@@ -15,7 +15,7 @@
  */
 
 import { useCallback } from 'react';
-import { PassengerOption } from '../../../utils/parcePnrData';
+import { PassengerOption } from '../../../utils/parsePnrData';
 import { FlightData } from '../../../utils/generateFlightData';
 import { SeatMapMessagePayload } from '../types/SeatMapMessagePayload';
 import { createPassengerPayload } from '../helpers/createPassengerPayload';

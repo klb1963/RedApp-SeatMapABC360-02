@@ -14,7 +14,7 @@
 
 import { getService } from '../Context';
 import { ISoapApiService } from 'sabre-ngv-communication/interfaces/ISoapApiService';
-import { PassengerOption } from '../utils/parcePnrData';
+import { PassengerOption } from '../utils/parsePnrData';
 import { parseSeatMapResponse } from '../utils/parseSeatMapResponse';
 import { AgentProfileService } from 'sabre-ngv-app/app/services/impl/AgentProfileService';
 import { sendXmlToUploader } from './sendXmlToUploader';

@@ -14,7 +14,7 @@
  * Used to prepare consistent visual data for all passengers displayed in the seat map UI.
  */
 
-import { PassengerOption } from '../../../utils/parcePnrData';
+import { PassengerOption } from '../../../utils/parsePnrData';
 import { SelectedSeat } from '../SeatMapComponentBase';
 import { getInitials } from './getInitials';
 import { getPassengerColor } from './getPassengerColor';

@@ -17,7 +17,7 @@
  */
 
 import { useEffect } from 'react';
-import { PassengerOption } from '../../../utils/parcePnrData';
+import { PassengerOption } from '../../../utils/parsePnrData';
 import { SelectedSeat } from '../SeatMapComponentBase';
 import { createSelectedSeat } from '../helpers/createSelectedSeat';
 

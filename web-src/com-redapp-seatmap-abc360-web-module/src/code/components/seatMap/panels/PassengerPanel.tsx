@@ -16,7 +16,7 @@
  */
 
 import * as React from 'react';
-import { PassengerOption } from '../../../utils/parcePnrData';
+import { PassengerOption } from '../../../utils/parsePnrData';
 import { SelectedSeat } from '../SeatMapComponentBase';
 import { t } from '../../../Context';
 import { CreatePnrButton } from './CreatePnrButton';

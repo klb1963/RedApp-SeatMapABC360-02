@@ -22,7 +22,7 @@ import { Option } from 'sabre-ngv-UIComponents/advancedDropdown/interfaces/Optio
 import { loadPnrDetailsFromSabre } from '../services/loadPnrDetailsFromSabre';
 import { loadSeatMapFromSabre } from '../services/loadSeatMapFromSabre';
 import { XmlViewer } from '../utils/XmlViewer';
-import { PassengerOption, SegmentOption } from '../utils/parcePnrData';
+import { PassengerOption, SegmentOption } from '../utils/parsePnrData';
 
 interface EnhancedSeatMapRequestState {
   segments: SegmentOption[];

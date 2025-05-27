@@ -1,6 +1,6 @@
 // file: src/code/seatMap/helpers/getInitials.ts
 
-import { PassengerOption } from '../../../utils/parcePnrData';
+import { PassengerOption } from '../../../utils/parsePnrData';
 
 /**
  * Returns passenger initials based on given name and surname.

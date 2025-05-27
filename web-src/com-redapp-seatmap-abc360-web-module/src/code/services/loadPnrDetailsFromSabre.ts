@@ -17,7 +17,7 @@
 import { getService } from '../Context';
 import { ISoapApiService } from 'sabre-ngv-communication/interfaces/ISoapApiService';
 import { PnrPublicService } from 'sabre-ngv-app/app/services/impl/PnrPublicService';
-import { parsePnrData, PnrData } from '../utils/parcePnrData';
+import { parsePnrData, PnrData } from '../utils/parsePnrData';
 
 export const loadPnrDetailsFromSabre = async (): Promise<{ parsedData: PnrData; rawXml: string }> => {
   try {

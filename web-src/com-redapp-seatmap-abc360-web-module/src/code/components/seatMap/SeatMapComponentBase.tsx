@@ -18,7 +18,7 @@ import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FlightData } from '../../utils/generateFlightData';
 import SeatMapModalLayout from './layout/SeatMapModalLayout';
-import { PassengerOption } from '../../utils/parcePnrData';
+import { PassengerOption } from '../../utils/parsePnrData';
 import { createPassengerPayload } from './helpers/createPassengerPayload';
 import { SeatMapMessagePayload } from './types/SeatMapMessagePayload';
 import { useSyncOnSegmentChange } from './hooks/useSyncOnSegmentChange';
