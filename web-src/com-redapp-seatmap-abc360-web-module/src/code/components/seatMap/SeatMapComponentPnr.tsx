@@ -23,6 +23,7 @@ import { PassengerOption } from '../../utils/parsePnrData';
 import { FlightInfoPanel } from './panels/FlidhtInfoPanel';
 import { normalizeSegment } from '../../utils/normalizeSegment';
 import { t } from '../../Context';
+import { SegmentCabinSelector } from './panels/SegmentCabinSelector';
 
 interface SeatMapComponentPnrProps {
   config: any;
@@ -56,7 +57,6 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
   const [selectedSeats, setSelectedSeats] = useState<SelectedSeat[]>([]);
 
   const segment = flightSegments?.[segmentIndex];
-
   const normalizedSegment = normalizeSegment(segment, { padFlightNumber: false });
 
   const {
@@ -73,11 +73,10 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
     aircraftDescription
   } = normalizedSegment;
 
-
   const flightInfo = (
     <>
       <FlightInfoPanel
-        airlineCode={marketingAirline} 
+        airlineCode={marketingAirline}
         airlineName={marketingAirlineName}
         flightNumber={flightNumber}
         fromCode={origin}
@@ -93,124 +92,18 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
     </>
   );
 
-  console.log('🟡 Assigned seats at PNR level:', assignedSeats);
-  console.log('🟡 Passengers at PNR level:', passengers);
-
   return (
     <div style={{ padding: '1rem' }}>
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-        gap: '1rem',
-        marginBottom: '1rem'
-      }}>
-        <div style={{ position: 'relative' }}>
-          <label style={{ marginRight: '0.5rem' }}>{t('seatMap.segment')}:</label>
-          <select
-            value={segmentIndex}
-            onChange={(e) => {
-              setSegmentIndex(Number(e.target.value));
-              setCabinClass('Y');
-            }}
-            style={{
-              border: 'none',
-              background: 'transparent',
-              fontSize: '1.5rem',
-              padding: '0.25rem 1.5rem 0.25rem 0.5rem',
-              appearance: 'none',
-              outline: 'none',
-              cursor: 'pointer',
-              minWidth: '200px',
-            }}
-          >
-            {flightSegments.map((seg: any, idx: number) => {
-              const s = normalizeSegment(seg, { padFlightNumber: false });
-              return (
-                <option key={idx} value={idx}>
-                  {s.origin} → {s.destination}, {s.flightNumber}
-                </option>
-              );
-            })}
-          </select>
-          {/* ▼ */}
-          <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                style={{
-                  position: 'absolute',
-                  right: '8px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  pointerEvents: 'none',
-                  color: '#234E55'
-                }}
-              >
-                <path
-                  d="M7 10l5 5 5-5"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-        </div>
-        <div style={{ fontSize: '1.5rem', color: '#555' }}>
-          <strong>{t('seatMap.equipmentType')}:</strong> {equipmentType}
-        </div>
-      </div>
-
-      <div style={{ position: 'relative', display: 'inline-block', marginTop: '0rem' }}>
-        <label style={{ marginRight: '0.5rem' }}>{t('seatMap.cabinClass')}:</label>
-        <select
-          value={cabinClass}
-          onChange={(e) => setCabinClass(e.target.value as 'Y' | 'S' | 'C' | 'F' | 'A')}
-          style={{
-            border: 'none',
-            background: 'transparent',
-            fontSize: '1.5rem',
-            padding: '0.25rem 2rem 0.25rem 0.5rem',
-            appearance: 'none',
-            outline: 'none',
-            cursor: 'pointer',
-            minWidth: '180px',
-          }}
-        >
-          <option value="Y">{t('seatMap.cabin.economy')}</option>
-          <option value="S">{t('seatMap.cabin.premiumEconomy')}</option>
-          <option value="C">{t('seatMap.cabin.business')}</option>
-          <option value="F">{t('seatMap.cabin.first')}</option>
-          <option value="A">{t('seatMap.cabin.all')}</option>
-        </select>
-
-        {/* ▼ */}
-        <svg
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          style={{
-            position: 'absolute',
-            right: '8px',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            pointerEvents: 'none',
-            color: '#234E55'
-          }}
-        >
-          <path
-            d="M7 10l5 5 5-5"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </div>
+      <SegmentCabinSelector
+        flightSegments={flightSegments}
+        segmentIndex={segmentIndex}
+        setSegmentIndex={(index) => {
+          setSegmentIndex(index);
+          setCabinClass('Y');
+        }}
+        cabinClass={cabinClass}
+        setCabinClass={setCabinClass}
+      />
 
       {segment && (
         <SeatMapComponentBase
