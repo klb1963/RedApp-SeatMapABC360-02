@@ -11,8 +11,6 @@ import { CustomWorkflowService } from './services/CustomWorkflowService';
 import { RedAppSidePanelConfig } from 'sabre-ngv-xp/configs/RedAppSidePanelConfig';
 import { RedAppSidePanelButton } from 'sabre-ngv-redAppSidePanel/models/RedAppSidePanelButton';
 
-import { LayerService } from 'sabre-ngv-core/services/LayerService';
-
 import { PublicAirAvailabilityService } from 'sabre-ngv-airAvailability/services/PublicAirAvailabilityService';
 import { PublicModalsService } from 'sabre-ngv-modals/services/PublicModalService';
 import { ReactModalOptions } from 'sabre-ngv-modals/components/PublicReactModal/ReactModalOptions';
@@ -124,19 +122,18 @@ export class Main extends Module {
 
     } // end of init
 
-  //============= create Teast PNR form =======
+  //============= create Test PNR form =======
   showCreatePnrForm(): void {
     createPnrForm();
   }
 
-  //============= open SeatMap ABC 360 with PNR data =====
-
+  //============= 💺💺💺 open SeatMap ABC 360 with PNR data =====
   openSeatMapABC360(): void {
     getService(PublicModalsService).closeReactModal(); // ✅ Close any open modals
     openSeatMapPnr(); // delegate 
   }
 
-  // ========== open showAgentProfile =====================
+  // ========== 🪪 open showAgentProfile =====================
   private showAgentProfile = (): void => {
     const modals = getService(PublicModalsService);
     const agentService = getService(AgentProfileService);
@@ -160,7 +157,7 @@ export class Main extends Module {
 
   // ===============================================
 
-    // ✅ needed inside Main
+    // ✅ this method needed inside Main
     localStore = {
       store: {
         getState: () => {
@@ -175,7 +172,7 @@ export class Main extends Module {
       getService(PublicModalsService).closeReactModal();
     };
 
-  //============= Button getEnhancedSeatMapRQ ==========
+  //============= ⌨️ Button getEnhancedSeatMapRQ ==========
   private getEnhancedSeatMapRQ(): void {
     const publicModalsService = getService(PublicModalsService);
 
@@ -186,7 +183,7 @@ export class Main extends Module {
     });
   }
 
-  // =========== Button showPnrInfo ==================
+  // =========== ⌨️ Button showPnrInfo ==================
   showPnrInfo(): void {
     const publicModalsService = getService(PublicModalsService);
 
@@ -230,9 +227,9 @@ export class Main extends Module {
     })();
   }
 
-  //============== Widgets ====================
+  //============== 🖥️ Widgets ====================
 
-  // ========= AvailabilityTile ===============
+  // ========= 🌏🌐🌌 AvailabilityTile ===============
   private registerSeatMapAvailTile(): void {
     const airAvailabilityService = getService(PublicAirAvailabilityService);
 
@@ -258,7 +255,7 @@ export class Main extends Module {
     );
   }
 
-  //========= Shopping & Pricing Tile =============
+  //========= 🛒 Shopping & 💵 Pricing Tile =============
   private registerSeatMapShoppingTile(): void {
     // define config shoppingDrawerConfig
     console.log("registerSeatMapShoppingTile");
@@ -276,8 +273,7 @@ export class Main extends Module {
 
   }
 
-    // ===============================================
-    // приватный метод для показа модального окна в сценарии Pricing
+    // ============ Show Modal for Pricing===================================
     private createShowModalAction(view: React.FunctionComponent<any>, header: string): (data: any) => void {
         return ((data) => {
     

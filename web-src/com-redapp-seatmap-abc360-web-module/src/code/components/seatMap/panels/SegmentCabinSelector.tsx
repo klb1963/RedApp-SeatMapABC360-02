@@ -30,7 +30,8 @@ export const SegmentCabinSelector: React.FC<SegmentCabinSelectorProps> = ({
         alignItems: 'center',
         flexWrap: 'wrap',
         gap: '1rem',
-        marginBottom: '1rem'
+        marginBottom: '1rem',
+        paddingLeft: '1.5rem'
       }}>
       <div style={{ position: 'relative' }}>
         <label style={{ marginRight: '0.5rem' }}>{t('seatMap.segment')}:</label>

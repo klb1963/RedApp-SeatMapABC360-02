@@ -37,7 +37,7 @@ const SeatMapModalLayout: React.FC<SeatMapModalLayoutProps> = ({
     }}>
       {/* Left side — flight info */}
       <div style={{
-        flexBasis: '30%',
+        flexBasis: '35%',
         flexShrink: 0,
         background: '#f8f8f8',
         padding: '1rem',
@@ -64,7 +64,7 @@ const SeatMapModalLayout: React.FC<SeatMapModalLayoutProps> = ({
 
       {/* Right side — passengers panel */}
       <div style={{
-        flexBasis: '30%',
+        flexBasis: '25%',
         flexShrink: 0,
         background: '#f8f8f8',
         padding: '1rem',

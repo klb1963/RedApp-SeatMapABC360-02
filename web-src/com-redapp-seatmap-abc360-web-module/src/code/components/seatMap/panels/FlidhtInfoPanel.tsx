@@ -94,14 +94,14 @@ export const FlightInfoPanel: React.FC<FlightInfoPanelProps> = ({
       }}>
         {/* Левая колонка */}
         <div style={{ flex: '1 1 45%' }}>
-          <div style={{ fontWeight: 'bold' }}>{airlineName} {flightNumber}</div>
+          <div style={{ fontSize: '1.5rem' }}> {airlineName} {airlineCode} {flightNumber}</div>
           <div><strong>Date:</strong> {localizedDate}</div>
           <div><strong>Aircraft:</strong> {aircraft}</div>
         </div>
 
         {/* Правая колонка */}
         <div style={{ flex: '1 1 45%' }}>
-          <div>{fromCode} - {cityFrom} → {toCode} - {cityTo}</div>
+          <div style={{ fontSize: '1.5rem' }}>{fromCode} - {cityFrom} → {toCode} - {cityTo}</div>
           <div><strong>Duration:</strong> {duration}</div>
         </div>
       </div>
