@@ -19,16 +19,15 @@
   box-sizing: border-box;
 }
 
-
 /* 👇 Делаем окно ниже по вертикали */
 .seatmap-modal-lower.modal-dialog {
   position: fixed !important;
-  top: 100px !important;
-  left: 50% !important;
+  top: 8% !important;
+  left: 42% !important;
   transform: translateX(-50%) !important;
 
-  width: 95vw !important;
-  max-width: 95vw !important;
+  width: 80% !important;
+  max-width: 80% !important;
   min-width: 1200px !important;
   
   z-index: 1050;
@@ -82,4 +81,35 @@ div.panel-body {
 
 .react-modal .modal-dialog .modal-content .panel-title {
   margin-left: 10px;
+}
+
+/* ⬆️ Ensure full height modal layout */
+.seatmap-modal-wide.modal-dialog {
+  height: calc(100vh - 5vh) !important;
+  max-height: calc(100vh - 5vh) !important;
+  display: flex !important;
+  flex-direction: column;
+}
+
+.seatmap-modal-wide .modal-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100% !important;
+  max-height: 100% !important;
+  overflow: hidden !important;
+  box-sizing: border-box;
+}
+
+.seatmap-modal-wide .modal-body {
+  flex-grow: 1;
+  overflow-y: auto !important;
+  padding: 1rem !important;
+  min-height: 0;
+}
+
+.seatmap-modal-wide .modal-footer {
+  flex-shrink: 0;
+  padding: 1rem !important;
+  background: white;
 }

@@ -33,9 +33,9 @@ export const quicketConfig = {
     // 🚪 Floor / seats / cabin styling
     floorColor: 'rgb(30,60,90)',
     seatLabelColor: 'white',
-    seatStrokeColor: 'rgb(237, 237, 237)',
+    // seatStrokeColor: 'rgb(237, 237, 237)',
     seatStrokeWidth: 1,
-    seatArmrestColor: '#cccccc',
+    // seatArmrestColor: '#cccccc',
     notAvailableSeatsColor: 'lightgray',
 
     // ✂️ Bulkhead zones
