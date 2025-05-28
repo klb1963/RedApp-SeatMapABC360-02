@@ -63,7 +63,6 @@ const SeatMapComponentShopping: React.FC<SeatMapComponentShoppingProps> = ({ con
         toCity={destinationCityName || ''}
         date={departureDateTime?.split?.('T')[0] || t('seatMap.dateUnknown')}
         duration={duration}
-        equipmentType={equipmentType}
         aircraft={aircraftDescription}
       />
       <SeatLegend />

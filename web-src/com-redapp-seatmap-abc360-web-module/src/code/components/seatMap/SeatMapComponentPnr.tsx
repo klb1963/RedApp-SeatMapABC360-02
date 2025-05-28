@@ -29,7 +29,6 @@ interface SeatMapComponentPnrProps {
   config: any;
   flightSegments: any[];
   selectedSegmentIndex?: number;
-  availability?: any[];
   passengers?: PassengerOption[];
   assignedSeats?: {
     passengerId: string;
@@ -38,6 +37,10 @@ interface SeatMapComponentPnrProps {
   }[];
   showSegmentSelector?: boolean;
   onSeatChange?: (updatedSeats: SelectedSeat[]) => void;
+  availability?: {
+    price: number;
+    currency: string;
+  }[];
 }
 
 const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
@@ -69,8 +72,7 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
     destination,
     destinationCityName,
     duration,
-    equipmentType,
-    aircraftDescription
+    aircraftDescription,
   } = normalizedSegment;
 
   const flightInfo = (
@@ -85,8 +87,8 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
         toCity={destinationCityName}
         date={departureDateTime?.split?.('T')[0] || t('seatMap.dateUnknown')}
         duration={duration}
-        equipmentType={equipmentType}
         aircraft={aircraftDescription}
+        availability={Array.isArray(availability) ? availability : []}
       />
       <SeatLegend />
     </>

@@ -51,7 +51,6 @@ const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, d
     destination,
     destinationCityName,
     duration,
-    equipmentType,
     aircraftDescription
   } = normalized;
 
@@ -67,7 +66,6 @@ const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, d
         toCity={destinationCityName || ''}
         date={departureDateTime?.split?.('T')[0] || t('seatMap.dateUnknown')}
         duration={duration}
-        equipmentType={equipmentType}
         aircraft={aircraftDescription}
       />
       <SeatLegend />
@@ -135,12 +133,6 @@ const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, d
           >
             <path d="M7 10l5 5 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-        </div>
-  
-        <div>
-          <span style={{ color: '#555', fontSize: '1.5rem' }}>
-            <strong>Equipment type:</strong> {equipmentType}
-          </span>
         </div>
       </div>
   

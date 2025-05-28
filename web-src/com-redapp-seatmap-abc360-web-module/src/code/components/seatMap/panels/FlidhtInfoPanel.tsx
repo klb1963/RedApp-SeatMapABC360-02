@@ -7,14 +7,44 @@ interface FlightInfoPanelProps {
   airlineName: string;
   flightNumber: string;
   fromCode: string;
-  fromCity: string;
+  fromCity?: string;
   toCode: string;
-  toCity: string;
+  toCity?: string;
   date: string;
   duration: string;
-  equipmentType: string;
   aircraft: string;
+  seatPrice?: string;
+  availability?: {
+    price: number;
+    currency: string;
+  }[];
 }
+
+const cityByIata: Record<string, string> = {
+  "MUC": "Munich",
+  "DXB": "Dubai",
+  "FRA": "Frankfurt",
+  "JFK": "New York",
+  "BER": "Berlin",
+  "LHR": "London",
+  "CDG": "Paris",
+  "AMS": "Amsterdam",
+  "MAD": "Madrid",
+  "VIE": "Vienna",
+  "ZRH": "Zurich",
+  "IST": "Istanbul",
+  "SIN": "Singapore",
+  "BKK": "Bangkok",
+  "HND": "Tokyo Haneda",
+  "NRT": "Tokyo Narita",
+  "LAX": "Los Angeles",
+  "SFO": "San Francisco",
+  "ORD": "Chicago O'Hare",
+  "ATL": "Atlanta",
+  "DEL": "Delhi",
+  "BOM": "Mumbai"
+  // TODO - expand list with more values
+};
 
 export const FlightInfoPanel: React.FC<FlightInfoPanelProps> = ({
   airlineCode,
@@ -26,9 +56,26 @@ export const FlightInfoPanel: React.FC<FlightInfoPanelProps> = ({
   toCity,
   date,
   duration,
-  equipmentType,
-  aircraft
+  aircraft,
+  seatPrice,
+  availability
 }) => {
+  const cityFrom = fromCity || cityByIata[fromCode] || '';
+  const cityTo = toCity || cityByIata[toCode] || '';
+
+  // Локализованная дата
+  const localizedDate = new Intl.DateTimeFormat(navigator.language || 'en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  }).format(new Date(date));
+
+  const validPrices = availability?.map(a => a.price).filter(p => p > 0) || [];
+
+  const minPrice = validPrices.length ? Math.min(...validPrices) : null;
+  const maxPrice = validPrices.length ? Math.max(...validPrices) : null;
+  const currency = availability?.[0]?.currency || '';
+
   return (
     <div style={{
       backgroundColor: '#f8f8f8',
@@ -37,16 +84,31 @@ export const FlightInfoPanel: React.FC<FlightInfoPanelProps> = ({
       borderRadius: '4px',
       marginBottom: '1rem'
     }}>
-      <div style={{ fontSize: '1.5rem' }}>
-      Flight: {airlineCode}&nbsp;{flightNumber} ({airlineName})
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        fontSize: '1.5rem',
+        color: '#333'
+      }}>
+        {/* Левая колонка */}
+        <div style={{ flex: '1 1 45%' }}>
+          <div style={{ fontWeight: 'bold' }}>{airlineName} {flightNumber}</div>
+          <div><strong>Date:</strong> {localizedDate}</div>
+          <div><strong>Aircraft:</strong> {aircraft}</div>
+        </div>
+
+        {/* Правая колонка */}
+        <div style={{ flex: '1 1 45%' }}>
+          <div>{fromCode} - {cityFrom} → {toCode} - {cityTo}</div>
+          <div><strong>Duration:</strong> {duration}</div>
+        </div>
       </div>
-      <div style={{ margin: '0.5rem 0' }}>
-       Rout: {fromCode}{fromCity ? ` (${fromCity})` : ''} → {toCode}{toCity ? ` (${toCity})` : ''}
-      </div>
-      <div>Date: {date}</div>
-      <div>Duration: {duration || '—'}</div>
-      {/* <div>Equipment type: {equipmentType}</div> */}
-      <div>Aircraft: {aircraft}</div>
+      {minPrice !== null && maxPrice !== null && (
+        <div style={{ marginTop: '0.5rem', fontWeight: 500 }}>
+          PRICE PER SEAT: {currency} {minPrice.toFixed(2)}–{maxPrice.toFixed(2)}
+        </div>
+      )}
     </div>
   );
 };

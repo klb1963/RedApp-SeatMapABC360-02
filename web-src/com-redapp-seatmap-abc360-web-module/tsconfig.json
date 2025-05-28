@@ -30,7 +30,9 @@
     "keyofStringsOnly": true,
     "preserveSymlinks": true,
     "allowSyntheticDefaultImports": true,
-    "paths": {}
+    "paths": {},
+    "resolveJsonModule": true,
+    "esModuleInterop": true
   },
   "include": [
     "./src/code/**/*.ts",
@@ -42,5 +44,5 @@
   "exclude": [
     "./node_modules/sabre-ngv-skeleton/**/*"
   ],
-  "rootDir": "./src"
+  "rootDir": "./src/code"
 }

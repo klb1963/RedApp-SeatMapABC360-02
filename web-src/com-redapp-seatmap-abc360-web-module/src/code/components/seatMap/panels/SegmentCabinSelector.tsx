@@ -90,7 +90,7 @@ export const SegmentCabinSelector: React.FC<SegmentCabinSelectorProps> = ({
             appearance: 'none',
             outline: 'none',
             cursor: 'pointer',
-            minWidth: '180px'
+            minWidth: '200px'
           }}>
             <option value="Y">Y — {t('seatMap.cabin.economy')}</option>
             <option value="S">S — {t('seatMap.cabin.premiumEconomy')}</option>

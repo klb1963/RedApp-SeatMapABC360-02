@@ -70,7 +70,6 @@ const SeatMapComponentPricing: React.FC<SeatMapComponentPricingProps> = ({
         toCity={destinationCityName || ''}
         date={departureDateTime?.split?.('T')[0] || t('seatMap.dateUnknown')}
         duration={duration}
-        equipmentType={equipmentType}
         aircraft={aircraftDescription}
       />
       <SeatLegend />
@@ -114,26 +113,8 @@ const SeatMapComponentPricing: React.FC<SeatMapComponentPricingProps> = ({
               );
             })}
           </select>
-          <div
-            style={{
-              position: 'absolute',
-              right: '8px',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              pointerEvents: 'none',
-              fontSize: '1.5rem',
-              color: '#234E55',
-            }}
-          >
-            ▼
           </div>
         </div>
-
-        {/* Equipment display */}
-        <div style={{ fontSize: '1.5rem', color: '#555' }}>
-          <strong>Equipment:</strong> {equipmentType}
-        </div>
-      </div>
 
       {/* Cabin class selector */}
       <div style={{ position: 'relative', display: 'inline-block', marginBottom: '1rem' }}>
