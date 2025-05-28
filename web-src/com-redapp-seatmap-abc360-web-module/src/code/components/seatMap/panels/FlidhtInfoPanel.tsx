@@ -82,7 +82,8 @@ export const FlightInfoPanel: React.FC<FlightInfoPanelProps> = ({
       padding: '1rem',
       border: '1px solid #ddd',
       borderRadius: '4px',
-      marginBottom: '1rem'
+      marginBottom: '1rem',
+      lineHeight: '2.5rem' 
     }}>
       <div style={{
         display: 'flex',
