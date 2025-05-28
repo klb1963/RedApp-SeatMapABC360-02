@@ -23,14 +23,32 @@ import { t } from '../../../Context';
 
 export const SeatLegend: React.FC = () => {
   const firstColumnItems = [
+    // passanger
+    {
+      color: '#5F5E5E', // #5F5E5E
+      label: t('seatMap.legend.occupied'),
+    },
+    // available
+    {
+      color: '#0B8A10', // #0B8A10
+      label: t('seatMap.legend.available'),
+    },
+    // paid
+    {
+      color: '#F4B400', // #F4B400
+      label: t('seatMap.legend.paid'),
+    },
+
     {
       color: 'rgb(50, 90, 170)',
       label: t('seatMap.legend.standard'),
     },
+
     {
       color: 'rgb(48, 168, 62)',
       label: t('seatMap.legend.comfort'),
     },
+
     {
       color: 'rgb(182, 177, 51)',
       label: t('seatMap.legend.beaware'),
@@ -43,18 +61,7 @@ export const SeatLegend: React.FC = () => {
       color: 'rgb(184,60,50)',
       label: t('seatMap.legend.reduced-comfort'),
     },
-    {
-      color: 'rgb(128, 128, 128)',
-      label: t('seatMap.legend.occupied'),
-    },
-    {
-      color: 'rgb(255, 165, 0)',
-      label: t('seatMap.legend.paid'),
-    },
-    {
-      color: 'rgb(0, 255, 34)',
-      label: t('seatMap.legend.available'),
-    },
+
 
   ];
 
@@ -182,6 +189,26 @@ export const SeatLegend: React.FC = () => {
       label: t('seatMap.legend.pray'),
     },
 
+    {
+      customSvg: (
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 114 114"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <g
+            transform="translate(0.000000,114.000000) scale(0.100000,-0.100000)"
+            fill="red"
+            stroke="none"
+          >
+            <path d="M635 922 c-115 -85 -269 -198 -341 -251 l-132 -96 344 -252 344 -252 0 129 0 129 95 -54 95 -54 0 354 0 354 -95 -54 -94 -53 -3 127 -3 127 -210 -154z" />
+          </g>
+        </svg>
+      ),
+      label: t('seatMap.legend.exit'),
+    },
+
   ];
 
   const ICON_SIZE = 20;
@@ -201,7 +228,7 @@ export const SeatLegend: React.FC = () => {
         <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
 
             {firstColumnItems.map((item, index) => (
-              <li key={index} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
+              <li key={index} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
                 {item.gradient ? (
                   <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
                     <rect width="16" height="16" rx="2" fill="url(#grad)" />
@@ -227,7 +254,7 @@ export const SeatLegend: React.FC = () => {
 
         <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
           {secondColumnItems.map((item, index) => (
-            <li key={index} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
+            <li key={index} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
               {item.customSvg}
               <span>{item.label}</span>
             </li>

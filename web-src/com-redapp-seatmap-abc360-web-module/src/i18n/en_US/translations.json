@@ -42,5 +42,6 @@
     "seatMap.legend.available": "Available",
     "seatMap.legend.baby": "Baby",
     "seatMap.legend.bar": "Bar",
-    "seatMap.legend.pray": "Pray"
+    "seatMap.legend.pray": "Pray",
+    "seatMap.legend.exit": "Exit"
 }
