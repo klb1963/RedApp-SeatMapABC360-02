@@ -26,7 +26,10 @@ interface Props {
   selectedPassengerId: string;
   setSelectedPassengerId: (id: string) => void;
   handleResetSeat: () => void;
+  handleSave: () => void; 
   boardingComplete: boolean;
+  saveDisabled?: boolean; 
+  
 }
 
 export const PassengerPanel: React.FC<Props> = ({
@@ -35,7 +38,9 @@ export const PassengerPanel: React.FC<Props> = ({
   selectedPassengerId,
   setSelectedPassengerId,
   handleResetSeat,
-  boardingComplete
+  handleSave,
+  boardingComplete,
+  saveDisabled = false // by default = false
 }) => {
 
   const totalPrice = selectedSeats.reduce((sum, s) => {
@@ -118,14 +123,26 @@ export const PassengerPanel: React.FC<Props> = ({
 
       {totalPrice > 0 && (
         <div style={{ marginTop: '1rem', textAlign: 'right', fontWeight: 'bold' }}>
-          Total: EUR {totalPrice.toFixed(2)}
+          Total: USD {totalPrice.toFixed(2)}
         </div>
       )}
 
-      <div style={{ marginTop: '1.5rem' }}>
-        <div style={{ textAlign: 'right' }}>
-          <button onClick={handleResetSeat} style={{ marginTop: '10px', borderRadius: '6px' }}> {t('seatMap.resetAll')}</button>
-        </div>
+       {/* === Кнопки SAVE и RESET === */}
+       <div style={{ marginTop: '1.5rem', textAlign: 'right', display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+        <button
+          onClick={handleSave} 
+          disabled={saveDisabled}
+          style={{ borderRadius: '6px' }}
+        >
+          💾 {t('seatMap.save')}
+        </button>
+
+        <button
+          onClick={handleResetSeat}
+          style={{ borderRadius: '6px' }}
+        >
+          🔁 {t('seatMap.resetAll')}
+        </button>
       </div>
 
     </div>

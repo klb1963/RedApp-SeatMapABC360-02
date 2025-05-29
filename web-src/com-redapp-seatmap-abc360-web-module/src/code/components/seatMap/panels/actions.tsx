@@ -19,12 +19,19 @@ import { t } from '../../../Context';
 // Функция возвращает массив JSX-кнопок для модального окна
 export const actions = (
   onButtonSubmit: () => void,
-  onClickCancel: () => void
+  onClickCancel: () => void,
+  saveDisabled: boolean = false
 ): JSX.Element[] => [
   <Button key="cancel" className="btn-secondary" onClick={onClickCancel}>
     {t('seatMap.button.close')}
   </Button>,
-  <Button key="submit" className="btn-success" onClick={onButtonSubmit}>
+
+  <Button
+    key="submit"
+    className="btn-success"
+    onClick={onButtonSubmit}
+    disabled={saveDisabled}
+  >
     {t('seatMap.button.save')}
   </Button>
 ];

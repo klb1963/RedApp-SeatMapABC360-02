@@ -28,6 +28,8 @@ import { useSeatSelectionHandler } from './hooks/useSeatSelectionHandler';
 import { PassengerPanel } from './panels/PassengerPanel';
 import { GalleryPanel } from './panels/GalleryPanel';
 import { createSelectedSeat } from './helpers/createSelectedSeat';
+import { areSeatsEqual } from './helpers/areSeatsEqual';
+import { handleSaveSeats } from './handleSaveSeats';
 
 // Global type declaration for optional debug use
 declare global {
@@ -228,7 +230,27 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     onSeatChange,
     availability
   });
-  
+
+  // === 💾 Save button logic: disable if no changes compared to assignedSeats ===
+  const enrichedAssignedSeats: SelectedSeat[] = assignedSeats?.map((s) => {
+    const pax = passengers.find(
+      (p) => p.id === s.passengerId || p.nameNumber === s.passengerId
+    );
+    if (!pax) return null;
+
+    return createSelectedSeat(pax, s.seat, true, availability); // ⬅️ передаём цены
+  }).filter(Boolean) as SelectedSeat[];
+
+  const saveDisabled = assignedSeats
+    ? areSeatsEqual(selectedSeats, enrichedAssignedSeats)
+    : false;
+
+  // 💾 SAVE HANDLER
+  const handleSave = () => {
+    console.log('💾 Saving selected seats...', selectedSeats);
+    handleSaveSeats(selectedSeats);
+  };
+
   // === 👥 Passenger control panel ===
   const passengerPanel = (
     <PassengerPanel
@@ -237,7 +259,9 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
       selectedPassengerId={selectedPassengerId}
       setSelectedPassengerId={setSelectedPassengerId}
       handleResetSeat={handleResetSeat}
+      handleSave={handleSave}
       boardingComplete={boardingComplete}
+      saveDisabled={saveDisabled} 
     />
   );
 
