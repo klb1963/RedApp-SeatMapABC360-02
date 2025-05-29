@@ -11,8 +11,6 @@ import { getService } from '../../Context';
 import { PublicModalsService } from 'sabre-ngv-modals/services/PublicModalService';
 import { loadPnrDetailsFromSabre } from '../../services/loadPnrDetailsFromSabre';
 import { loadSeatMapFromSabre } from '../../services/loadSeatMapFromSabre';
-import { handleSaveSeats } from './handleSaveSeats';
-import { actions } from './panels/actions';
 import SeatMapComponentPnr from './SeatMapComponentPnr';
 import { quicketConfig } from '../../utils/quicketConfig';
 import { t } from '../../Context';
@@ -54,17 +52,6 @@ export async function openSeatMapPnr(): Promise<void> {
 
     const { availability } = await loadSeatMapFromSabre(activeFlight, enrichedPassengers);
 
-    const onClickCancel = () => modals.closeReactModal();
-
-    const handleSubmit = async () => {
-      const selected = selectedSeatsRef.current;
-      if (!selected?.length) {
-        alert('❗ Не выбрано ни одного места.');
-        return;
-      }
-      await handleSaveSeats(selected);
-    };
-
     modals.showReactModal({
       header: 'Seat Map ABC 360',
       component: React.createElement(SeatMapComponentPnr, {
@@ -78,8 +65,6 @@ export async function openSeatMapPnr(): Promise<void> {
           selectedSeatsRef.current = updatedSeats;
         }
       }),
-      onSubmit: handleSubmit,
-      actions: actions(handleSubmit, onClickCancel),
       modalClassName: 'seatmap-modal-lower'
     });
 

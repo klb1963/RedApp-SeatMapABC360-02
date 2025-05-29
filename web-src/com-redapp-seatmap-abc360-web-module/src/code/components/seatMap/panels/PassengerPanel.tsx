@@ -16,119 +16,108 @@
  */
 
 import * as React from 'react';
-import { PassengerOption } from '../../../utils/parsePnrData';
 import { SelectedSeat } from '../SeatMapComponentBase';
-import { t } from '../../../Context';
+import { PassengerOption } from '../../../utils/parsePnrData';
+import { handleDeleteSeats } from '../handleDeleteSeats';
 
-interface Props {
+interface PassengerPanelProps {
   passengers: PassengerOption[];
   selectedSeats: SelectedSeat[];
   selectedPassengerId: string;
   setSelectedPassengerId: (id: string) => void;
   handleResetSeat: () => void;
-  boardingComplete: boolean;
+  handleSave: () => void;
+  handleDeleteSeats: () => void;
+  saveDisabled: boolean;
+  assignedSeats?: {
+    passengerId: string;
+    seat: string;
+    segmentNumber: string;
+  }[];
 }
 
-export const PassengerPanel: React.FC<Props> = ({
+export const PassengerPanel: React.FC<PassengerPanelProps> = ({
   passengers,
   selectedSeats,
   selectedPassengerId,
   setSelectedPassengerId,
   handleResetSeat,
-  boardingComplete
+  handleSave,
+  saveDisabled,
+  assignedSeats = []
 }) => {
-
-  const totalPrice = selectedSeats.reduce((sum, s) => {
-    if (s.seat?.price) {
-      const price = parseFloat(s.seat.price.replace(/[^\d.]/g, ''));
-      return sum + price;
-    }
-    return sum;
+  const totalPrice = selectedSeats.reduce((acc, s) => {
+    const price = s.seat?.price || '0';
+    const amount = parseFloat(price.replace(/[^\d.]/g, ''));
+    return acc + (isNaN(amount) ? 0 : amount);
   }, 0);
 
+  console.log('🧪 assignedSeats:', assignedSeats);
 
   return (
-    <div>
-      {/* <strong>{t('seatMap.passengers')}</strong> */}
-
-      {boardingComplete && false && (
-        <div style={{
-          backgroundColor: '#e6ffe6',
-          padding: '0.75rem',
-          margin: '1rem 0',
-          border: '1px solid #00cc66',
-          borderRadius: '5px',
-          fontWeight: 'bold',
-          color: '#006633'
-        }}>
-          {t('seatMap.boardingComplete')}
-        </div>
-      )}
-
-      <table style={{ width: '100%', marginTop: '1rem', borderCollapse: 'collapse' }}>
-
-        <thead>
-          <tr>
-            <th style={{ textAlign: 'left', paddingBottom: '0.5rem' }}>
-              {t('seatMap.passengers')}:
-              <span style={{ marginLeft: '1.5rem' }}>{passengers.length}</span>
-            </th>
-            <th style={{ textAlign: 'right', paddingBottom: '0.5rem' }}>
-              {t('seatMap.assignedSeats')}:
-              <span style={{ marginLeft: '1.5rem' }}>
-                {
-                  passengers.filter(p =>
-                    selectedSeats.some(s => s.passengerId === String(p.id))
-                  ).length
-                }
-              </span>
-            </th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {passengers.map((p) => {
-            const passengerId = String(p.id);
-            const seat = selectedSeats.find(s => s.passengerId === passengerId);
-
-            return (
-              <tr key={p.id} style={{ borderBottom: '1px solid #ccc' }}>
-                <td style={{ padding: '0.5rem 0' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <input
-                      type="radio"
-                      name="activePassenger"
-                      value={p.id}
-                      checked={selectedPassengerId === passengerId}
-                      onChange={() => setSelectedPassengerId(passengerId)}
-                    />
-                    {p.label || `${p.givenName} ${p.surname}`}
-                  </label>
-                </td>
-                <td style={{ padding: '0.5rem 0', textAlign: 'right' }}>
-                  <strong style={{ color: p.passengerColor || 'black' }}>
-                    {seat?.seatLabel || t('seatMap.seatNotAssigned')}
-                  </strong>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-
-      {totalPrice > 0 && (
-        <div style={{ marginTop: '1rem', textAlign: 'right', fontWeight: 'bold' }}>
-          Total: EUR {totalPrice.toFixed(2)}
-        </div>
-      )}
-
-      <div style={{ marginTop: '1.5rem' }}>
-        <div style={{ textAlign: 'right' }}>
-          <button onClick={handleResetSeat} style={{ marginTop: '10px', borderRadius: '6px' }}> {t('seatMap.resetAll')}</button>
-        </div>
+    <div style={{ padding: '1rem', minWidth: '320px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold' }}>
+        <span>Passengers: {passengers.length}</span>
+        <span>Assigned seats: {selectedSeats.length}</span>
       </div>
 
+      <div style={{ marginTop: '0.5rem', borderTop: '1px solid #ccc' }}>
+        {passengers.map((pax, index) => {
+          const paxId = String(pax.id);
+          const assigned = selectedSeats.find(s => s.passengerId === paxId);
+          return (
+            <div
+              key={paxId}
+              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.25rem 0', cursor: 'pointer' }}
+              onClick={() => setSelectedPassengerId(paxId)}
+            >
+              <div>
+                <input
+                  type="radio"
+                  name="selectedPassenger"
+                  checked={selectedPassengerId === paxId}
+                  onChange={() => setSelectedPassengerId(paxId)}
+                />{' '}
+                <strong>{pax.label}</strong>
+              </div>
+              <div>
+                {assigned ? (
+                  <span style={{ color: pax.passengerColor || 'gray', fontWeight: 600 }}>{assigned.seatLabel}</span>
+                ) : (
+                  <span style={{ color: 'gray' }}>—</span>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div style={{ textAlign: 'right', marginTop: '1rem', fontWeight: 'bold' }}>
+        Total: USD {totalPrice.toFixed(2)}
+      </div>
+
+      <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
+        {assignedSeats.length > 0 ? (
+
+          <button
+            onClick={handleDeleteSeats}
+            className="btn btn-outline-danger"
+            style={{ borderWidth: '1px' }}
+          >
+            Delete seats
+          </button>
+
+        ) : (
+          <>
+            <button onClick={handleResetSeat} className="btn btn-outline-secondary">
+              Reset all
+            </button>
+            <button onClick={handleSave} className="btn btn-secondary" disabled={saveDisabled}>
+              Save
+            </button>
+          </>
+        )}
+      </div>
     </div>
   );
-
 };

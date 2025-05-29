@@ -27,6 +27,10 @@ import { useOnIframeLoad } from './hooks/useOnIframeLoad';
 import { useSeatSelectionHandler } from './hooks/useSeatSelectionHandler';
 import { PassengerPanel } from './panels/PassengerPanel';
 import { GalleryPanel } from './panels/GalleryPanel';
+import { createSelectedSeat } from './helpers/createSelectedSeat';
+import { areSeatsEqual } from './helpers/areSeatsEqual';
+import { handleSaveSeats } from './handleSaveSeats';
+import { handleDeleteSeats } from './handleDeleteSeats';
 
 // Global type declaration for optional debug use
 declare global {
@@ -104,43 +108,30 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   //===================================================
   // 🪑 State for selected seats — начальная пустая инициализация
   const [selectedSeats, setSelectedSeats] = useState<SelectedSeat[]>([]);
+  const [alreadyInitialized, setAlreadyInitialized] = useState(false);
 
-  // ✅ Если selectedSeats пустой, но есть assignedSeats — инициализируем selectedSeats
+  // ✅ If selectedSeats is empty, but alredy have assignedSeats — let's inizialize selectedSeats
   useEffect(() => {
-    if (selectedSeats.length === 0 && assignedSeats?.length) {
+    console.log('🧪 assignedSeats (raw):', assignedSeats);
+    console.log('🧪 passenger IDs:', passengers.map(p => p.id));
+  
+    if (assignedSeats?.length && !alreadyInitialized) {
       const enriched = assignedSeats.map((s) => {
         const pax = passengers.find(
-          (p) => p.id === s.passengerId || p.nameNumber === s.passengerId
+          (p) =>
+            String(p.id) === String(s.passengerId) ||
+            String(p.nameNumber) === String(s.passengerId)
         );
-
-        const fullName = pax?.label || '';
-        const initials = pax
-          ? `${pax.givenName?.[0] || ''}${pax.surname?.[0] || ''}`.toUpperCase()
-          : '';
-        const abbr = pax?.surname?.slice(0, 2).toUpperCase() || '';
-        const passengerColor = pax?.passengerColor || '';
-
-        return {
-          passengerId: s.passengerId,
-          seatLabel: s.seat,
-          passengerType: 'ADT',
-          passengerLabel: fullName,
-          passengerColor,
-          initials,
-          abbr,
-          readOnly: true,
-          seat: {
-            seatLabel: s.seat,
-            price: 'USD 0',
-          },
-        };
-      });
-
+        if (!pax) return null;
+        return createSelectedSeat(pax, s.seat, true, availability);
+      }).filter(Boolean) as SelectedSeat[];
+  
       setSelectedSeats(enriched);
       onSeatChange?.(enriched);
-      console.log('🪑 selectedSeats инициализированы из assignedSeats');
+      setAlreadyInitialized(true); // чтобы не перезаписывать позже
+      console.log('🪑 selectedSeats инициализированы из assignedSeats с ценами');
     }
-  }, [assignedSeats, selectedSeats.length, passengers]);
+  }, [assignedSeats, passengers, availability, alreadyInitialized]);
 
   //===================================================
 
@@ -246,7 +237,27 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     onSeatChange,
     availability
   });
-  
+
+  // === 💾 Save button logic: disable if no changes compared to assignedSeats ===
+  const enrichedAssignedSeats: SelectedSeat[] = assignedSeats?.map((s) => {
+    const pax = passengers.find(
+      (p) => p.id === s.passengerId || p.nameNumber === s.passengerId
+    );
+    if (!pax) return null;
+
+    return createSelectedSeat(pax, s.seat, true, availability); // ⬅️ передаём цены
+  }).filter(Boolean) as SelectedSeat[];
+
+  const saveDisabled = assignedSeats
+    ? areSeatsEqual(selectedSeats, enrichedAssignedSeats)
+    : false;
+
+  // 💾 SAVE HANDLER
+  const handleSave = () => {
+    console.log('💾 Saving selected seats...', selectedSeats);
+    handleSaveSeats(selectedSeats);
+  };
+
   // === 👥 Passenger control panel ===
   const passengerPanel = (
     <PassengerPanel
@@ -255,7 +266,10 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
       selectedPassengerId={selectedPassengerId}
       setSelectedPassengerId={setSelectedPassengerId}
       handleResetSeat={handleResetSeat}
-      boardingComplete={boardingComplete}
+      handleSave={handleSave}
+      saveDisabled={saveDisabled}
+      assignedSeats={assignedSeats}
+      handleDeleteSeats={handleDeleteSeats} 
     />
   );
 
