@@ -33,6 +33,7 @@ type SeatType = 'available' | 'occupied' | 'paid' | 'blocked';
 
 interface AvailabilityItem {
   label: string;     // e.g. '12A'
+  seatLabel: string; // for usage in createSelectedSeat
   price: number;     // Numeric price
   currency: string;  // e.g. 'USD'
   color: string;     // Used for seat rendering
@@ -101,6 +102,7 @@ export function parseSeatMapResponse(xml: Document): {
 
       availability.push({
         label: `${rowNumber}${seatLabel}`,
+        seatLabel: `${rowNumber}${seatLabel}`,
         price,
         currency,
         color,
@@ -120,4 +122,5 @@ export function parseSeatMapResponse(xml: Document): {
   layout.decks[0].rows.sort((a, b) => parseInt(a.label) - parseInt(b.label));
 
   return { layout, availability };
+  
 }

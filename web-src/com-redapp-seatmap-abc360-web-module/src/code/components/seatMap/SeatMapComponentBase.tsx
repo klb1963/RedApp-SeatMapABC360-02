@@ -243,7 +243,8 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     setSelectedPassengerId,
     setSelectedSeats,
     setBoardingComplete,
-    onSeatChange
+    onSeatChange,
+    availability
   });
   
   // === 👥 Passenger control panel ===

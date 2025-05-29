@@ -37,6 +37,16 @@ export const PassengerPanel: React.FC<Props> = ({
   handleResetSeat,
   boardingComplete
 }) => {
+
+  const totalPrice = selectedSeats.reduce((sum, s) => {
+    if (s.seat?.price) {
+      const price = parseFloat(s.seat.price.replace(/[^\d.]/g, ''));
+      return sum + price;
+    }
+    return sum;
+  }, 0);
+
+
   return (
     <div>
       {/* <strong>{t('seatMap.passengers')}</strong> */}
@@ -106,11 +116,18 @@ export const PassengerPanel: React.FC<Props> = ({
         </tbody>
       </table>
 
+      {totalPrice > 0 && (
+        <div style={{ marginTop: '1rem', textAlign: 'right', fontWeight: 'bold' }}>
+          Total: EUR {totalPrice.toFixed(2)}
+        </div>
+      )}
+
       <div style={{ marginTop: '1.5rem' }}>
         <div style={{ textAlign: 'right' }}>
-          <button onClick={handleResetSeat} style={{ marginTop: '10px', borderRadius: '6px'}}> {t('seatMap.resetAll')}</button>
-        </div>  
+          <button onClick={handleResetSeat} style={{ marginTop: '10px', borderRadius: '6px' }}> {t('seatMap.resetAll')}</button>
+        </div>
       </div>
+
     </div>
   );
 
