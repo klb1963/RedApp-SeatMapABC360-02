@@ -94,6 +94,8 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
     </>
   );
 
+  console.log('💡 SeatMapComponentPnr: passengers =', passengers);
+
   return (
     <div style={{ padding: '1rem' }}>
       <SegmentCabinSelector

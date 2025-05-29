@@ -30,6 +30,7 @@ import { GalleryPanel } from './panels/GalleryPanel';
 import { createSelectedSeat } from './helpers/createSelectedSeat';
 import { areSeatsEqual } from './helpers/areSeatsEqual';
 import { handleSaveSeats } from './handleSaveSeats';
+import { handleDeleteSeats } from './handleDeleteSeats';
 
 // Global type declaration for optional debug use
 declare global {
@@ -107,24 +108,30 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   //===================================================
   // 🪑 State for selected seats — начальная пустая инициализация
   const [selectedSeats, setSelectedSeats] = useState<SelectedSeat[]>([]);
+  const [alreadyInitialized, setAlreadyInitialized] = useState(false);
 
   // ✅ If selectedSeats is empty, but alredy have assignedSeats — let's inizialize selectedSeats
   useEffect(() => {
-    if (selectedSeats.length === 0 && assignedSeats?.length) {
+    console.log('🧪 assignedSeats (raw):', assignedSeats);
+    console.log('🧪 passenger IDs:', passengers.map(p => p.id));
+  
+    if (assignedSeats?.length && !alreadyInitialized) {
       const enriched = assignedSeats.map((s) => {
         const pax = passengers.find(
-          (p) => p.id === s.passengerId || p.nameNumber === s.passengerId
+          (p) =>
+            String(p.id) === String(s.passengerId) ||
+            String(p.nameNumber) === String(s.passengerId)
         );
         if (!pax) return null;
-  
-        return createSelectedSeat(pax, s.seat, true, availability); // ✅ передаём availability
+        return createSelectedSeat(pax, s.seat, true, availability);
       }).filter(Boolean) as SelectedSeat[];
   
       setSelectedSeats(enriched);
       onSeatChange?.(enriched);
+      setAlreadyInitialized(true); // чтобы не перезаписывать позже
       console.log('🪑 selectedSeats инициализированы из assignedSeats с ценами');
     }
-  }, [assignedSeats, selectedSeats.length, passengers, availability]);
+  }, [assignedSeats, passengers, availability, alreadyInitialized]);
 
   //===================================================
 
@@ -260,8 +267,9 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
       setSelectedPassengerId={setSelectedPassengerId}
       handleResetSeat={handleResetSeat}
       handleSave={handleSave}
-      boardingComplete={boardingComplete}
-      saveDisabled={saveDisabled} 
+      saveDisabled={saveDisabled}
+      assignedSeats={assignedSeats}
+      handleDeleteSeats={handleDeleteSeats} 
     />
   );
 
