@@ -5,7 +5,8 @@ import { PassengerOption } from '../../../utils/parsePnrData';
 
 interface AvailabilityEntry {
   seatLabel: string;
-  price?: string;
+  price?: number | string;
+  currency?: string;
 }
 
 /**
@@ -27,12 +28,17 @@ export function createSelectedSeat(
   const abbr = passenger.surname?.slice(0, 2).toUpperCase() || '';
 
   const matched = availability?.find(a => a.seatLabel === seatLabel);
-  const seatPrice = matched?.price || 'USD 0';
+
+  const seatPrice = typeof matched?.price === 'string'
+  ? matched.price
+  : matched?.price !== undefined && matched.currency
+    ? `${matched.currency} ${matched.price.toFixed(2)}`
+    : 'USD 0';
 
   console.log(`🎯 Seat assigned: ${seatLabel}, price from availability: ${seatPrice}`);
   console.log('🔍 Looking for seatLabel:', seatLabel);
   console.log('🔍 availabilityMapped:', availability);
-  
+
   return {
     passengerId: passenger.id,
     seatLabel,
