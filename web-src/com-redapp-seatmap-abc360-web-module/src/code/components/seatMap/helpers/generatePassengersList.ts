@@ -38,7 +38,7 @@ export function generatePassengerList(
     const pid = String(p.id ?? index);
     const seat = selectedSeats.find((s) => s.passengerId === pid) || null;
     const abbr = getInitials(p);
-    const label = `${p.givenName}, ${p.surname}`;
+    const label = `${p.surname}, ${p.givenName}`;
     const isReadOnly = pid !== selectedPassengerId;
 
     return {

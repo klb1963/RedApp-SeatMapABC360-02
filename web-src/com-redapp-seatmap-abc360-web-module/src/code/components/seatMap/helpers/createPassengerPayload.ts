@@ -40,7 +40,7 @@ export function createPassengerPayload(
     : null;
 
   const color = passenger.passengerColor || getPassengerColor(index);
-  const label = `${passenger.givenName}, ${passenger.surname}`;
+  const label = `${passenger.surname}, ${passenger.givenName}`;
   const abbr = getInitials(passenger);
 
   return {
