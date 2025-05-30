@@ -23,6 +23,7 @@
     "seatMap.of": "of",
     "seatMap.legendTitle": "Legend",
     "seatMap.legend.standard": "Standard seat",
+    "seatMap.legend.preferred": "Preferred",
     "seatMap.legend.comfort": "More comfort",
     "seatMap.legend.beaware": "Some issues",
     "seatMap.legend.mixed-features": "Mixed features",

@@ -40,28 +40,27 @@ export const SeatLegend: React.FC = () => {
     },
 
     {
-      color: 'rgb(50, 90, 170)',
-      label: t('seatMap.legend.standard'),
+      color: '#01D0CE', // #01D0CE
+      label: t('seatMap.legend.preferred'),
     },
 
-    {
-      color: 'rgb(48, 168, 62)',
-      label: t('seatMap.legend.comfort'),
-    },
+    // {
+    //   color: 'rgb(256, 256, 256)',
+    //   label: t('seatMap.legend.comfort'),
+    // },
 
-    {
-      color: 'rgb(182, 177, 51)',
-      label: t('seatMap.legend.beaware'),
-    },
-    {
-      gradient: true,
-      label: t('seatMap.legend.mixed-features'),
-    },
-    {
-      color: 'rgb(184,60,50)',
-      label: t('seatMap.legend.reduced-comfort'),
-    },
-
+    // {
+    //   color: 'rgb(182, 177, 51)',
+    //   label: t('seatMap.legend.beaware'),
+    // },
+    // {
+    //   gradient: true,
+    //   label: t('seatMap.legend.mixed-features'),
+    // },
+    // {
+    //   color: 'rgb(184,60,50)',
+    //   label: t('seatMap.legend.reduced-comfort'),
+    // },
 
   ];
 
@@ -229,7 +228,7 @@ export const SeatLegend: React.FC = () => {
 
             {firstColumnItems.map((item, index) => (
               <li key={index} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                {item.gradient ? (
+                {'gradient' in item ? (
                   <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
                     <rect width="16" height="16" rx="2" fill="url(#grad)" />
                     <defs>

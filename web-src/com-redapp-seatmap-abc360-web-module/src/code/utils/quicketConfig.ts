@@ -21,7 +21,7 @@ export const quicketConfig = {
   singleDeckMode: true,     // Force single-deck rendering
   builtInTooltip: true,     // Enable native tooltips for seats
   externalPassengerManagement: false, // Control passengers from iframe
-  tooltipOnHover: false,    // Show tooltip only on click (not hover)
+  tooltipOnHover: true,    // Show tooltip only on click (not hover)
 
   // === 🎨 Color and style theme ===
   colorTheme: {
@@ -49,7 +49,7 @@ export const quicketConfig = {
     fontFamily: 'Montserrat, sans-serif',
 
     // 💬 Tooltip styling
-    tooltipBackgroundColor: 'rgb(255,255,255)',
+    tooltipBackgroundColor: 'rgb(255, 255, 255)',
     tooltipHeaderColor: '#4f6f8f',
     tooltipBorderColor: 'rgb(255,255,255)',
     tooltipFontColor: '#4f6f8f',

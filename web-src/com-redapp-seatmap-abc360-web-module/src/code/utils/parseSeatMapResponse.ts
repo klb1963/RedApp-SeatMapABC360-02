@@ -29,7 +29,7 @@ interface Deck {
   rows: Row[];     // List of rows (with seats)
 }
 
-type SeatType = 'available' | 'occupied' | 'paid' | 'blocked';
+type SeatType = 'available' | 'occupied' | 'paid' | 'blocked' | 'preferred';
 
 interface AvailabilityItem {
   label: string;     // e.g. '12A'
@@ -49,9 +49,14 @@ function getSeatType(seatEl: Element): SeatType {
   const offerEl = seatEl.querySelector('Offer TotalAmount');
   const price = offerEl ? parseFloat(offerEl.textContent || '0') : 0;
 
+  const isPreferred = Array.from(seatEl.querySelectorAll('Facilities > Detail'))
+    .some(detail => detail.getAttribute('code') === 'O');
+
   if (isOccupied) return 'occupied';
   if (isBlocked) return 'blocked';
+  if (isPreferred) return 'preferred';
   if (offerEl && price > 0) return 'paid';
+
   return 'available';
 }
 
@@ -64,6 +69,7 @@ function getColorByType(type: SeatType): string {
     case 'paid': return '#F4B400'; // olive #A2A233 #F4B400
     case 'occupied': return '#5f5e5e'; // dark gray #5F5E5E
     case 'blocked': return 'lightgray';
+    case 'preferred': return '#01D0CE'; // light blue #01D0CE'
     default: return 'white';
   }
 }
