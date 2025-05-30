@@ -111,13 +111,13 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
               cursor: 'pointer',
             }}
           >
-            Delete seats
+            DELETE SEATS
           </button>
 
         ) : (
           <>
             <button onClick={handleResetSeat} className="btn btn-outline-secondary">
-              Reset all
+              RESET ALL
             </button>
 
               <button
@@ -134,7 +134,7 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
                   opacity: saveDisabled ? 0.5 : 1,
                 }}
               >
-                Save
+                SAVE
               </button>
 
           </>

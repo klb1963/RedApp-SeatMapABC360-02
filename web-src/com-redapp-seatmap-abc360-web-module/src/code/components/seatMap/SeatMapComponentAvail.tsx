@@ -199,8 +199,8 @@ const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, d
             }]
           }, 0);
         }}
-        availability={availability}
-        passengers={passengers}
+        availability={[]} // отключаем
+        passengers={[]}   // отключаем
         showSegmentSelector={false}
         flightInfo={flightInfo}
       />

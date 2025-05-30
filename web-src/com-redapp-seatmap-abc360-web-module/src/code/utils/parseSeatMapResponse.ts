@@ -29,7 +29,7 @@ interface Deck {
   rows: Row[];     // List of rows (with seats)
 }
 
-type SeatType = 'available' | 'occupied' | 'paid' | 'blocked' | 'preferred';
+type SeatType = 'available' | 'unavailable' | 'paid' | 'blocked' | 'preferred';
 
 interface AvailabilityItem {
   label: string;     // e.g. '12A'
@@ -44,7 +44,7 @@ interface AvailabilityItem {
  * Maps Sabre seat attributes to a semantic seat type.
  */
 function getSeatType(seatEl: Element): SeatType {
-  const isOccupied = seatEl.getAttribute('occupiedInd') === 'true';
+  const isUnavailable = seatEl.getAttribute('unavailableInd') === 'true';
   const isBlocked = seatEl.getAttribute('availableInd') === 'false';
   const offerEl = seatEl.querySelector('Offer TotalAmount');
   const price = offerEl ? parseFloat(offerEl.textContent || '0') : 0;
@@ -52,7 +52,7 @@ function getSeatType(seatEl: Element): SeatType {
   const isPreferred = Array.from(seatEl.querySelectorAll('Facilities > Detail'))
     .some(detail => detail.getAttribute('code') === 'O');
 
-  if (isOccupied) return 'occupied';
+  if (isUnavailable) return 'unavailable';
   if (isBlocked) return 'blocked';
   if (isPreferred) return 'preferred';
   if (offerEl && price > 0) return 'paid';
@@ -65,9 +65,9 @@ function getSeatType(seatEl: Element): SeatType {
  */
 function getColorByType(type: SeatType): string {
   switch (type) {
-    case 'available': return '#0B8A10'; // #0B8A10 #A6ECA6 
-    case 'paid': return '#F4B400'; // olive #A2A233 #F4B400
-    case 'occupied': return '#5f5e5e'; // dark gray #5F5E5E
+    case 'available': return '#00C853'; // #00C853 
+    case 'paid': return '#F8CF00'; // #F8CF00
+    case 'unavailable': return '#212121'; // dark gray #212121
     case 'blocked': return 'lightgray';
     case 'preferred': return '#01D0CE'; // light blue #01D0CE'
     default: return 'white';
