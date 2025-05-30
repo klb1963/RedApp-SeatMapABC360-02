@@ -25,7 +25,6 @@ export interface PassengerVisualInfo {
   seat: { seatLabel: string } | null;
   passengerLabel: string;
   passengerColor: string;
-  initials: string;
   abbr: string;
   readOnly: boolean;
 }
@@ -38,17 +37,17 @@ export function generatePassengerList(
   return passengers.map((p, index) => {
     const pid = String(p.id ?? index);
     const seat = selectedSeats.find((s) => s.passengerId === pid) || null;
-    const initials = getInitials(p);
+    const abbr = getInitials(p);
+    const label = `${p.surname}, ${p.givenName}`;
     const isReadOnly = pid !== selectedPassengerId;
 
     return {
       id: pid,
       passengerType: 'ADT',
       seat,
-      passengerLabel: p.label || `${p.givenName}/${p.surname}`,
+      passengerLabel: label,
       passengerColor: getPassengerColor(index),
-      initials,
-      abbr: initials,
+      abbr,
       readOnly: isReadOnly
     };
   });

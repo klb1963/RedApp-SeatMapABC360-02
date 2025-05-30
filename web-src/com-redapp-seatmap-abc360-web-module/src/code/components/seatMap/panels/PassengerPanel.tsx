@@ -101,8 +101,15 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
 
           <button
             onClick={handleDeleteSeats}
-            className="btn btn-outline-danger"
-            style={{ borderWidth: '1px' }}
+            style={{
+              border: '1px solid #000',
+              color: '#000',
+              backgroundColor: '#fff',
+              padding: '0.5rem 1.2rem',
+              fontWeight: 500,
+              borderRadius: '6px',
+              cursor: 'pointer',
+            }}
           >
             Delete seats
           </button>
@@ -112,9 +119,24 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
             <button onClick={handleResetSeat} className="btn btn-outline-secondary">
               Reset all
             </button>
-            <button onClick={handleSave} className="btn btn-secondary" disabled={saveDisabled}>
-              Save
-            </button>
+
+              <button
+                onClick={handleSave}
+                disabled={saveDisabled}
+                style={{
+                  backgroundColor: '#000',
+                  color: '#fff',
+                  padding: '0.5rem 1.2rem',
+                  fontWeight: 600,
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  opacity: saveDisabled ? 0.5 : 1,
+                }}
+              >
+                Save
+              </button>
+
           </>
         )}
       </div>

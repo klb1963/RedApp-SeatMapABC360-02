@@ -182,8 +182,8 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     };
 
     const targetOrigin = 'https://quicket.io';
+    console.log('🚀 Sending seatArray:', JSON.stringify(passengers, null, 2));
     iframe.contentWindow?.postMessage(message, targetOrigin);
-    console.log('🔁 PostMessage after Reset all');
   };
 
   // === 🗺️ Initial iframe load handler (fires onLoad) ===

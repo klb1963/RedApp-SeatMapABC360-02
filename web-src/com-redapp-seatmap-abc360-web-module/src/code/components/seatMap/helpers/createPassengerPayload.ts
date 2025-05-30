@@ -39,10 +39,9 @@ export function createPassengerPayload(
       }
     : null;
 
-  const initials = getInitials(passenger);
   const color = passenger.passengerColor || getPassengerColor(index);
-  const label = passenger.label || `${passenger.surname}/${passenger.givenName}`;
-  const abbr = passenger.surname?.slice(0, 2).toUpperCase() || '';
+  const label = `${passenger.surname}, ${passenger.givenName}`;
+  const abbr = getInitials(passenger);
 
   return {
     id: passengerId,
@@ -50,7 +49,6 @@ export function createPassengerPayload(
     seat,
     passengerLabel: label,
     passengerColor: color,
-    initials,
     abbr,
     readOnly: passengerId !== selectedPassengerId && !!seat
   };
