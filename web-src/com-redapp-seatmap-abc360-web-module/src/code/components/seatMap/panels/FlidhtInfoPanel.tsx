@@ -107,7 +107,7 @@ export const FlightInfoPanel: React.FC<FlightInfoPanelProps> = ({
       </div>
       {minPrice !== null && maxPrice !== null && (
         <div style={{ marginTop: '0.5rem', fontWeight: 500 }}>
-          PRICE PER SEAT: {currency} {minPrice.toFixed(2)}–{maxPrice.toFixed(2)}
+          Price per Seat: {currency} {minPrice.toFixed(2)}–{maxPrice.toFixed(2)}
         </div>
       )}
     </div>

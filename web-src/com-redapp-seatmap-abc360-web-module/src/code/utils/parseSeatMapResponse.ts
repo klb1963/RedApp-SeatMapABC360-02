@@ -14,69 +14,69 @@
 
 interface Seat {
   label: string;
-  x: number; // X-coordinate for layout rendering
-  y: number; // Y-coordinate for layout rendering
+  x: number;
+  y: number;
 }
 
 interface Row {
-  label: string;   // Row number
-  seats: Seat[];   // Seats in the row
+  label: string;
+  seats: Seat[];
 }
 
 interface Deck {
-  id: string;      // e.g. 'main-deck'
-  name: string;    // Display label
-  rows: Row[];     // List of rows (with seats)
+  id: string;
+  name: string;
+  rows: Row[];
 }
 
-type SeatType = 'available' | 'unavailable' | 'paid' | 'blocked' | 'preferred';
+type SeatType = 'available' | 'occupied' | 'paid' | 'blocked' | 'preferred';
 
 interface AvailabilityItem {
-  label: string;     // e.g. '12A'
-  seatLabel: string; // for usage in createSelectedSeat
-  price: number;     // Numeric price
-  currency: string;  // e.g. 'USD'
-  color: string;     // Used for seat rendering
-  type: SeatType;    // Semantic type for legend/logic
+  label: string;
+  seatLabel: string;
+  price: number;
+  currency: string;
+  color: string;
+  type: SeatType;
 }
 
-/**
- * Maps Sabre seat attributes to a semantic seat type.
- */
 function getSeatType(seatEl: Element): SeatType {
-  const isUnavailable = seatEl.getAttribute('unavailableInd') === 'true';
-  const isBlocked = seatEl.getAttribute('availableInd') === 'false';
-  const offerEl = seatEl.querySelector('Offer TotalAmount');
-  const price = offerEl ? parseFloat(offerEl.textContent || '0') : 0;
+  const occupiedInd = seatEl.getAttribute('occupiedInd') === 'true';
+  const availableInd = seatEl.getAttribute('availableInd') === 'true';
+
+  const occupationDetails = Array.from(seatEl.querySelectorAll('Occupation > Detail'))
+    .map((d) => d.textContent?.trim());
+
+  const isOccupied = occupiedInd || occupationDetails.includes('SeatIsOccupied');
+  const isFree = occupationDetails.includes('SeatIsFree');
 
   const isPreferred = Array.from(seatEl.querySelectorAll('Facilities > Detail'))
     .some(detail => detail.getAttribute('code') === 'O');
 
-  if (isUnavailable) return 'unavailable';
-  if (isBlocked) return 'blocked';
+  const offerTotalAmountEl = seatEl.querySelector('Offer TotalAmount');
+  const price = offerTotalAmountEl ? parseFloat(offerTotalAmountEl.textContent || '0') : 0;
+
+  // Правила классификации
+  if (isOccupied) return 'occupied';
+  if (!availableInd && !isFree) return 'blocked';
+  if (price > 0 && isPreferred) return 'preferred';
+  if (price > 0) return 'paid';
   if (isPreferred) return 'preferred';
-  if (offerEl && price > 0) return 'paid';
 
   return 'available';
 }
 
-/**
- * Maps seat type to color (used in UI rendering).
- */
 function getColorByType(type: SeatType): string {
   switch (type) {
-    case 'available': return '#00C853'; // #00C853 
-    case 'paid': return '#F8CF00'; // #F8CF00
-    case 'unavailable': return '#212121'; // dark gray #212121
+    case 'available': return '#00C853';
+    case 'paid': return '#F8CF00';
+    case 'occupied': return '#212121';
     case 'blocked': return 'lightgray';
-    case 'preferred': return '#01D0CE'; // light blue #01D0CE'
+    case 'preferred': return '#01D0CE';
     default: return 'white';
   }
 }
 
-/**
- * Parses EnhancedSeatMapRS XML and extracts both layout and pricing/availability.
- */
 export function parseSeatMapResponse(xml: Document): {
   layout: { decks: Deck[] };
   availability: AvailabilityItem[];
@@ -99,9 +99,9 @@ export function parseSeatMapResponse(xml: Document): {
       const seatLabel = seatEl.querySelector('Number')?.textContent?.trim();
       if (!seatLabel) return;
 
-      const offerEl = seatEl.querySelector('Offer TotalAmount');
-      const price = offerEl ? parseFloat(offerEl.textContent || '0') : 0;
-      const currency = offerEl?.getAttribute('currencyCode') || 'USD';
+      const priceEl = seatEl.querySelector('Offer TotalAmount');
+      const price = priceEl ? parseFloat(priceEl.textContent || '0') : 0;
+      const currency = priceEl?.getAttribute('currencyCode') || 'USD';
 
       const type = getSeatType(seatEl);
       const color = getColorByType(type);
@@ -128,5 +128,4 @@ export function parseSeatMapResponse(xml: Document): {
   layout.decks[0].rows.sort((a, b) => parseInt(a.label) - parseInt(b.label));
 
   return { layout, availability };
-  
 }
