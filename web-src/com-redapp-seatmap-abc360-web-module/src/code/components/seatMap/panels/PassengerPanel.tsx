@@ -18,7 +18,6 @@
 import * as React from 'react';
 import { SelectedSeat } from '../SeatMapComponentBase';
 import { PassengerOption } from '../../../utils/parsePnrData';
-import { handleDeleteSeats } from '../handleDeleteSeats';
 
 interface PassengerPanelProps {
   passengers: PassengerOption[];
@@ -28,6 +27,7 @@ interface PassengerPanelProps {
   handleResetSeat: () => void;
   handleSave: () => void;
   handleDeleteSeats: () => void;
+  handleAutomateSeating: () => void;
   saveDisabled: boolean;
   assignedSeats?: {
     passengerId: string;
@@ -43,6 +43,8 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
   setSelectedPassengerId,
   handleResetSeat,
   handleSave,
+  handleDeleteSeats,
+  handleAutomateSeating,
   saveDisabled,
   assignedSeats = []
 }) => {
@@ -52,7 +54,7 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
     return acc + (isNaN(amount) ? 0 : amount);
   }, 0);
 
-  console.log('🧪 assignedSeats:', assignedSeats);
+  const hasAssignedSeats = selectedSeats.length > 0;
 
   return (
     <div style={{ padding: '1rem', minWidth: '320px' }}>
@@ -62,7 +64,7 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
       </div>
 
       <div style={{ marginTop: '0.5rem', borderTop: '1px solid #ccc' }}>
-        {passengers.map((pax, index) => {
+        {passengers.map((pax) => {
           const paxId = String(pax.id);
           const assigned = selectedSeats.find(s => s.passengerId === paxId);
           return (
@@ -98,7 +100,6 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
 
       <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
         {assignedSeats.length > 0 ? (
-
           <button
             onClick={handleDeleteSeats}
             style={{
@@ -113,30 +114,43 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
           >
             DELETE SEATS
           </button>
-
         ) : (
           <>
+            <button
+              onClick={handleAutomateSeating}
+              style={{
+                backgroundColor: '#00C852',
+                color: '#fff',
+                padding: '0.5rem 1.2rem',
+                fontWeight: 600,
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+              }}
+            >
+              AUTOMATE SEATING
+            </button>
+
             <button onClick={handleResetSeat} className="btn btn-outline-secondary">
               RESET ALL
             </button>
 
-              <button
-                onClick={handleSave}
-                disabled={saveDisabled}
-                style={{
-                  backgroundColor: '#000',
-                  color: '#fff',
-                  padding: '0.5rem 1.2rem',
-                  fontWeight: 600,
-                  border: 'none',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  opacity: saveDisabled ? 0.5 : 1,
-                }}
-              >
-                SAVE
-              </button>
-
+            <button
+              onClick={handleSave}
+              disabled={saveDisabled}
+              style={{
+                backgroundColor: '#000',
+                color: '#fff',
+                padding: '0.5rem 1.2rem',
+                fontWeight: 600,
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                opacity: saveDisabled ? 0.5 : 1,
+              }}
+            >
+              SAVE
+            </button>
           </>
         )}
       </div>

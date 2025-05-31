@@ -31,7 +31,7 @@ interface Deck {
 
 type SeatType = 'available' | 'occupied' | 'paid' | 'blocked' | 'preferred' | 'unavailable';
 
-interface AvailabilityItem {
+export interface AvailabilityItem {
   label: string;
   seatLabel: string;
   price: number;

@@ -31,6 +31,8 @@ import { createSelectedSeat } from './helpers/createSelectedSeat';
 import { areSeatsEqual } from './helpers/areSeatsEqual';
 import { handleSaveSeats } from './handleSaveSeats';
 import { handleDeleteSeats } from './handleDeleteSeats';
+import { postSeatMapUpdate } from './helpers/postSeatMapUpdate';
+import { handleAutomateSeating } from './handleAutomateSeating';
 
 // Global type declaration for optional debug use
 declare global {
@@ -100,7 +102,6 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
 }) => {
 
   const iframeRef = useRef<HTMLIFrameElement>(null); // reference to the iframe
-  const [boardingComplete, setBoardingComplete] = useState(false); // boarding status
 
   // ✅ Normalize passenger IDs on initial load
   const [cleanPassengers] = useState(() => ensurePassengerIds(passengers));
@@ -159,7 +160,6 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     setSelectedSeats([]);
     setSelectedPassengerId(cleanPassengers.length > 0 ? cleanPassengers[0].id : '');
     onSeatChange?.([]);
-    setBoardingComplete(false);
 
     const iframe = iframeRef.current;
     if (!iframe) return;
@@ -233,7 +233,6 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     selectedPassengerId,
     setSelectedPassengerId,
     setSelectedSeats,
-    setBoardingComplete,
     onSeatChange,
     availability
   });
@@ -258,6 +257,28 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     handleSaveSeats(selectedSeats);
   };
 
+  // Automate Seating
+  const onAutomateSeating = () => {
+    const newSeats = handleAutomateSeating({
+      passengers: cleanPassengers,
+      availableSeats: availability
+    });
+    setSelectedSeats(newSeats);
+    setSelectedPassengerId(String(cleanPassengers[0].id));
+    onSeatChange?.(newSeats);
+
+    const flight = generateFlightData(segment, initialSegmentIndex, cabinClass);
+    postSeatMapUpdate({
+      config,
+      flight,
+      availability,
+      passengers: cleanPassengers,
+      selectedPassengerId: String(cleanPassengers[0].id),
+      selectedSeats: newSeats,
+      iframeRef
+    });
+  };
+
   // === 👥 Passenger control panel ===
   const passengerPanel = (
     <PassengerPanel
@@ -269,7 +290,8 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
       handleSave={handleSave}
       saveDisabled={saveDisabled}
       assignedSeats={assignedSeats}
-      handleDeleteSeats={handleDeleteSeats} 
+      handleDeleteSeats={handleDeleteSeats}
+      handleAutomateSeating={onAutomateSeating} 
     />
   );
 

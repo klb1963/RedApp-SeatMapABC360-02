@@ -21,7 +21,7 @@ export const quicketConfig = {
   singleDeckMode: true,     // Force single-deck rendering
   builtInTooltip: true,     // Enable native tooltips for seats
   externalPassengerManagement: false, // Control passengers from iframe
-  tooltipOnHover: true,    // Show tooltip only on click (not hover)
+  tooltipOnHover: false,    // Show tooltip only on click (not hover)
 
   // === 🎨 Color and style theme ===
   colorTheme: {

@@ -39,7 +39,6 @@ interface Props {
   selectedPassengerId: string;
   setSelectedPassengerId: (id: string) => void;
   setSelectedSeats: React.Dispatch<React.SetStateAction<SelectedSeat[]>>;
-  setBoardingComplete: (status: boolean) => void;
   onSeatChange?: (seats: SelectedSeat[]) => void;
   availability?: RawAvailabilityItem[]; // Исходный массив доступных мест
 }
@@ -49,7 +48,6 @@ export const useSeatSelectionHandler = ({
   selectedPassengerId,
   setSelectedPassengerId,
   setSelectedSeats,
-  setBoardingComplete,
   onSeatChange,
   availability
 }: Props): void => {
@@ -118,12 +116,12 @@ export const useSeatSelectionHandler = ({
         onSeatChange?.(merged);
 
         // 🟢 Проверяем: все ли пассажиры рассажены?
-        const allSeated = cleanPassengers.every(p =>
-          merged.some(s => s.passengerId === p.id)
-        );
-        setBoardingComplete(allSeated);
+        // const allSeated = cleanPassengers.every(p =>
+        //   merged.some(s => s.passengerId === p.id)
+        // );
+        // setBoardingComplete(allSeated);
 
-        // ⏭️ Автоматически переключаемся на следующего
+        // ⏭️ Goto next passenger
         const nextPassenger = cleanPassengers.find(
           p => !merged.some(s => s.passengerId === String(p.id))
         );
@@ -138,5 +136,5 @@ export const useSeatSelectionHandler = ({
     // 🔌 Подключаем обработчик
     window.addEventListener('message', handleSeatSelection);
     return () => window.removeEventListener('message', handleSeatSelection);
-  }, [cleanPassengers, selectedPassengerId, setSelectedPassengerId, setSelectedSeats, setBoardingComplete, onSeatChange, availability]);
+  }, [cleanPassengers, selectedPassengerId, setSelectedPassengerId, setSelectedSeats, onSeatChange, availability]);
 };
