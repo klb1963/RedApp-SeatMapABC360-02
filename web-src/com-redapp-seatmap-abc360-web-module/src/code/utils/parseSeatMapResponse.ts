@@ -29,7 +29,7 @@ interface Deck {
   rows: Row[];
 }
 
-type SeatType = 'available' | 'occupied' | 'paid' | 'blocked' | 'preferred';
+type SeatType = 'available' | 'occupied' | 'paid' | 'blocked' | 'preferred' | 'unavailable';
 
 interface AvailabilityItem {
   label: string;
@@ -43,6 +43,9 @@ interface AvailabilityItem {
 function getSeatType(seatEl: Element): SeatType {
   const occupiedInd = seatEl.getAttribute('occupiedInd') === 'true';
   const availableInd = seatEl.getAttribute('availableInd') === 'true';
+  // 🔒 Not bookable — если есть Limited Detail с code="1" (RestrictedGeneral)
+  const isRestricted = Array.from(seatEl.querySelectorAll('Limitations > Detail'))
+    .some(detail => detail.getAttribute('code') === '1');
 
   const occupationDetails = Array.from(seatEl.querySelectorAll('Occupation > Detail'))
     .map((d) => d.textContent?.trim());
@@ -58,6 +61,7 @@ function getSeatType(seatEl: Element): SeatType {
 
   // Правила классификации
   if (isOccupied) return 'occupied';
+  if (isRestricted && isFree && !occupiedInd) return 'unavailable';
   if (!availableInd && !isFree) return 'blocked';
   if (price > 0 && isPreferred) return 'preferred';
   if (price > 0) return 'paid';
@@ -68,11 +72,12 @@ function getSeatType(seatEl: Element): SeatType {
 
 function getColorByType(type: SeatType): string {
   switch (type) {
-    case 'available': return '#00C853';
-    case 'paid': return '#F8CF00';
-    case 'occupied': return '#212121';
-    case 'blocked': return 'lightgray';
-    case 'preferred': return '#01D0CE';
+    case 'available': return '#00C853'; // green
+    case 'paid': return '#F8CF00'; // yellow
+    case 'occupied': return '#212121'; // dark grey
+    case 'unavailable': return '#212121'; // dark grey
+    case 'blocked': return 'lightgray'; 
+    case 'preferred': return '#01D0CE'; // light blue
     default: return 'white';
   }
 }
