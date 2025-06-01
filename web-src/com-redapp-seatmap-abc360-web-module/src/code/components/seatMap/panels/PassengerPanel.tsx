@@ -116,6 +116,7 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
           </button>
         ) : (
           <>
+          
             <button
               onClick={handleAutomateSeating}
               style={{

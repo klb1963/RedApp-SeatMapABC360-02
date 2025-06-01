@@ -1,9 +1,14 @@
 // file: /code/components/seatMap/openSeatMapPnr.ts
 
 /**
- * Opens the Seat Map modal for PNR context.
- * Loads PNR data, fetches seat availability from Sabre,
- * maps passenger/segment data, and initializes the SeatMapComponentPnr.
+ * 📍 openSeatMapPnr.ts
+ *
+ * Opens the Seat Map modal in the context of an existing PNR.
+ * - Loads PNR data and parses passenger and segment details
+ * - Fetches availability for the first segment via EnhancedSeatMapRS
+ * - Displays SeatMapComponentPnr with mapped props and data bindings
+ * 
+ * Used as the entry point for viewing/editing seats from a retrieved PNR.
  */
 
 import * as React from 'react';
@@ -21,9 +26,11 @@ export async function openSeatMapPnr(): Promise<void> {
   const selectedSeatsRef = { current: [] };
 
   try {
+    // Load current PNR with passengers and segments
     const { parsedData: pnrData } = await loadPnrDetailsFromSabre();
 
     if (!pnrData || !pnrData.segments?.length) {
+      // Show fallback modal if no segments present
       modals.showReactModal({
         header: 'Seat Map ABC 360',
         component: React.createElement('div', { style: { padding: '1rem' } }, t('seatMap.noSegments')),
@@ -32,6 +39,7 @@ export async function openSeatMapPnr(): Promise<void> {
       return;
     }
 
+    // Normalize flight segments to match seat map library expectations
     const flightSegments = pnrData.segments.map(seg => ({
       ...seg,
       flightNo: seg.marketingFlightNumber || '000',
@@ -45,13 +53,17 @@ export async function openSeatMapPnr(): Promise<void> {
       passengerType: 'ADT'
     }));
 
+    // Enrich passenger data with visuals and assignments
     const { enrichedPassengers, assignedSeats } = enrichPassengerData(pnrData.passengers || []);
 
+    // Focus on first segment
     const selectedSegmentIndex = 0;
     const activeFlight = flightSegments[selectedSegmentIndex];
 
+    // Load availability for this segment
     const { availability } = await loadSeatMapFromSabre(activeFlight, enrichedPassengers);
 
+    // Show seat map modal with loaded data
     modals.showReactModal({
       header: 'Seat Map ABC 360',
       component: React.createElement(SeatMapComponentPnr, {
