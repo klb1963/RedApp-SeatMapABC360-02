@@ -191,20 +191,21 @@ export const SeatLegend: React.FC = () => {
 
     {
       customSvg: (
+
         <svg
           width="20"
           height="20"
-          viewBox="0 0 114 114"
+          viewBox="0 0 22 22"
           xmlns="http://www.w3.org/2000/svg"
         >
-          <g
-            transform="translate(0.000000,114.000000) scale(0.100000,-0.100000)"
-            fill="red"
-            stroke="none"
-          >
-            <path d="M635 922 c-115 -85 -269 -198 -341 -251 l-132 -96 344 -252 344 -252 0 129 0 129 95 -54 95 -54 0 354 0 354 -95 -54 -94 -53 -3 127 -3 127 -210 -154z" />
+          <g>
+            <path
+              fill="#ff2000"
+              d="M10.22,3.2v15.59l-2.24-2.54-.06,5.74L0,11,7.92,0l.06,5.74,2.24-2.54ZM11.78,3.2v15.59s2.24-2.54,2.24-2.54l.06,5.74,7.92-11L14.08,0l-.06,5.74-2.24-2.54Z"
+            />
           </g>
         </svg>
+
       ),
       label: t('seatMap.legend.exit'),
     },

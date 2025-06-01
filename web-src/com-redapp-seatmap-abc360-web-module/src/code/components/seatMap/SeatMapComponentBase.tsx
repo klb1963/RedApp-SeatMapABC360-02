@@ -1,19 +1,5 @@
 // file: /code/components/seatMap/SeatMapComponentBase.tsx
 
-/**
- * SeatMapComponentBase.tsx
- * 
- * 🎯 Core Seat Map Wrapper Component – RedApp ABC360
- * 
- * This component wraps the external SeatMap rendering iframe (quicket.io) and manages:
- * - Mapping passenger data to visual payload
- * - Selecting passengers and tracking their assigned seats
- * - Posting data into the iframe via postMessage
- * - Handling deck/class/segment changes and seat selections
- * 
- * Acts as a central data bridge between Sabre PNR/availability data and the SeatMap visualization engine.
- */
-
 import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FlightData } from '../../utils/generateFlightData';
@@ -33,8 +19,8 @@ import { handleSaveSeats } from './handleSaveSeats';
 import { handleDeleteSeats } from './handleDeleteSeats';
 import { postSeatMapUpdate } from './helpers/postSeatMapUpdate';
 import { handleAutomateSeating } from './handleAutomateSeating';
+import { mapCabinToCode } from '../../utils/mapCabinToCode';
 
-// Global type declaration for optional debug use
 declare global {
   interface Window {
     selectedSeats?: SelectedSeat[];
@@ -77,7 +63,6 @@ interface SeatMapComponentBaseProps {
   galleryPanel?: React.ReactNode;
 }
 
-// 🧮 Ensure each passenger has unique id and value fields
 function ensurePassengerIds(passengers: PassengerOption[]): PassengerOption[] {
   return passengers.map((p, index) => ({
     ...p,
@@ -86,7 +71,6 @@ function ensurePassengerIds(passengers: PassengerOption[]): PassengerOption[] {
   }));
 }
 
-// === Main Component ===
 const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   config,
   flightSegments,
@@ -100,93 +84,147 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   assignedSeats,
   galleryPanel
 }) => {
-
-  const iframeRef = useRef<HTMLIFrameElement>(null); // reference to the iframe
-
-  // ✅ Normalize passenger IDs on initial load
+  const iframeRef = useRef<HTMLIFrameElement>(null);
   const [cleanPassengers] = useState(() => ensurePassengerIds(passengers));
-
-  //===================================================
-  // 🪑 State for selected seats — начальная пустая инициализация
   const [selectedSeats, setSelectedSeats] = useState<SelectedSeat[]>([]);
   const [alreadyInitialized, setAlreadyInitialized] = useState(false);
+  const [selectedPassengerId, setSelectedPassengerId] = useState<string>('');
+  const segment = flightSegments[initialSegmentIndex];
 
-  // ✅ If selectedSeats is empty, but alredy have assignedSeats — let's inizialize selectedSeats
+  // Initialize selectedSeats from assignedSeats if not already initialized
   useEffect(() => {
-    console.log('🧪 assignedSeats (raw):', assignedSeats);
-    console.log('🧪 passenger IDs:', passengers.map(p => p.id));
-  
     if (assignedSeats?.length && !alreadyInitialized) {
       const enriched = assignedSeats.map((s) => {
-        const pax = passengers.find(
-          (p) =>
-            String(p.id) === String(s.passengerId) ||
-            String(p.nameNumber) === String(s.passengerId)
-        );
+        const pax = passengers.find((p) => String(p.id) === String(s.passengerId) || String(p.nameNumber) === String(s.passengerId));
         if (!pax) return null;
         return createSelectedSeat(pax, s.seat, true, availability);
       }).filter(Boolean) as SelectedSeat[];
-  
+
       setSelectedSeats(enriched);
       onSeatChange?.(enriched);
-      setAlreadyInitialized(true); // чтобы не перезаписывать позже
-      console.log('🪑 selectedSeats инициализированы из assignedSeats с ценами');
+      setAlreadyInitialized(true);
     }
   }, [assignedSeats, passengers, availability, alreadyInitialized]);
 
-  //===================================================
-
-  // 🔁 Sync selected seats to a global variable for debugging/testing
+  // Sync selected seats to window for debug
   useEffect(() => {
     window.selectedSeats = selectedSeats;
   }, [selectedSeats]);
 
-  // 🎯 Track which passenger is currently selected
-  const [selectedPassengerId, setSelectedPassengerId] = useState<string>('');
-
-  // ✅ Auto-select the first passenger on mount
+  // Auto-select first passenger
   useEffect(() => {
     if (cleanPassengers.length > 0 && !selectedPassengerId) {
       const firstId = String(cleanPassengers[0].id);
       setSelectedPassengerId(firstId);
-      console.log('👤 selectedPassengerId initiated:', firstId);
     }
   }, [passengers, selectedPassengerId]);
 
-  const segment = flightSegments[initialSegmentIndex]; // selected segment
 
-  // 🔁 Reset seat selection and post a full update to the iframe
+
+  // 🧭 Initial map load effect – only runs once on first render
+  useEffect(() => {
+    if (
+      iframeRef.current &&
+      flightSegments.length > 0 &&
+      cabinClass &&
+      availability &&
+      !alreadyInitialized
+    ) {
+      // 🔁 Convert cabin code (e.g., 'Y', 'C') to mapped value expected by visualization (e.g., 'E', 'B')
+      const mappedCabin = mapCabinToCode(cabinClass);
+
+      // ✈️ Generate structured flight data based on segment and mapped cabin class
+      const flight = generateFlightData(segment, initialSegmentIndex, mappedCabin);
+
+      // 📤 Send data to SeatMap iframe
+      postSeatMapUpdate({
+        config,
+        flight,
+        availability,
+        passengers: cleanPassengers,
+        selectedPassengerId,
+        selectedSeats,
+        iframeRef
+      });
+
+      // ✅ Prevent multiple re-renders
+      setAlreadyInitialized(true);
+    }
+  }, [
+    iframeRef.current,
+    flightSegments,
+    cabinClass,
+    availability,
+    initialSegmentIndex,
+    cleanPassengers,
+    selectedPassengerId,
+    selectedSeats,
+    alreadyInitialized
+  ]);
+
+
+  // 🔄 Fallback update on cabin or segment change
+  useEffect(() => {
+    if (!iframeRef.current) return;
+
+    // 🧭 Convert Sabre cabin class (e.g., 'Y', 'C') to visualization code (e.g., 'E', 'B')
+    const mappedCabin = mapCabinToCode(cabinClass);
+
+    // ✈️ Generate updated flight data based on new segment or cabin
+    const flight = generateFlightData(segment, initialSegmentIndex, mappedCabin);
+
+    // 📤 Push updated data to SeatMap iframe
+    postSeatMapUpdate({
+      config,
+      flight,
+      availability,
+      passengers: cleanPassengers,
+      selectedPassengerId,
+      selectedSeats,
+      iframeRef
+    });
+  }, [initialSegmentIndex, cabinClass]);
+
+  // 🔄 Resets all selected seats and reinitializes the SeatMap iframe
   const handleResetSeat = () => {
+    // 🔁 Clear all selected seats
     setSelectedSeats([]);
+
+    // 🎯 Reset selected passenger to the first in the list (if available)
     setSelectedPassengerId(cleanPassengers.length > 0 ? cleanPassengers[0].id : '');
+
+    // 📭 Notify parent about seat reset
     onSeatChange?.([]);
 
     const iframe = iframeRef.current;
     if (!iframe) return;
 
-    const flight = generateFlightData(segment, initialSegmentIndex, cabinClass);
-    const availabilityData = availability || [];
+    // 🧭 Convert Sabre cabin class to library-specific code
+    const mappedCabin = mapCabinToCode(cabinClass);
 
-    // ⛔️ reset seats
+    // ✈️ Generate updated flight data
+    const flight = generateFlightData(segment, initialSegmentIndex, mappedCabin);
+
+    // 📦 Build passenger payload for iframe
     const passengerList = cleanPassengers.map((p, i) =>
-      createPassengerPayload(p, i, selectedPassengerId, []) 
+      createPassengerPayload(p, i, selectedPassengerId, [])
     );
 
+    // 📨 Construct postMessage payload
     const message: SeatMapMessagePayload = {
       type: 'seatMaps',
       config: JSON.stringify(config),
       flight: JSON.stringify(flight),
-      availability: JSON.stringify(availabilityData),
+      availability: JSON.stringify(availability || []),
       passengers: JSON.stringify(passengerList),
       currentDeckIndex: '0'
     };
 
-    const targetOrigin = 'https://quicket.io';
-    console.log('🚀 Sending seatArray:', JSON.stringify(passengers, null, 2));
-    iframe.contentWindow?.postMessage(message, targetOrigin);
+    // 🚀 Send data to iframe
+    iframe.contentWindow?.postMessage(message, 'https://quicket.io');
   };
 
-  // === 🗺️ Initial iframe load handler (fires onLoad) ===
+  // onLoad handler passed to iframe
   const handleIframeLoad = useOnIframeLoad({
     iframeRef,
     config,
@@ -198,9 +236,8 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     selectedPassengerId,
     selectedSeats,
     generateFlightData
-  });   
+  });
 
-  // === 🔁 Sync on cabin class change ===
   useSyncOnCabinClassChange({
     iframeRef,
     config,
@@ -213,7 +250,6 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     selectedSeats
   });
 
-  // === 🔁 Sync on segment change ===
   useSyncOnSegmentChange({
     config,
     segment,
@@ -227,7 +263,6 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     generateFlightData
   });
 
-  // === 🎯 Handle iframe message events (seat selection) ===
   useSeatSelectionHandler({
     cleanPassengers,
     selectedPassengerId,
@@ -237,37 +272,40 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     availability
   });
 
-  // === 💾 Save button logic: disable if no changes compared to assignedSeats ===
   const enrichedAssignedSeats: SelectedSeat[] = assignedSeats?.map((s) => {
-    const pax = passengers.find(
-      (p) => p.id === s.passengerId || p.nameNumber === s.passengerId
-    );
+    const pax = passengers.find((p) => p.id === s.passengerId || p.nameNumber === s.passengerId);
     if (!pax) return null;
-
-    return createSelectedSeat(pax, s.seat, true, availability); // ⬅️ передаём цены
+    return createSelectedSeat(pax, s.seat, true, availability);
   }).filter(Boolean) as SelectedSeat[];
 
-  const saveDisabled = assignedSeats
-    ? areSeatsEqual(selectedSeats, enrichedAssignedSeats)
-    : false;
+  const saveDisabled = assignedSeats ? areSeatsEqual(selectedSeats, enrichedAssignedSeats) : false;
 
-  // 💾 SAVE HANDLER
   const handleSave = () => {
-    console.log('💾 Saving selected seats...', selectedSeats);
     handleSaveSeats(selectedSeats);
   };
 
-  // Automate Seating
+  // 🤖 Automatically assigns free seats to passengers and updates the map
   const onAutomateSeating = () => {
+    // 🪑 Auto-assign seats using helper logic
     const newSeats = handleAutomateSeating({
       passengers: cleanPassengers,
       availableSeats: availability
     });
+
+    // 💾 Update internal state
     setSelectedSeats(newSeats);
     setSelectedPassengerId(String(cleanPassengers[0].id));
+
+    // 📭 Notify parent about seat selection
     onSeatChange?.(newSeats);
 
-    const flight = generateFlightData(segment, initialSegmentIndex, cabinClass);
+    // 🧭 Map Sabre cabin code to library-specific cabin code
+    const mappedCabin = mapCabinToCode(cabinClass);
+
+    // ✈️ Generate flight data with mapped cabin class
+    const flight = generateFlightData(segment, initialSegmentIndex, mappedCabin);
+
+    // 🚀 Push updated data to SeatMap iframe
     postSeatMapUpdate({
       config,
       flight,
@@ -279,7 +317,6 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     });
   };
 
-  // === 👥 Passenger control panel ===
   const passengerPanel = (
     <PassengerPanel
       passengers={cleanPassengers}
@@ -291,43 +328,27 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
       saveDisabled={saveDisabled}
       assignedSeats={assignedSeats}
       handleDeleteSeats={handleDeleteSeats}
-      handleAutomateSeating={onAutomateSeating} 
+      handleAutomateSeating={onAutomateSeating}
     />
   );
 
-  // === 📤 Render layout with iframe and passenger info ===
   return (
     <SeatMapModalLayout
       flightInfo={flightInfo}
       passengerPanel={passengerPanel}
-      galleryPanel={<GalleryPanel />} // 👈 GalleryPanel
+      galleryPanel={<GalleryPanel />}
     >
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          height: '100%',
-          width: '100%',
-          overflow: 'auto',
-        }}
-      >
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', width: '100%', overflow: 'auto' }}>
         <iframe
           ref={iframeRef}
           title="Seat Map"
           src="https://quicket.io/react-proxy-app/"
           onLoad={handleIframeLoad}
-          style={{
-            width: '460px', 
-            height: '100%',
-            border: 'none',
-            overflow: 'hidden' 
-           }}
+          style={{ width: '460px', height: '100%', border: 'none', overflow: 'hidden' }}
         />
       </div>
     </SeatMapModalLayout>
   );
-
 };
 
 export default SeatMapComponentBase;

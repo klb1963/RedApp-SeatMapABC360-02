@@ -18,12 +18,12 @@ interface AutomateSeatingParams {
   availableSeats: AvailabilityItem[];
 }
 
-// Generate passenger initials (e.g., "LK" from "Kleimann", "Leonid")
+// Generate passenger initials
 function getInitials(surname: string, givenName: string): string {
   return `${surname.charAt(0)}${givenName.charAt(0)}`.toUpperCase();
 }
 
-// Generate abbreviated name (e.g., "KL" from "Leonid", "Kleimann")
+// Generate passenger initials
 function getAbbr(surname: string, givenName: string): string {
   return `${givenName.charAt(0)}${surname.charAt(0)}`.toUpperCase();
 }

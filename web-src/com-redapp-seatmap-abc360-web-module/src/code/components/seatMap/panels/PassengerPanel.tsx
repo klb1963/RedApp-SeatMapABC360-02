@@ -120,7 +120,7 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
             <button
               onClick={handleAutomateSeating}
               style={{
-                backgroundColor: '#00C852',
+                backgroundColor: '#212121', 
                 color: '#fff',
                 padding: '0.5rem 1.2rem',
                 fontWeight: 600,
@@ -129,7 +129,7 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
                 cursor: 'pointer',
               }}
             >
-              AUTOMATE SEATING
+              ABC 360
             </button>
 
             <button onClick={handleResetSeat} className="btn btn-outline-secondary">

@@ -1,8 +1,8 @@
 // file: code/components/seatMap/panels/SegmentCabinSelector.tsx
 
 import * as React from 'react';
-import { normalizeSegment } from '../../../utils/normalizeSegment';
 import { t } from '../../../Context';
+import { normalizeSegment } from '../../../utils/normalizeSegment';
 
 interface SegmentCabinSelectorProps {
   flightSegments: any[];
@@ -19,10 +19,6 @@ export const SegmentCabinSelector: React.FC<SegmentCabinSelectorProps> = ({
   cabinClass,
   setCabinClass
 }) => {
-  const segment = flightSegments?.[segmentIndex];
-  const normalizedSegment = normalizeSegment(segment, { padFlightNumber: false });
-  const { equipmentType } = normalizedSegment;
-
   return (
     <div
       style={{

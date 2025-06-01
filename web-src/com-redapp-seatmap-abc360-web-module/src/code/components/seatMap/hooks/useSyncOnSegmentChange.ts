@@ -20,6 +20,7 @@ import { FlightData } from '../../../utils/generateFlightData';
 import { createPassengerPayload } from '../helpers/createPassengerPayload';
 import { SeatMapMessagePayload } from '../types/SeatMapMessagePayload';
 import { SelectedSeat } from '../SeatMapComponentBase';
+import { mapCabinToCode } from '../../../utils/mapCabinToCode';
 
 interface Props {
   config: any;
@@ -50,7 +51,8 @@ export const useSyncOnSegmentChange = ({
     const iframe = iframeRef.current;
     if (!iframe) return;
 
-    const flight = generateFlightData(segment, initialSegmentIndex, cabinClass);
+    const mappedCabin = mapCabinToCode(cabinClass);
+    const flight = generateFlightData(segment, initialSegmentIndex, mappedCabin);
     const availabilityData = availability || [];
 
     const passengerList = passengers.map((p, index) =>

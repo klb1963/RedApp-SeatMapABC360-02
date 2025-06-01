@@ -34,6 +34,7 @@ export interface FlightSegmentInput {
       SimplyDecoded?: string;
     };
   };
+  equipmentType?: string;
 }
 
 /**
@@ -84,10 +85,7 @@ export function generateFlightData(
   const arrival = segment.destination || segment.arrival || '???';
 
   // 🛫 Aircraft equipment description
-  const rawEquipment =
-    typeof segment.equipment === 'object'
-      ? segment.equipment?.EncodeDecodeElement?.SimplyDecoded || ''
-      : segment.equipment || '';
+  const rawEquipment = segment.equipmentType || '';
 
   // 💺 Cabin class logic with mapping (Y, C → E, B, etc.)
   const cabinClass = cabinClassOverride || segment.cabinClass || 'Y';

@@ -72,12 +72,12 @@ function getSeatType(seatEl: Element): SeatType {
 
 function getColorByType(type: SeatType): string {
   switch (type) {
-    case 'available': return '#00C853'; // green
-    case 'paid': return '#F8CF00'; // yellow
-    case 'occupied': return '#212121'; // dark grey
-    case 'unavailable': return '#212121'; // dark grey
+    case 'available': return '#00C853'; // green #00C853
+    case 'paid': return '#F8CF00'; // yellow #F8CF00
+    case 'occupied': return '#212121'; // dark grey #212121
+    case 'unavailable': return '#212121'; // dark grey #212121
     case 'blocked': return 'lightgray'; 
-    case 'preferred': return '#01D0CE'; // light blue
+    case 'preferred': return '#01D0CE'; // light blue #01D0CE
     default: return 'white';
   }
 }
