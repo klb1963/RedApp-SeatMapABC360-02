@@ -38,6 +38,8 @@ import { createPnrForm } from './components/seatMap/forms/CreatePnrForm';
 
 import { t } from './Context'; // i18n
 
+import { normalizeSegment } from './utils/normalizeSegment';
+
 export class Main extends Module {
     init(): void {
         super.init();
@@ -234,17 +236,15 @@ export class Main extends Module {
     const airAvailabilityService = getService(PublicAirAvailabilityService);
 
     const showSeatMapAvailabilityModal = (data: any) => {
-
-      // console.log('📥 [Availability] Received Data:', JSON.stringify(data, null, 2));
-
       const modalOptions: ReactModalOptions = {
         header: 'SeatMaps ABC 360',
         component: React.createElement(SeatMapComponentAvail, {
           config: quicketConfig,
-          data: data
+          data
         }),
-        modalClassName: 'react-tile-modal-class seatmap-modal-wide'
+        modalClassName: 'seatmap-modal-lower'
       };
+
       getService(PublicModalsService).showReactModal(modalOptions);
     };
 

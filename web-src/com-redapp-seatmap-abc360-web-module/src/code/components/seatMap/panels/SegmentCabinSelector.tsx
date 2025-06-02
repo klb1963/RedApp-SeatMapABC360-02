@@ -1,11 +1,22 @@
-// file: code/components/seatMap/panels/SegmentCabinSelector.tsx
+/**
+ * SegmentCabinSelector.tsx
+ *
+ * 🚀 UI Component for Selecting Flight Segment and Cabin Class
+ * This component renders two dropdowns:
+ * - Segment selector (origin → destination + flight number)
+ * - Cabin class selector (Economy, Business, etc.)
+ */
 
 import * as React from 'react';
 import { t } from '../../../Context';
-import { normalizeSegment } from '../../../utils/normalizeSegment';
 
 interface SegmentCabinSelectorProps {
-  flightSegments: any[];
+  flightSegments: Array<{
+    origin: string;
+    destination: string;
+    flightNumber: string;
+    [key: string]: any;
+  }>;
   segmentIndex: number;
   setSegmentIndex: (index: number) => void;
   cabinClass: 'Y' | 'S' | 'C' | 'F' | 'A';
@@ -29,6 +40,8 @@ export const SegmentCabinSelector: React.FC<SegmentCabinSelectorProps> = ({
         marginBottom: '1rem',
         paddingLeft: '1.5rem'
       }}>
+
+      {/* ✈️ Segment selection dropdown */}
       <div style={{ position: 'relative' }}>
         <label style={{ marginRight: '0.5rem' }}>{t('seatMap.segment')}:</label>
         <select
@@ -47,15 +60,13 @@ export const SegmentCabinSelector: React.FC<SegmentCabinSelectorProps> = ({
             cursor: 'pointer',
             minWidth: '200px'
           }}>
-          {flightSegments.map((seg: any, idx: number) => {
-            const s = normalizeSegment(seg, { padFlightNumber: false });
-            return (
-              <option key={idx} value={idx}>
-                {s.origin} → {s.destination}, {s.flightNumber}
-              </option>
-            );
-          })}
+          {flightSegments.map((seg, idx) => (
+            <option key={idx} value={idx}>
+              {seg.origin} → {seg.destination}, {seg.flightNumber}
+            </option>
+          ))}
         </select>
+
         <svg
           width="24"
           height="24"
@@ -74,6 +85,7 @@ export const SegmentCabinSelector: React.FC<SegmentCabinSelectorProps> = ({
         </svg>
       </div>
 
+      {/* 🪑 Cabin class selection dropdown */}
       <div style={{ position: 'relative', display: 'inline-block', marginTop: '0rem' }}>
         <label style={{ marginRight: '0.5rem' }}>{t('seatMap.cabinClass')}:</label>
         <select
@@ -89,12 +101,13 @@ export const SegmentCabinSelector: React.FC<SegmentCabinSelectorProps> = ({
             cursor: 'pointer',
             minWidth: '200px'
           }}>
-            <option value="Y">Y — {t('seatMap.cabin.economy')}</option>
-            <option value="S">S — {t('seatMap.cabin.premiumEconomy')}</option>
-            <option value="C">C — {t('seatMap.cabin.business')}</option>
-            <option value="F">F — {t('seatMap.cabin.first')}</option>
-            <option value="A">A — {t('seatMap.cabin.all')}</option>
+          <option value="Y">Y — {t('seatMap.cabin.economy')}</option>
+          <option value="S">S — {t('seatMap.cabin.premiumEconomy')}</option>
+          <option value="C">C — {t('seatMap.cabin.business')}</option>
+          <option value="F">F — {t('seatMap.cabin.first')}</option>
+          <option value="A">A — {t('seatMap.cabin.all')}</option>
         </select>
+
         <svg
           width="24"
           height="24"

@@ -41,11 +41,13 @@ export interface NormalizedSegment {
 export interface NormalizeSegmentOptions {
   padFlightNumber?: boolean;
 }
-
 export function normalizeSegment(
   seg: any,
   options: NormalizeSegmentOptions = {}
 ): NormalizedSegment {
+  // 🔍 Показываем, откуда вызвана функция
+  console.log('🪵 TRACE: normalizeSegment called');
+
   console.log('🧩 normalizeSegment input:', seg);
 
   const { padFlightNumber = true } = options;

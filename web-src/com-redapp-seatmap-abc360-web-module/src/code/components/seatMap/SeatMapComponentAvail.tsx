@@ -26,58 +26,37 @@ interface SeatMapComponentAvailProps {
 
 const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, data }) => {
   const rawSegments = data.flightSegments || [];
-
   const availability = data.availability || [];
-
   const passengers = data.passengers || [];
 
   const [segmentIndex, setSegmentIndex] = React.useState(0);
-  console.log('📦 rawSegment', rawSegments[segmentIndex]);
-
   const [cabinClass, setCabinClass] = React.useState<'Y' | 'S' | 'C' | 'F' | 'A'>('Y');
 
-  console.log('🔁 normalizeSegment called for rawSegments');
-
-  const normalizedSegments = rawSegments.map(seg =>
-    normalizeSegment(seg, { padFlightNumber: false })
-  );
+  // 👁 Только для отображения в UI
+  const normalizedSegments = React.useMemo(() => {
+    console.log('🔁 normalizeSegment called for rawSegments');
+    return rawSegments.map((seg) =>
+      normalizeSegment(seg, { padFlightNumber: false })
+    );
+  }, [rawSegments]);
 
   const segment = normalizedSegments[segmentIndex];
-  console.log('✅ normalizedSegment:', segment);
+  const rawSegment = rawSegments[segmentIndex];
 
-  console.log('🧪 normalized:', {
-    origin: segment.origin,
-    destination: segment.destination,
-    departureDateTime: segment.departureDateTime,
-    flightNumber: segment.flightNumber,
-  });
-
-  const {
-    marketingAirline,
-    marketingAirlineName,
-    flightNumber,
-    departureDateTime,
-    origin,
-    originCityName,
-    destination,
-    destinationCityName,
-    duration,
-    aircraftDescription
-  } = segment;
-
+  // 🛫 Панель информации о рейсе
   const flightInfo = (
     <>
       <FlightInfoPanel
-        airlineCode={marketingAirline}
-        airlineName={marketingAirlineName}
-        flightNumber={flightNumber}
-        fromCode={origin}
-        fromCity={originCityName || ''}
-        toCode={destination}
-        toCity={destinationCityName || ''}
-        date={departureDateTime?.split?.('T')[0] || 'Unknown date'}
-        duration={duration}
-        aircraft={aircraftDescription}
+        airlineCode={segment.marketingAirline}
+        airlineName={segment.marketingAirlineName}
+        flightNumber={segment.flightNumber}
+        fromCode={segment.origin}
+        fromCity={segment.originCityName || ''}
+        toCode={segment.destination}
+        toCity={segment.destinationCityName || ''}
+        date={segment.departureDateTime?.split?.('T')[0] || 'Unknown date'}
+        duration={segment.duration}
+        aircraft={segment.aircraftDescription}
       />
       <SeatLegend />
     </>
@@ -85,31 +64,47 @@ const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, d
 
   return (
     <div style={{ padding: '1rem' }}>
+      {/* ✈️ Селектор сегмента и класса обслуживания */}
       <SegmentCabinSelector
-        flightSegments={rawSegments}
+        flightSegments={normalizedSegments}
         segmentIndex={segmentIndex}
         setSegmentIndex={(index) => {
           setSegmentIndex(index);
-          setCabinClass('Y');
+          setTimeout(() => setCabinClass('Y'), 0);
         }}
         cabinClass={cabinClass}
         setCabinClass={setCabinClass}
       />
 
+      {/* 💺 Отображение карты мест */}
       <SeatMapComponentBase
         config={config}
-        flightSegments={normalizedSegments}
+        flightSegments={normalizedSegments} // только для отображения
         initialSegmentIndex={segmentIndex}
         cabinClass={cabinClass}
-        generateFlightData={(segment, index) => {
-          const mappedCabin = mapCabinToCode(cabinClass);
-          return getFlightFromSabreData({
-            flightSegments: [{
-              ...segment,
-              cabinClass: mappedCabin,
-              equipment: segment.equipmentType,
-            }]
-          }, index);
+        generateFlightData={(_, index, cabin) => {
+          const rawSeg = rawSegments[index];
+
+          if (!rawSeg) {
+            console.warn('⚠️ rawSegment is missing for index:', index);
+            return null;
+          }
+
+          // 🔍 Лог сегмента перед генерацией
+          console.log('[🔁 SWITCH]', index, rawSeg);
+
+          return getFlightFromSabreData(
+            {
+              flightSegments: [
+                {
+                  ...rawSeg,
+                  cabinClass: mapCabinToCode(cabin),
+                  equipment: rawSeg.equipmentType ?? rawSeg.aircraftType ?? 'n/a',
+                },
+              ],
+            },
+            0 // всегда индекс 0, потому что мы передаём массив из одного сегмента
+          );
         }}
         availability={availability}
         passengers={passengers}

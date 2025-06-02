@@ -56,7 +56,8 @@ export const getFlightFromSabreData = (
 
   const rawDeparture =
     segment?.departureDate ||
-    segment?.departureDateTime || 
+    segment?.departureDateTime ||
+    segment?.DepartureDateTime ||
     '';
 
   const departureDate = rawDeparture

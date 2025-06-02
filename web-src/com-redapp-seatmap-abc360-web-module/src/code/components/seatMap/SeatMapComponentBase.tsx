@@ -45,7 +45,7 @@ export interface SelectedSeat {
 interface SeatMapComponentBaseProps {
   config: any;
   flightSegments: any[];
-  initialSegmentIndex: number;
+  initialSegmentIndex?: number;
   showSegmentSelector?: boolean;
   cabinClass: string;
   availability: any[];
@@ -74,7 +74,7 @@ function ensurePassengerIds(passengers: PassengerOption[]): PassengerOption[] {
 const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   config,
   flightSegments,
-  initialSegmentIndex,
+  initialSegmentIndex = 0, // first segment
   cabinClass,
   availability,
   passengers,
@@ -89,7 +89,17 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   const [selectedSeats, setSelectedSeats] = useState<SelectedSeat[]>([]);
   const [alreadyInitialized, setAlreadyInitialized] = useState(false);
   const [selectedPassengerId, setSelectedPassengerId] = useState<string>('');
-  const segment = flightSegments[initialSegmentIndex];
+  const [segmentIndex, setSegmentIndex] = React.useState(initialSegmentIndex);
+  const segment = flightSegments[segmentIndex];
+
+  React.useEffect(() => {
+    setSegmentIndex(initialSegmentIndex);
+  }, [initialSegmentIndex]);
+
+  // Initialize Segment
+  useEffect(() => {
+    setAlreadyInitialized(false);
+  }, [initialSegmentIndex]);
 
   // Initialize selectedSeats from assignedSeats if not already initialized
   useEffect(() => {
@@ -119,9 +129,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     }
   }, [passengers, selectedPassengerId]);
 
-
-
-  // 🧭 Initial map load effect – only runs once on first render
+  // 🧭 Initial map load effect – only runs once on first rendering
   useEffect(() => {
     if (
       iframeRef.current &&
@@ -134,7 +142,11 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
       const mappedCabin = mapCabinToCode(cabinClass);
 
       // ✈️ Generate structured flight data based on segment and mapped cabin class
-      const flight = generateFlightData(segment, initialSegmentIndex, mappedCabin);
+      const flight = generateFlightData(segment, segmentIndex, mappedCabin);
+      if (!flight) {
+        console.warn('🛑 Skipping update – flight data is null');
+        return;
+      }
 
       // 📤 Send data to SeatMap iframe
       postSeatMapUpdate({
@@ -155,13 +167,12 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     flightSegments,
     cabinClass,
     availability,
-    initialSegmentIndex,
+    segmentIndex,
     cleanPassengers,
     selectedPassengerId,
     selectedSeats,
     alreadyInitialized
   ]);
-
 
   // 🔄 Fallback update on cabin or segment change
   useEffect(() => {
@@ -171,7 +182,11 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     const mappedCabin = mapCabinToCode(cabinClass);
 
     // ✈️ Generate updated flight data based on new segment or cabin
-    const flight = generateFlightData(segment, initialSegmentIndex, mappedCabin);
+    if (!segment) {
+      console.warn('🛑 No segment data – skipping postMessage on cabin or segment change');
+      return;
+    }
+    const flight = generateFlightData(segment, segmentIndex, mappedCabin);
 
     // 📤 Push updated data to SeatMap iframe
     postSeatMapUpdate({
@@ -183,7 +198,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
       selectedSeats,
       iframeRef
     });
-  }, [initialSegmentIndex, cabinClass]);
+  }, [segmentIndex, cabinClass]);
 
   // 🔄 Resets all selected seats and reinitializes the SeatMap iframe
   const handleResetSeat = () => {
@@ -202,8 +217,14 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     // 🧭 Convert Sabre cabin class to library-specific code
     const mappedCabin = mapCabinToCode(cabinClass);
 
+    console.log('!!!🧩🧩🧩 generateFlightData input:', segment) 
+
     // ✈️ Generate updated flight data
-    const flight = generateFlightData(segment, initialSegmentIndex, mappedCabin);
+    if (!segment) {
+      console.warn('🛑 No segment data – skipping postMessage in automateSeating');
+      return;
+    }
+    const flight = generateFlightData(segment, segmentIndex, mappedCabin);
 
     // 📦 Build passenger payload for iframe
     const passengerList = cleanPassengers.map((p, i) =>
@@ -303,7 +324,11 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     const mappedCabin = mapCabinToCode(cabinClass);
 
     // ✈️ Generate flight data with mapped cabin class
-    const flight = generateFlightData(segment, initialSegmentIndex, mappedCabin);
+    if (!segment) {
+      console.warn('🛑 No segment data – skipping postMessage in automateSeating');
+      return;
+    }
+    const flight = generateFlightData(segment, segmentIndex, mappedCabin);
 
     // 🚀 Push updated data to SeatMap iframe
     postSeatMapUpdate({
