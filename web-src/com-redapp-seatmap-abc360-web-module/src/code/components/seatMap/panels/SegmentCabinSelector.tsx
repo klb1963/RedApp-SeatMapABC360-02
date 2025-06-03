@@ -54,11 +54,11 @@ export const SegmentCabinSelector: React.FC<SegmentCabinSelectorProps> = ({
             border: 'none',
             background: 'transparent',
             fontSize: '1.5rem',
-            padding: '0.25rem 1.5rem 0.25rem 0.5rem',
+            padding: '0.25rem 1rem 0.25rem 0.5rem',
             appearance: 'none',
             outline: 'none',
             cursor: 'pointer',
-            minWidth: '200px'
+            minWidth: '180px'
           }}>
           {flightSegments.map((seg, idx) => (
             <option key={idx} value={idx}>
@@ -95,7 +95,7 @@ export const SegmentCabinSelector: React.FC<SegmentCabinSelectorProps> = ({
             border: 'none',
             background: 'transparent',
             fontSize: '1.5rem',
-            padding: '0.25rem 2rem 0.25rem 0.5rem',
+            padding: '0.25rem 1rem 0.25rem 0.5rem',
             appearance: 'none',
             outline: 'none',
             cursor: 'pointer',
