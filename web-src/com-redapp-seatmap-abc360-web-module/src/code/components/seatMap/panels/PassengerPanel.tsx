@@ -128,7 +128,7 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
                 cursor: 'pointer',
               }}
             >
-              AUTOMATE SEATING
+              Auto-Assign Seats
             </button>
 
             <button onClick={handleResetSeat} className="btn btn-outline-secondary">

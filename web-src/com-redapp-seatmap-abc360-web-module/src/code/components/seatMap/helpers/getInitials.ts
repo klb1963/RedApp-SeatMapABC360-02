@@ -8,5 +8,5 @@ import { PassengerOption } from '../../../utils/parsePnrData';
 export const getInitials = (p: PassengerOption): string => {
   const first = p.givenName?.trim().charAt(0).toUpperCase() || ''; // get first letter from givenName, then toUpperCase
   const last = p.surname?.trim().charAt(0).toUpperCase() || ''; // get first letter from surName, then toUpperCase
-  return `${first}${last}`; // Jhon Smith => JS 
+  return `${first}${last}`; // John Smith => JS 
 };

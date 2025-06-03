@@ -24,6 +24,7 @@ import SeatLegend from './panels/SeatLegend';
 import { FlightInfoPanel } from './panels/FlidhtInfoPanel';
 import { t } from '../../Context';
 import { normalizeSegment } from '../../utils/normalizeSegment';
+import { SegmentCabinSelector } from './panels/SegmentCabinSelector';
 
 interface SeatMapComponentPricingProps {
   config: any;
@@ -36,13 +37,22 @@ const SeatMapComponentPricing: React.FC<SeatMapComponentPricingProps> = ({
   flightSegments,
   selectedSegmentIndex,
 }) => {
-  const shoppingSegments = JSON.parse(sessionStorage.getItem('shoppingSegments') || '[]');
-
   const [segmentIndex, setSegmentIndex] = useState<number>(selectedSegmentIndex);
   const [cabinClass, setCabinClass] = useState<'Y' | 'S' | 'C' | 'F' | 'A'>('Y');
 
-  const rawSegment = shoppingSegments[segmentIndex] || {};
-  const normalized = normalizeSegment(rawSegment, { padFlightNumber: false });
+  const rawSegment = flightSegments?.[segmentIndex];
+
+  const normalized = React.useMemo(() => {
+    if (!rawSegment || typeof rawSegment !== 'object') {
+      console.warn('⚠️ rawSegment is invalid or undefined:', rawSegment);
+      return null;
+    }
+    return normalizeSegment(rawSegment, { padFlightNumber: false });
+  }, [rawSegment]);
+
+  if (!normalized) {
+    return <div style={{ padding: '1rem', color: 'red' }}>Segment data is unavailable.</div>;
+  }
 
   const {
     marketingAirline,
@@ -78,85 +88,13 @@ const SeatMapComponentPricing: React.FC<SeatMapComponentPricingProps> = ({
 
   return (
     <div style={{ padding: '1rem' }}>
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '1rem',
-        marginBottom: '1rem',
-        flexWrap: 'wrap'
-      }}>
-        {/* Segment selector */}
-        <div style={{ position: 'relative' }}>
-          <label style={{ marginRight: '0.5rem' }}>Segment:</label>
-          <select
-            value={segmentIndex}
-            onChange={(e) => setSegmentIndex(Number(e.target.value))}
-            style={{
-              border: 'none',
-              background: 'transparent',
-              fontSize: '1.5rem',
-              padding: '0.25rem 1.5rem 0.25rem 0.5rem',
-              appearance: 'none',
-              WebkitAppearance: 'none',
-              MozAppearance: 'none',
-              outline: 'none',
-              cursor: 'pointer',
-              minWidth: '200px',
-            }}
-          >
-            {shoppingSegments.map((seg: any, idx: number) => {
-              const s = normalizeSegment(seg, { padFlightNumber: false });
-              return (
-                <option key={idx} value={idx}>
-                  {s.origin} → {s.destination}, {s.flightNumber}
-                </option>
-              );
-            })}
-          </select>
-          </div>
-        </div>
-
-      {/* Cabin class selector */}
-      <div style={{ position: 'relative', display: 'inline-block', marginBottom: '1rem' }}>
-        <label style={{ marginRight: '0.5rem' }}>Cabin class:</label>
-        <div style={{ position: 'relative', display: 'inline-block' }}>
-          <select
-            value={cabinClass}
-            onChange={(e) => setCabinClass(e.target.value as 'Y' | 'S' | 'C' | 'F' | 'A')}
-            style={{
-              border: 'none',
-              background: 'transparent',
-              fontSize: '1.5rem',
-              padding: '0.25rem 2rem 0.25rem 0.5rem',
-              appearance: 'none',
-              WebkitAppearance: 'none',
-              MozAppearance: 'none',
-              outline: 'none',
-              cursor: 'pointer',
-              minWidth: '180px',
-            }}
-          >
-            <option value="Y">Economy</option>
-            <option value="S">Premium Economy</option>
-            <option value="C">Business</option>
-            <option value="F">First</option>
-            <option value="A">All Cabins</option>
-          </select>
-          <div
-            style={{
-              position: 'absolute',
-              right: '6px',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              pointerEvents: 'none',
-              fontSize: '1.5rem',
-              color: '#234E55',
-            }}
-          >
-            ▼
-          </div>
-        </div>
-      </div>
+      <SegmentCabinSelector
+        flightSegments={flightSegments}
+        segmentIndex={segmentIndex}
+        setSegmentIndex={setSegmentIndex}
+        cabinClass={cabinClass}
+        setCabinClass={setCabinClass}
+      />
 
       <SeatMapComponentBase
         config={config}

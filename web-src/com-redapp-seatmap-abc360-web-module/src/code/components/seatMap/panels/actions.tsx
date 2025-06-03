@@ -16,7 +16,7 @@ import * as React from 'react';
 import { t } from '../../../Context'; 
 
 
-// Функция возвращает массив JSX-кнопок для модального окна
+// JSX-buttons for modal window
 export const actions = (
   onButtonSubmit: () => void,
   onClickCancel: () => void,

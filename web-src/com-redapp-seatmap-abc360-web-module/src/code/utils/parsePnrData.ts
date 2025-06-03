@@ -61,40 +61,44 @@ export const parsePnrData = (xmlDoc: XMLDocument): PnrData => {
   const passengers: PassengerOption[] = [];
   const segments: SegmentOption[] = [];
 
-  // ===== 👤 Parse Passengers =====
-  const passengerNodes = xmlDoc.getElementsByTagName('stl19:Passenger');
-  for (let i = 0; i < passengerNodes.length; i++) {
-    const passenger = passengerNodes[i];
-    const id = passenger.getAttribute('id') || '';
-    const surname = passenger.getElementsByTagName('stl19:LastName')[0]?.textContent?.trim() || '';
-    const givenName = passenger.getElementsByTagName('stl19:FirstName')[0]?.textContent?.trim() || '';
+// ===== 👤 Parse Passengers =====
+const passengerNodes = xmlDoc.getElementsByTagName('stl19:Passenger');
+for (let i = 0; i < passengerNodes.length; i++) {
+  const passenger = passengerNodes[i];
+  const id = passenger.getAttribute('id') || '';
 
-    const nameAssocId = passenger.getAttribute('nameAssocId') || '';
-    const nameNumber = nameAssocId ? `${nameAssocId}.1` : undefined;
+  const surname = passenger.getElementsByTagName('stl19:LastName')[0]?.textContent?.trim() || '';
 
-    let seatAssignment = 'not assigned';
+  // ✂️ Удаляем титулы типа MR, MRS, MS из имени
+  const rawGivenName = passenger.getElementsByTagName('stl19:FirstName')[0]?.textContent?.trim() || '';
+  const givenName = rawGivenName.replace(/\bMR\b|\bMRS\b|\bMS\b/gi, '').trim();
 
-    const seatNumberNode = passenger
-      .getElementsByTagName('stl19:Seats')[0]
-      ?.getElementsByTagName('stl19:PreReservedSeats')[0]
-      ?.getElementsByTagName('stl19:PreReservedSeat')[0]
-      ?.getElementsByTagName('stl19:SeatNumber')[0];
+  const nameAssocId = passenger.getAttribute('nameAssocId') || '';
+  const nameNumber = nameAssocId ? `${nameAssocId}.1` : undefined;
 
-    const seatText = seatNumberNode?.textContent?.trim();
-    if (seatText) {
-      seatAssignment = seatText;
-    }
+  let seatAssignment = 'not assigned';
 
-    passengers.push({
-      id,
-      value: id,
-      givenName,
-      surname,
-      label: `${surname}/${givenName}`,
-      seatAssignment,
-      nameNumber
-    });
+  const seatNumberNode = passenger
+    .getElementsByTagName('stl19:Seats')[0]
+    ?.getElementsByTagName('stl19:PreReservedSeats')[0]
+    ?.getElementsByTagName('stl19:PreReservedSeat')[0]
+    ?.getElementsByTagName('stl19:SeatNumber')[0];
+
+  const seatText = seatNumberNode?.textContent?.trim();
+  if (seatText) {
+    seatAssignment = seatText;
   }
+
+  passengers.push({
+    id,
+    value: id,
+    givenName,
+    surname,
+    label: `${surname}/${givenName}`,
+    seatAssignment,
+    nameNumber
+  });
+}
 
   // ===== ✈️ Parse Segments =====
   const airSegmentNodes = xmlDoc.getElementsByTagName('stl19:Air');
@@ -152,20 +156,3 @@ export const parsePnrData = (xmlDoc: XMLDocument): PnrData => {
   };
 
 };
-
-
-// // === Assign a unique color to each passenger for UI display ===
-// passengers.forEach((p, i) => {
-//   p.passengerColor = getPassengerColor(i);
-// });
-
-// // === Create a flat list of assigned seats for UI state sync ===
-// const seatAssignments = passengers
-//   .filter(p => p.seatAssignment && p.seatAssignment !== 'not assigned')
-//   .map(p => ({
-//     passengerId: p.id,
-//     seat: p.seatAssignment,
-//     segmentNumber: '1'
-//   }));
-
-// assignedSeats: seatAssignments,
