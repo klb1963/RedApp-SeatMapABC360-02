@@ -129,7 +129,7 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
                 cursor: 'pointer',
               }}
             >
-              ABC 360
+              Auto-Assign Seats
             </button>
 
             <button onClick={handleResetSeat} className="btn btn-outline-secondary">

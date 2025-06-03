@@ -2,6 +2,7 @@
 
 import { SelectedSeat } from '../SeatMapComponentBase';
 import { PassengerOption } from '../../../utils/parsePnrData';
+import { getInitials } from './getInitials';
 
 interface AvailabilityEntry {
   seatLabel: string;
@@ -24,8 +25,10 @@ export function createSelectedSeat(
   readOnly: boolean = false,
   availability?: AvailabilityEntry[]
 ): SelectedSeat {
-  const initials = `${passenger.givenName?.[0] || ''}${passenger.surname?.[0] || ''}`.toUpperCase();
-  const abbr = passenger.surname?.slice(0, 2).toUpperCase() || '';
+  const initials = getInitials(passenger);
+  const abbr = initials;
+
+  const passengerLabel = `${passenger.givenName}, ${passenger.surname}`;
 
   const matched = availability?.find(a => a.seatLabel === seatLabel);
 
@@ -43,7 +46,7 @@ export function createSelectedSeat(
     passengerId: passenger.id,
     seatLabel,
     passengerType: 'ADT',
-    passengerLabel: passenger.label,
+    passengerLabel,
     passengerColor: passenger.passengerColor || '',
     initials,
     abbr,

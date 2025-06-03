@@ -285,7 +285,7 @@ export class Main extends Module {
               view,
               data
             ),
-            modalClassName: 'react-tile-modal-class seatmap-modal-wide'
+            modalClassName: 'seatmap-modal-lower'
           }
           getService(PublicModalsService).showReactModal(ngvModalOptions);
 
