@@ -52,7 +52,7 @@ export class SeatMapShoppingView extends AbstractView<AbstractModel> {
     /**
      * Optionally trigger rendering for a segment programmatically.
      */
-    private renderForSegment(segment: FlightSegment): void {
+    public renderForSegment(segment: FlightSegment): void {
         this.currentSegment = segment;
         this.updateFlightSegmentsFromSegment(segment);
         this.tryRenderReactComponent();
@@ -137,6 +137,10 @@ export class SeatMapShoppingView extends AbstractView<AbstractModel> {
         } catch (err) {
             console.error('❌ Failed to save segments to sessionStorage:', err);
         }
+
+        console.log('🧪!!! renderReactComponent flightSegments:', this.flightSegments);
+        console.log('🧪!!! selectedSegmentIndex:', this.selectedSegmentIndex);
+        console.log('🧪!!! segment at index:', this.flightSegments[this.selectedSegmentIndex]);
     
         ReactDOM.render(
             <SeatMapComponentShopping

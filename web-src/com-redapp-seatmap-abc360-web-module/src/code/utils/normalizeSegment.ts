@@ -47,10 +47,8 @@ export function normalizeSegment(
   seg: any,
   options: NormalizeSegmentOptions = {}
 ): NormalizedSegment {
-  // 🔍 Показываем, откуда вызвана функция
-  console.log('🪵 TRACE: normalizeSegment called');
-
-  console.log('🧩 normalizeSegment input:', seg);
+  
+  console.log('🧩!!! normalizeSegment input:', JSON.stringify(seg, null, 2));
 
   const { padFlightNumber = true } = options;
 
