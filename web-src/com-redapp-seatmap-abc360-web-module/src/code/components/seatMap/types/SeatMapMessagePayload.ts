@@ -31,13 +31,13 @@ export interface SeatMapMessagePayload {
    * JSON string of seat availability information.
    * Includes seat status (available, occupied, chargeable, etc.)
    */
-  availability: string;
+  availability?: string;
 
   /**
    * JSON string of the passenger list for visual rendering.
    * Each passenger includes name, seat assignment, label, initials, and interaction flags.
    */
-  passengers: string;
+  passengers?: string;
 
   /**
    * Active deck index (as string).

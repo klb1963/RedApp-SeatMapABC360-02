@@ -63,10 +63,16 @@ export const useSyncOnSegmentChange = ({
       type: 'seatMaps',
       config: JSON.stringify(config),
       flight: JSON.stringify(flight),
-      availability: JSON.stringify(availabilityData),
-      passengers: JSON.stringify(passengerList),
       currentDeckIndex: '0'
     };
+    
+    if (availabilityData?.length > 0) {
+      message.availability = JSON.stringify(availabilityData);
+    }
+    
+    if (passengerList?.length > 0) {
+      message.passengers = JSON.stringify(passengerList);
+    }
 
     console.log('[🚀 passengerList отправлен в iframe - смена сегмента]', passengerList);
 

@@ -63,11 +63,21 @@ export const useOnIframeLoad = ({
       type: 'seatMaps',
       config: JSON.stringify(config),
       flight: JSON.stringify(flight),
-      availability: JSON.stringify(availabilityData),
-      passengers: JSON.stringify(passengerList),
       currentDeckIndex: '0'
     };
 
+    if (availabilityData?.length > 0) {
+      message.availability = JSON.stringify(availabilityData);
+    }
+
+    if (passengerList?.length > 0) {
+      message.passengers = JSON.stringify(passengerList);
+    }
+
+
+    console.log('📤📤📤 Sending seat map message:', message);
+    console.log('✅✅✅ typeof availability:', typeof availability, 'Length:', availability?.length);
+    console.log('✅✅✅ typeof passengerList:', typeof passengerList, 'Length:', passengerList?.length);
     console.log('[🚀 passengerList send to iframe - onLoad]', passengerList);
     const targetOrigin = new URL(iframe.src).origin;
     iframe.contentWindow?.postMessage(message, targetOrigin);

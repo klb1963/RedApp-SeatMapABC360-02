@@ -61,10 +61,21 @@ export const useSyncOnCabinClassChange = ({
       type: 'seatMaps',
       config: JSON.stringify(config),
       flight: JSON.stringify(flight),
-      availability: JSON.stringify(availabilityData),
-      passengers: JSON.stringify(passengerList),
       currentDeckIndex: '0'
     };
+    
+    if (availabilityData?.length > 0) {
+      message.availability = JSON.stringify(availabilityData);
+    }
+    
+    if (passengerList?.length > 0) {
+      message.passengers = JSON.stringify(passengerList);
+    }
+
+    console.log('✅ Cabin class changed to:', cabinClass);
+    console.log('📤 New availabilityData length:', availabilityData?.length);
+    console.log('📤 New passengerList length:', passengerList?.length);
+    console.log('📤 Final message to iframe:', message);
 
     console.log('[🚀 passengerList отправлен в iframe - смена класса]', passengerList);
 

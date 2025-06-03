@@ -25,7 +25,7 @@ import SeatMapComponentAvail from './components/seatMap/SeatMapComponentAvail';
 import { SeatMapShoppingTile } from './components/tiles/SeatMapShoppingTile';
 import { SeatMapShoppingView } from './components/views/SeatMapShoppingView';
 import { PricingTile } from './components/tiles/SeatMapPricingTile';
-import { PricingView } from './components/views/SaetMapPricingView';
+import { PricingView } from './components/views/SeatMapPricingView';
 
 import { SampleComponent } from './views/SampleComponent';
 

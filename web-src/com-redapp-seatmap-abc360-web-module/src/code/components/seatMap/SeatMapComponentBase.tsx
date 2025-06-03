@@ -236,11 +236,17 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
       type: 'seatMaps',
       config: JSON.stringify(config),
       flight: JSON.stringify(flight),
-      availability: JSON.stringify(availability || []),
-      passengers: JSON.stringify(passengerList),
       currentDeckIndex: '0'
     };
-
+    
+    if (availability && availability.length > 0) {
+      message.availability = JSON.stringify(availability);
+    }
+    
+    if (passengerList && passengerList.length > 0) {
+      message.passengers = JSON.stringify(passengerList);
+    }
+    
     // 🚀 Send data to iframe
     iframe.contentWindow?.postMessage(message, 'https://quicket.io');
   };
