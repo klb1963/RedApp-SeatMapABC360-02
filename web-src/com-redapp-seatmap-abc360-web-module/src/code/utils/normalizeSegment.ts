@@ -98,7 +98,7 @@ export function normalizeSegment(
   const duration =
     durationMinutes > 0
       ? `${Math.floor(durationMinutes / 60)}h ${durationMinutes % 60}m`
-      : 'n/a';
+      : '';
 
   //========================
 
