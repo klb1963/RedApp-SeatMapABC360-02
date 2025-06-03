@@ -122,32 +122,31 @@ export class SeatMapShoppingView extends AbstractView<AbstractModel> {
      */
     private renderReactComponent(): void {
         if (!this.currentSegment || !this.flightSegments?.length) return;
-
+    
         const rootElement = document.getElementById('seatmap-root');
         if (!rootElement) {
             console.error('❌ seatmap-root not found in DOM');
             return;
         }
-
+    
         rootElement.innerHTML = '';
-
-        const data = {
-            flightSegments: this.flightSegments,
-            selectedSegmentIndex: this.selectedSegmentIndex
-        };
-
+    
         try {
             sessionStorage.setItem('flightSegmentsForPricing', JSON.stringify(this.flightSegments));
             console.log('💾 Flight segments saved to sessionStorage');
         } catch (err) {
             console.error('❌ Failed to save segments to sessionStorage:', err);
         }
-
+    
         ReactDOM.render(
-            <SeatMapComponentShopping config={quicketConfig} data={data} />,
+            <SeatMapComponentShopping
+                config={quicketConfig}
+                flightSegments={this.flightSegments}
+                selectedSegmentIndex={this.selectedSegmentIndex}
+            />,
             rootElement
         );
-
+    
         console.log('📌 [SeatMapShoppingView] React component rendered');
     }
 }

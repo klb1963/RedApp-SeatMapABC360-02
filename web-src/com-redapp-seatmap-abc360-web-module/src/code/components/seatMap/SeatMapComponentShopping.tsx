@@ -13,71 +13,70 @@
  */
 
 import * as React from 'react';
-import { useState, useEffect, useMemo } from 'react';
+import { useState } from 'react';
 import SeatMapComponentBase from './SeatMapComponentBase';
 import { generateFlightData } from '../../utils/generateFlightData';
-import { FlightInfoPanel } from './panels/FlidhtInfoPanel';
 import SeatLegend from './panels/SeatLegend';
+import { FlightInfoPanel } from './panels/FlidhtInfoPanel';
 import { t } from '../../Context';
 import { normalizeSegment } from '../../utils/normalizeSegment';
 import { SegmentCabinSelector } from './panels/SegmentCabinSelector';
 
-interface SeatMapComponentShoppingProps {
+interface SeatMapComponentPricingProps {
   config: any;
-  data: any;
+  flightSegments: any[];
+  selectedSegmentIndex: number;
 }
 
-const SeatMapComponentShopping: React.FC<SeatMapComponentShoppingProps> = ({ config, data }) => {
-  const flightSegments = Array.isArray(data?.flightSegments) ? data.flightSegments : [];
+const SeatMapComponentPricing: React.FC<SeatMapComponentPricingProps> = ({
+  config,
+  flightSegments,
+  selectedSegmentIndex,
+}) => {
+  const shoppingSegments = JSON.parse(sessionStorage.getItem('shoppingSegments') || '[]');
 
+  const [segmentIndex, setSegmentIndex] = useState<number>(selectedSegmentIndex);
   const [cabinClass, setCabinClass] = useState<'Y' | 'S' | 'C' | 'F' | 'A'>('Y');
-  const [segmentIndex, setSegmentIndex] = useState(0);
 
-  const normalized = useMemo(() => {
-    return normalizeSegment(flightSegments[segmentIndex] || {}, { padFlightNumber: false });
-  }, [flightSegments, segmentIndex]);
+  const rawSegment = shoppingSegments[segmentIndex] || {};
+  const normalized = normalizeSegment(rawSegment, { padFlightNumber: false });
+
+  const {
+    marketingAirline,
+    marketingAirlineName,
+    flightNumber,
+    departureDateTime,
+    origin,
+    originCityName,
+    destination,
+    destinationCityName,
+    duration,
+    equipmentType,
+    aircraftDescription
+  } = normalized;
 
   const flightInfo = (
     <>
       <FlightInfoPanel
-        airlineCode={normalized.marketingAirline}
-        airlineName={normalized.marketingAirlineName || normalized.marketingAirline || 'n/a'}
-        flightNumber={normalized.flightNumber}
-        fromCode={normalized.origin}
-        fromCity={normalized.originCityName || ''}
-        toCode={normalized.destination}
-        toCity={normalized.destinationCityName || ''}
-        date={normalized.departureDateTime?.split?.('T')[0] || t('seatMap.dateUnknown')}
-        duration={normalized.duration}
-        aircraft={normalized.aircraftDescription}
+        airlineCode={marketingAirline}
+        airlineName={marketingAirlineName}
+        flightNumber={flightNumber}
+        fromCode={origin}
+        fromCity={originCityName || ''}
+        toCode={destination}
+        toCity={destinationCityName || ''}
+        date={departureDateTime?.split?.('T')[0] || t('seatMap.dateUnknown')}
+        duration={duration}
+        aircraft={aircraftDescription}
       />
       <SeatLegend />
     </>
   );
 
-  useEffect(() => {
-    const enriched = flightSegments.map((seg: any) => {
-      const n = normalizeSegment(seg);
-      return {
-        ...seg,
-        marketingCarrier: n.marketingAirline,
-        marketingAirlineName: n.marketingAirlineName,
-        departureDateTime: n.departureDateTime,
-        equipment: n.equipmentType,
-        origin: n.origin,
-        destination: n.destination,
-        duration: n.duration
-      };
-    });
-
-    sessionStorage.setItem('shoppingSegments', JSON.stringify(enriched));
-    console.log('[🛍️ Shopping] Saved shoppingSegments to sessionStorage:', enriched);
-  }, [flightSegments]);
-
   return (
     <div style={{ padding: '1rem' }}>
       <SegmentCabinSelector
-        flightSegments={flightSegments}
+        flightSegments={shoppingSegments}
         segmentIndex={segmentIndex}
         setSegmentIndex={setSegmentIndex}
         cabinClass={cabinClass}
@@ -86,21 +85,14 @@ const SeatMapComponentShopping: React.FC<SeatMapComponentShoppingProps> = ({ con
 
       <SeatMapComponentBase
         config={config}
-        flightSegments={flightSegments}
-        initialSegmentIndex={segmentIndex}
+        flightSegments={[normalized]}
+        initialSegmentIndex={0}
         cabinClass={cabinClass}
-        generateFlightData={(segment, index, cabin) =>
-          generateFlightData(
-            {
-              ...segment,
-              cabinClass,
-              equipment: segment.equipmentType
-            },
-            index
-          )
+        generateFlightData={(seg, index, cabin) =>
+          generateFlightData({ ...normalized, cabinClass, equipment: normalized.equipmentType }, index)
         }
-        availability={[]} // пока не передаём
-        passengers={[]}   // пока не передаём
+        availability={[]}
+        passengers={[]}
         showSegmentSelector={false}
         flightInfo={flightInfo}
       />
@@ -108,4 +100,4 @@ const SeatMapComponentShopping: React.FC<SeatMapComponentShoppingProps> = ({ con
   );
 };
 
-export default SeatMapComponentShopping;
+export default SeatMapComponentPricing;
