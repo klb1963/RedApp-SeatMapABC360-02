@@ -22,24 +22,36 @@ import { t } from '../../Context';
 import { normalizeSegment } from '../../utils/normalizeSegment';
 import { SegmentCabinSelector } from './panels/SegmentCabinSelector';
 
-interface SeatMapComponentPricingProps {
+interface SeatMapComponentShoppingProps {
   config: any;
   flightSegments: any[];
   selectedSegmentIndex: number;
 }
 
-const SeatMapComponentPricing: React.FC<SeatMapComponentPricingProps> = ({
+const SeatMapComponentShopping: React.FC<SeatMapComponentShoppingProps> = ({
   config,
   flightSegments,
   selectedSegmentIndex,
 }) => {
-  const shoppingSegments = JSON.parse(sessionStorage.getItem('shoppingSegments') || '[]');
+  const shoppingSegments = flightSegments;
 
   const [segmentIndex, setSegmentIndex] = useState<number>(selectedSegmentIndex);
   const [cabinClass, setCabinClass] = useState<'Y' | 'S' | 'C' | 'F' | 'A'>('Y');
 
   const rawSegment = shoppingSegments[segmentIndex] || {};
-  const normalized = normalizeSegment(rawSegment, { padFlightNumber: false });
+
+  // Безопасное нормализованное значение
+  const normalized = React.useMemo(() => {
+    if (!rawSegment || typeof rawSegment !== 'object') {
+      console.warn('⚠️ rawSegment is invalid or undefined:', rawSegment);
+      return null;
+    }
+    return normalizeSegment(rawSegment, { padFlightNumber: false });
+  }, [rawSegment]);
+
+  if (!normalized) {
+    return <div style={{ padding: '1rem', color: 'red' }}>Segment data is unavailable.</div>;
+  }
 
   const {
     marketingAirline,
@@ -100,4 +112,4 @@ const SeatMapComponentPricing: React.FC<SeatMapComponentPricingProps> = ({
   );
 };
 
-export default SeatMapComponentPricing;
+export default SeatMapComponentShopping;

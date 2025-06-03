@@ -1,6 +1,7 @@
 // file: components/seatMap/panels/FlightInfoPanel.tsx
 
 import * as React from 'react';
+import { t } from '../../../Context';
 
 interface FlightInfoPanelProps {
   airlineCode: string; 
@@ -64,11 +65,19 @@ export const FlightInfoPanel: React.FC<FlightInfoPanelProps> = ({
   const cityTo = toCity || cityByIata[toCode] || '';
 
   // Локализованная дата
-  const localizedDate = new Intl.DateTimeFormat(navigator.language || 'en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  }).format(new Date(date));
+  let localizedDate = t('seatMap.dateUnknown');
+  try {
+    const d = new Date(date);
+    if (!isNaN(d.getTime())) {
+      localizedDate = new Intl.DateTimeFormat(navigator.language || 'en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      }).format(d);
+    }
+  } catch (e) {
+    console.warn('⚠️ Invalid date in FlightInfoPanel:', date);
+  }
 
   const validPrices = availability?.map(a => a.price).filter(p => p > 0) || [];
 

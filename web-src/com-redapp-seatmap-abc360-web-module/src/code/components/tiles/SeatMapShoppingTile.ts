@@ -31,23 +31,16 @@ import { extractSegmentData } from '../../utils/extractSegmentData';
 export class SeatMapShoppingTile extends Tile<FlightSegment> implements WithoutFocusOnClick {
     declare context: any;
 
-    private currentSegment: FlightSegment | null = null;
     private sharedModel: any = null;
 
-    /**
-     * Called when the drawer context is updated.
-     * Receives the selected `FlightSegment` and renders the button tile UI.
-     */
     selfDrawerContextModelPropagated(cpa: FlightSegment): void {
-        console.log("selfDrawerContextModelPropagated");
+        console.log('🧩 selfDrawerContextModelPropagated');
 
         try {
-            this.currentSegment = cpa;
-
-            // 🧩 Extract segment data from FlightSegment (for use in pricing component)
+            // 🧩 Extract segment data
             const sharedSegmentData = extractSegmentData(cpa);
 
-            // 💾 Store segment in sharedContextModel if available
+            // 💾 Store in SharedContextModel
             if (this.context?.sharedContextModel?.set) {
                 this.sharedModel = this.context.sharedContextModel;
                 this.sharedModel.set('selectedSegmentForPricing', sharedSegmentData);
@@ -59,7 +52,22 @@ export class SeatMapShoppingTile extends Tile<FlightSegment> implements WithoutF
                 console.warn('⚠️ SharedContextModel unavailable — segment not saved.');
             }
 
-            // 🛫 Build a label based on all segments in the itinerary
+            // ♻️ Try updating an open SeatMapShoppingView if it exists
+            const activeViews = this.context?.viewController?.getActiveViews?.();
+            if (Array.isArray(activeViews)) {
+                const seatMapView = activeViews.find(
+                    (v: any) => v.constructor?.name === 'SeatMapShoppingView'
+                );
+
+                if (seatMapView?.renderForSegment) {
+                    console.log('♻️ Updating SeatMapShoppingView with new segment');
+                    seatMapView.renderForSegment(cpa);
+                } else {
+                    console.log('⚠️ SeatMapShoppingView not found or no renderForSegment()');
+                }
+            }
+
+            // 🛫 Build label
             const segments = cpa.getShoppingItinerary().getFlightSegments();
             const label = segments.map(segment => {
                 const origin = segment.getOriginIata();
@@ -69,7 +77,7 @@ export class SeatMapShoppingTile extends Tile<FlightSegment> implements WithoutF
                 return `${origin}-${destination}:${carrier} ${flightNumber}`;
             }).join(' ');
 
-            // 🧱 Generate HTML for the tile with a launch button
+            // 🧱 Render HTML
             const tileHtml = `
                 <div style="display: flex; flex-direction: column; align-items: center; font-size: 12px;">
                     <div style="margin-bottom: 8px;">${label}</div>
@@ -86,22 +94,12 @@ export class SeatMapShoppingTile extends Tile<FlightSegment> implements WithoutF
                 </div>
             `;
 
-            console.log("setDataContent_before");
-
-            // 🚀 Render the HTML content inside the tile
             this.setDataContent(tileHtml);
-
-            console.log("setDataContent_after");
-
         } catch (error) {
             console.error('❌ Error in selfDrawerContextModelPropagated:', error);
         }
     }
 
-    /**
-     * Invoked when the user changes fare selection.
-     * Re-renders the tile with updated segment info.
-     */
     selfSelectedFareChanged(cpa: FlightSegment): void {
         this.selfDrawerContextModelPropagated(cpa);
     }
