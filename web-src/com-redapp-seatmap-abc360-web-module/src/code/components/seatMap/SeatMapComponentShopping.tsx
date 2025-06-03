@@ -20,6 +20,7 @@ import { FlightInfoPanel } from './panels/FlidhtInfoPanel';
 import SeatLegend from './panels/SeatLegend';
 import { t } from '../../Context';
 import { normalizeSegment } from '../../utils/normalizeSegment';
+import { SegmentCabinSelector } from './panels/SegmentCabinSelector';
 
 interface SeatMapComponentShoppingProps {
   config: any;
@@ -32,48 +33,28 @@ const SeatMapComponentShopping: React.FC<SeatMapComponentShoppingProps> = ({ con
   const [cabinClass, setCabinClass] = useState<'Y' | 'S' | 'C' | 'F' | 'A'>('Y');
   const [segmentIndex, setSegmentIndex] = useState(0);
 
-  // ✅ Используем useMemo для перерасчета normalized при смене сегмента
   const normalized = useMemo(() => {
     return normalizeSegment(flightSegments[segmentIndex] || {}, { padFlightNumber: false });
   }, [flightSegments, segmentIndex]);
 
-  const {
-    marketingAirline,
-    marketingAirlineName,
-    flightNumber,
-    departureDateTime,
-    origin,
-    originCityName,
-    destination,
-    destinationCityName,
-    duration,
-    equipmentType,
-    aircraftDescription
-  } = normalized;
-
   const flightInfo = (
     <>
       <FlightInfoPanel
-        airlineCode={marketingAirline}
-        airlineName={marketingAirlineName}
-        flightNumber={flightNumber}
-        fromCode={origin}
-        fromCity={originCityName || ''}
-        toCode={destination}
-        toCity={destinationCityName || ''}
-        date={departureDateTime?.split?.('T')[0] || t('seatMap.dateUnknown')}
-        duration={duration}
-        aircraft={aircraftDescription}
+        airlineCode={normalized.marketingAirline}
+        airlineName={normalized.marketingAirlineName || normalized.marketingAirline || 'n/a'}
+        flightNumber={normalized.flightNumber}
+        fromCode={normalized.origin}
+        fromCity={normalized.originCityName || ''}
+        toCode={normalized.destination}
+        toCity={normalized.destinationCityName || ''}
+        date={normalized.departureDateTime?.split?.('T')[0] || t('seatMap.dateUnknown')}
+        duration={normalized.duration}
+        aircraft={normalized.aircraftDescription}
       />
       <SeatLegend />
     </>
   );
 
-  console.log('🛍️ Shopping received data:', data);
-  console.log('🛍️ Shopping flightSegments:', flightSegments);
-  console.log('🛍️ Shopping normalized:', normalized);
-
-  // ✅ Логирование enriched и сохранение сегментов в sessionStorage
   useEffect(() => {
     const enriched = flightSegments.map((seg: any) => {
       const n = normalizeSegment(seg);
@@ -95,133 +76,31 @@ const SeatMapComponentShopping: React.FC<SeatMapComponentShoppingProps> = ({ con
 
   return (
     <div style={{ padding: '1rem' }}>
-      <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1rem' }}>
-        <div style={{ position: 'relative' }}>
-          <label style={{ marginRight: '0.5rem' }}>Segment:</label>
-          <select
-            value={segmentIndex}
-            onChange={(e) => setSegmentIndex(Number(e.target.value))}
-            style={{
-              border: 'none',
-              background: 'transparent',
-              fontSize: '1.5rem',
-              padding: '0.25rem 1.5rem 0.25rem 0.5rem',
-              appearance: 'none',
-              WebkitAppearance: 'none',
-              MozAppearance: 'none',
-              outline: 'none',
-              cursor: 'pointer',
-              minWidth: '200px',
-            }}
-          >
-            {flightSegments.map((seg: any, idx: number) => {
-              const s = normalizeSegment(seg, { padFlightNumber: false });
-              return (
-                <option key={idx} value={idx}>
-                  {s.origin} → {s.destination}, {s.flightNumber}
-                </option>
-              );
-            })}
-          </select>
-
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            style={{
-              position: 'absolute',
-              right: '8px',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              pointerEvents: 'none',
-              color: '#234E55'
-            }}
-          >
-            <path d="M7 10l5 5 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </div>
-
-        <div style={{ fontSize: '1.5rem', color: '#555' }}>
-          <strong>Equipment type:</strong> {equipmentType}
-        </div>
-      </div>
-
-      <div style={{ position: 'relative', display: 'inline-block', marginBottom: '1rem' }}>
-        <label style={{ marginRight: '0.5rem' }}>Cabin class:</label>
-        <div style={{ position: 'relative', display: 'inline-block' }}>
-          <select
-            value={cabinClass}
-            onChange={(e) => setCabinClass(e.target.value as 'Y' | 'S' | 'C' | 'F' | 'A')}
-            style={{
-              border: 'none',
-              background: 'transparent',
-              fontSize: '1.5rem',
-              padding: '0.25rem 2rem 0.25rem 0.5rem',
-              appearance: 'none',
-              WebkitAppearance: 'none',
-              MozAppearance: 'none',
-              outline: 'none',
-              cursor: 'pointer',
-              minWidth: '180px',
-            }}
-          >
-            <option value="Y">Economy</option>
-            <option value="S">Premium Economy</option>
-            <option value="C">Business</option>
-            <option value="F">First</option>
-            <option value="A">All Cabins</option>
-          </select>
-          <div
-            style={{
-              position: 'absolute',
-              right: '6px',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              pointerEvents: 'none',
-              fontSize: '1.5rem',
-              color: '#234E55',
-            }}
-          >
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              style={{
-                position: 'absolute',
-                right: '8px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                pointerEvents: 'none',
-                color: '#234E55'
-              }}
-            >
-              <path d="M7 10l5 5 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
-        </div>
-      </div>
+      <SegmentCabinSelector
+        flightSegments={flightSegments}
+        segmentIndex={segmentIndex}
+        setSegmentIndex={setSegmentIndex}
+        cabinClass={cabinClass}
+        setCabinClass={setCabinClass}
+      />
 
       <SeatMapComponentBase
         config={config}
-        flightSegments={[normalized]}
-        initialSegmentIndex={0}
+        flightSegments={flightSegments}
+        initialSegmentIndex={segmentIndex}
         cabinClass={cabinClass}
         generateFlightData={(segment, index, cabin) =>
           generateFlightData(
             {
-              ...normalized,
+              ...segment,
               cabinClass,
-              equipment: normalized.equipmentType
+              equipment: segment.equipmentType
             },
             index
           )
         }
-        availability={[]}
-        passengers={[]}
+        availability={[]} // пока не передаём
+        passengers={[]}   // пока не передаём
         showSegmentSelector={false}
         flightInfo={flightInfo}
       />

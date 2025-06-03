@@ -1,5 +1,7 @@
 // file: utils/normalizeSegment.ts
 
+import { airlineNames } from './airlineNames';
+
 const EQUIPMENT_DESCRIPTIONS: Record<string, string> = {
   '388': 'Airbus A380-800',
   '359': 'Airbus A350-900',
@@ -60,6 +62,7 @@ export function normalizeSegment(
 
   const marketingAirlineName =
     seg.marketingAirlineName ||
+    airlineNames[marketingAirline] ||
     capitalize(seg.airlineName) ||
     seg.MarketingAirline?.EncodeDecodeElement?.SimplyDecoded ||
     'n/a';
