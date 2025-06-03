@@ -102,7 +102,9 @@ export const FlightInfoPanel: React.FC<FlightInfoPanelProps> = ({
         {/* Правая колонка */}
         <div style={{ flex: '1 1 45%' }}>
           <div style={{ fontSize: '1.5rem' }}>{fromCode} - {cityFrom} → {toCode} - {cityTo}</div>
-          <div><strong>Duration:</strong> {duration}</div>
+          {duration && duration.trim() !== '' && (
+            <div><strong>Duration:</strong> {duration}</div>
+          )}
         </div>
       </div>
       {minPrice !== null && maxPrice !== null && (
