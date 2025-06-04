@@ -51,8 +51,8 @@ export const useOnIframeLoad = ({
     const iframe = iframeRef.current;
     if (!iframe) return;
 
-    const mappedCabin = mapCabinToCode(cabinClass); 
-    const flight = generateFlightData(segment, initialSegmentIndex, mappedCabin);
+    // const mappedCabin = mapCabinToCode(cabinClass); 
+    const flight = generateFlightData(segment, initialSegmentIndex, cabinClass);
     const availabilityData = availability || [];
 
     const passengerList = cleanPassengers.map((p, index) =>
@@ -74,11 +74,11 @@ export const useOnIframeLoad = ({
       message.passengers = JSON.stringify(passengerList);
     }
 
-
     console.log('📤📤📤 Sending seat map message:', message);
     console.log('✅✅✅ typeof availability:', typeof availability, 'Length:', availability?.length);
     console.log('✅✅✅ typeof passengerList:', typeof passengerList, 'Length:', passengerList?.length);
     console.log('[🚀 passengerList send to iframe - onLoad]', passengerList);
+
     const targetOrigin = new URL(iframe.src).origin;
     iframe.contentWindow?.postMessage(message, targetOrigin);
 
