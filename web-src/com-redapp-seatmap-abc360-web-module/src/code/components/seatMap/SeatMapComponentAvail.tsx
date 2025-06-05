@@ -17,6 +17,7 @@ import SeatLegend from './panels/SeatLegend';
 import { FlightInfoPanel } from './panels/FlidhtInfoPanel';
 import { t } from '../../Context';
 import { normalizeSegment } from '../../utils/normalizeSegment';
+import { mapCabinToCode } from '../../utils/mapCabinToCode';
 
 type CabinClassForLibrary = 'E' | 'P' | 'B' | 'F' | 'ALL';
 
@@ -76,6 +77,8 @@ const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, d
     setSegmentIndex(Number(e.target.value));
     setCabinClass('E');
   };
+
+  const mappedCabin = mapCabinToCode(cabinClass);
 
   return (
     <div style={{ padding: '1rem' }}>
@@ -189,7 +192,7 @@ const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, d
         config={config}
         flightSegments={[normalized]}
         initialSegmentIndex={0}
-        cabinClass={cabinClass}
+        cabinClass={mappedCabin}
         generateFlightData={() => {
           return getFlightFromSabreData({
             flightSegments: [{
@@ -199,8 +202,8 @@ const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, d
             }]
           }, 0);
         }}
-        availability={[]} // отключаем
-        passengers={[]}   // отключаем
+        availability={availability} 
+        passengers={passengers}  
         showSegmentSelector={false}
         flightInfo={flightInfo}
       />
