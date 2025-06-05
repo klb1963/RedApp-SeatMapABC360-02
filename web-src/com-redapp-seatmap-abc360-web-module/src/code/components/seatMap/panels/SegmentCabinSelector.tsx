@@ -19,9 +19,10 @@ export const SegmentCabinSelector: React.FC<SegmentCabinSelectorProps> = ({
   cabinClass,
   setCabinClass
 }) => {
-  const segment = flightSegments?.[segmentIndex];
-  const normalizedSegment = normalizeSegment(segment, { padFlightNumber: false });
-  const { equipmentType } = normalizedSegment;
+  const segment = flightSegments?.[segmentIndex] ?? flightSegments?.[0];
+  if (!segment) return null;
+  
+  normalizeSegment(segment, { padFlightNumber: false });
 
   return (
     <div
