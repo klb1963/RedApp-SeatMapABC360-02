@@ -106,8 +106,8 @@ const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, d
             0 // всегда индекс 0, потому что мы передаём массив из одного сегмента
           );
         }}
-        availability={availability}
-        passengers={passengers}
+        availability={null}
+        passengers={[]}
         showSegmentSelector={false}
         flightInfo={flightInfo}
       />

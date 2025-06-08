@@ -104,7 +104,7 @@ const SeatMapComponentPricing: React.FC<SeatMapComponentPricingProps> = ({
         generateFlightData={(seg, index, cabin) =>
           generateFlightData({ ...normalized, cabinClass, equipment: normalized.equipmentType }, index)
         }
-        availability={[]}
+        availability={null}
         passengers={[]}
         showSegmentSelector={false}
         flightInfo={flightInfo}
