@@ -32,14 +32,16 @@
     "allowSyntheticDefaultImports": true,
     "paths": {},
     "resolveJsonModule": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "module": "ESNext"
   },
   "include": [
     "./src/code/**/*.ts",
     "./src/code/**/*.tsx",
     "./node_modules/*/module.d.ts",
     "./node_modules/*/module-protected.d.ts",
-    "./src/tests/jest/**/*.ts"
+    "./src/tests/jest/**/*.ts",
+    "./code/assets/iata-city-mapping.json",
   ],
   "exclude": [
     "./node_modules/sabre-ngv-skeleton/**/*"

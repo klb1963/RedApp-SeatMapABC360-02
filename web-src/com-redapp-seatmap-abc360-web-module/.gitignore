@@ -6,3 +6,4 @@ node_modules/
 /src/**/*.map
 *.iml
 /src/tests/test-setup.ts
+**/node_modules/

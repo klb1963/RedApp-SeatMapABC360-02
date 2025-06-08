@@ -2,6 +2,8 @@
 
 import * as React from 'react';
 import { t } from '../../../Context';
+import cityByIata from '../../../assets/iata-city-mapping';
+
 
 interface FlightInfoPanelProps {
   airlineCode: string; 
@@ -20,32 +22,6 @@ interface FlightInfoPanelProps {
     currency: string;
   }[];
 }
-
-const cityByIata: Record<string, string> = {
-  "MUC": "Munich",
-  "DXB": "Dubai",
-  "FRA": "Frankfurt",
-  "JFK": "New York",
-  "BER": "Berlin",
-  "LHR": "London",
-  "CDG": "Paris",
-  "AMS": "Amsterdam",
-  "MAD": "Madrid",
-  "VIE": "Vienna",
-  "ZRH": "Zurich",
-  "IST": "Istanbul",
-  "SIN": "Singapore",
-  "BKK": "Bangkok",
-  "HND": "Tokyo Haneda",
-  "NRT": "Tokyo Narita",
-  "LAX": "Los Angeles",
-  "SFO": "San Francisco",
-  "ORD": "Chicago O'Hare",
-  "ATL": "Atlanta",
-  "DEL": "Delhi",
-  "BOM": "Mumbai"
-  // TODO - expand list with more values
-};
 
 export const FlightInfoPanel: React.FC<FlightInfoPanelProps> = ({
   airlineCode,
