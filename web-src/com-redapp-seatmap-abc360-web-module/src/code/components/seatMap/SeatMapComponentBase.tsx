@@ -135,7 +135,6 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
       iframeRef.current &&
       flightSegments.length > 0 &&
       cabinClass &&
-      availability &&
       !alreadyInitialized
     ) {
       // 🔁 Convert cabin code (e.g., 'Y', 'C') to mapped value expected by visualization (e.g., 'E', 'B')
@@ -239,8 +238,10 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
       currentDeckIndex: '0'
     };
     
-    if (availability && availability.length > 0) {
+    if (Array.isArray(availability) && availability.length > 0) {
       message.availability = JSON.stringify(availability);
+    } else if (availability === null) {
+      message.availability = null;
     }
     
     if (passengerList && passengerList.length > 0) {
@@ -316,7 +317,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     // 🪑 Auto-assign seats using helper logic
     const newSeats = handleAutomateSeating({
       passengers: cleanPassengers,
-      availableSeats: availability
+      availableSeats: Array.isArray(availability) ? availability : []
     });
 
     // 💾 Update internal state
