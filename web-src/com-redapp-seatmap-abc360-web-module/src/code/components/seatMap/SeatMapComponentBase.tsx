@@ -36,6 +36,7 @@ export interface SelectedSeat {
   initials: string;
   readOnly?: boolean;
   abbr?: string;
+  segmentNumber: string;
   seat: {
     seatLabel: string;
     price: string;
@@ -317,7 +318,9 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     // 🪑 Auto-assign seats using helper logic
     const newSeats = handleAutomateSeating({
       passengers: cleanPassengers,
-      availableSeats: Array.isArray(availability) ? availability : []
+      availableSeats: Array.isArray(availability) ? availability : [],
+      segmentNumber: segment?.segmentNumber || '1'
+
     });
 
     // 💾 Update internal state
@@ -359,8 +362,8 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
       handleSave={handleSave}
       saveDisabled={saveDisabled}
       assignedSeats={assignedSeats}
-      // handleDeleteSeats={handleDeleteSeats}
       handleAutomateSeating={onAutomateSeating}
+      setSelectedSeats={setSelectedSeats}
     />
   );
 

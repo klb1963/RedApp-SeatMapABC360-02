@@ -18,8 +18,10 @@
 import * as React from 'react';
 import { SelectedSeat } from '../SeatMapComponentBase';
 import { PassengerOption } from '../../../utils/parsePnrData';
+import { postSeatMapUpdate } from '../helpers/postSeatMapUpdate';
+import { createPassengerPayload } from '../helpers/createPassengerPayload';
 
-interface PassengerPanelProps {
+export interface PassengerPanelProps {
   passengers: PassengerOption[];
   selectedSeats: SelectedSeat[];
   selectedPassengerId: string;
@@ -27,12 +29,17 @@ interface PassengerPanelProps {
   handleResetSeat: () => void;
   handleSave: () => void;
   handleAutomateSeating: () => void;
+  setSelectedSeats: (seats: SelectedSeat[]) => void;
   saveDisabled: boolean;
   assignedSeats?: {
     passengerId: string;
     seat: string;
     segmentNumber: string;
   }[];
+  config?: any;
+  flight?: any;
+  availability?: any;
+  iframeRef?: React.RefObject<HTMLIFrameElement>;
 }
 
 export const PassengerPanel: React.FC<PassengerPanelProps> = ({
@@ -44,7 +51,12 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
   handleSave,
   handleAutomateSeating,
   saveDisabled,
-  assignedSeats = []
+  setSelectedSeats,
+  assignedSeats = [],
+  config,
+  flight,
+  availability,
+  iframeRef
 }) => {
   const totalPrice = selectedSeats.reduce((acc, s) => {
     const price = s.seat?.price || '0';
@@ -52,13 +64,42 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
     return acc + (isNaN(amount) ? 0 : amount);
   }, 0);
 
+  const onRemoveSeat = async (passengerIdToRemove: string) => {
+    const remainingSeats = selectedSeats.filter(s => s.passengerId !== passengerIdToRemove);
+  
+    try {
+      setSelectedSeats(remainingSeats);
+
+      if (selectedPassengerId === passengerIdToRemove) {
+        setSelectedPassengerId('');
+      }
+  
+      // 🔄 Обновляем карту: пассажиры остаются, просто без assigned seat
+      if (iframeRef?.current && config && flight) {
+        postSeatMapUpdate({
+          config,
+          flight,
+          availability,
+          passengers, // полный список
+          selectedSeats: remainingSeats,
+          selectedPassengerId,
+          iframeRef
+        });
+      }
+  
+    } catch (error) {
+      console.error('❌ Ошибка при очистке места:', error);
+      alert('Ошибка при обновлении карты.');
+    }
+  };
+
   return (
     <div style={{ padding: '1rem', minWidth: '320px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold' }}>
         <span>Passengers: {passengers.length}</span>
         <span>Assigned seats: {selectedSeats.length}</span>
       </div>
-  
+
       <div style={{ marginTop: '0.5rem', borderTop: '1px solid #ccc' }}>
         {passengers.map((pax) => {
           const paxId = String(pax.id);
@@ -71,7 +112,7 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 padding: '0.25rem 0',
-                cursor: 'pointer'
+                cursor: 'pointer',
               }}
               onClick={() => setSelectedPassengerId(paxId)}
             >
@@ -84,9 +125,33 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
                 />{' '}
                 <strong>{pax.label}</strong>
               </div>
-              <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 {assigned ? (
-                  <span style={{ color: pax.passengerColor || 'gray', fontWeight: 600 }}>{assigned.seatLabel}</span>
+                  <>
+                    <span style={{ color: pax.passengerColor || 'gray', fontWeight: 600 }}>
+                      {assigned.seatLabel}
+                    </span>
+
+                    {!assigned.readOnly && pax.nameNumber && (
+                      <button
+                        title="Cancel seat"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          console.log('🧪 Clicked cancel for:', pax.nameNumber, assigned.segmentNumber);
+                          onRemoveSeat(paxId);
+                        }}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#a00',
+                          cursor: 'pointer',
+                          fontSize: '1rem',
+                        }}
+                      >
+                        ❌
+                      </button>
+)}
+                  </>
                 ) : (
                   <span style={{ color: 'gray' }}>—</span>
                 )}
@@ -95,11 +160,11 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
           );
         })}
       </div>
-  
+
       <div style={{ textAlign: 'right', marginTop: '1rem', fontWeight: 'bold' }}>
         Total: USD {totalPrice.toFixed(2)}
       </div>
-  
+    
       <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
         {saveDisabled === false ? (
           <>
@@ -117,11 +182,11 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
             >
               Auto-Assign Seats
             </button>
-  
+
             <button onClick={handleResetSeat} className="btn btn-outline-secondary">
               RESET ALL
             </button>
-  
+
             <button
               onClick={handleSave}
               disabled={saveDisabled}
@@ -164,6 +229,4 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
       </div>
     </div>
   );
-
-
 };

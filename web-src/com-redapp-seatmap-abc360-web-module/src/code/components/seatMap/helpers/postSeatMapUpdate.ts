@@ -12,6 +12,7 @@ interface PostSeatMapUpdateParams {
   flight: FlightData;
   availability: any[];
   passengers: PassengerOption[];
+  passengerPayload?: any[];
   selectedPassengerId: string;
   selectedSeats: SelectedSeat[];
 }
