@@ -26,7 +26,6 @@ interface PassengerPanelProps {
   setSelectedPassengerId: (id: string) => void;
   handleResetSeat: () => void;
   handleSave: () => void;
-  handleDeleteSeats: () => void;
   handleAutomateSeating: () => void;
   saveDisabled: boolean;
   assignedSeats?: {
@@ -43,7 +42,6 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
   setSelectedPassengerId,
   handleResetSeat,
   handleSave,
-  handleDeleteSeats,
   handleAutomateSeating,
   saveDisabled,
   assignedSeats = []
@@ -54,15 +52,13 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
     return acc + (isNaN(amount) ? 0 : amount);
   }, 0);
 
-  const hasAssignedSeats = selectedSeats.length > 0;
-
   return (
     <div style={{ padding: '1rem', minWidth: '320px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold' }}>
         <span>Passengers: {passengers.length}</span>
         <span>Assigned seats: {selectedSeats.length}</span>
       </div>
-
+  
       <div style={{ marginTop: '0.5rem', borderTop: '1px solid #ccc' }}>
         {passengers.map((pax) => {
           const paxId = String(pax.id);
@@ -70,7 +66,13 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
           return (
             <div
               key={paxId}
-              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.25rem 0', cursor: 'pointer' }}
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '0.25rem 0',
+                cursor: 'pointer'
+              }}
               onClick={() => setSelectedPassengerId(paxId)}
             >
               <div>
@@ -93,34 +95,18 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
           );
         })}
       </div>
-
+  
       <div style={{ textAlign: 'right', marginTop: '1rem', fontWeight: 'bold' }}>
         Total: USD {totalPrice.toFixed(2)}
       </div>
-
+  
       <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
-        {assignedSeats.length > 0 ? (
-          <button
-            onClick={handleDeleteSeats}
-            style={{
-              border: '1px solid #000',
-              color: '#000',
-              backgroundColor: '#fff',
-              padding: '0.5rem 1.2rem',
-              fontWeight: 500,
-              borderRadius: '6px',
-              cursor: 'pointer',
-            }}
-          >
-            DELETE SEATS
-          </button>
-        ) : (
+        {saveDisabled === false ? (
           <>
-          
             <button
               onClick={handleAutomateSeating}
               style={{
-                backgroundColor: '#212121', 
+                backgroundColor: '#212121',
                 color: '#fff',
                 padding: '0.5rem 1.2rem',
                 fontWeight: 600,
@@ -131,11 +117,11 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
             >
               Auto-Assign Seats
             </button>
-
+  
             <button onClick={handleResetSeat} className="btn btn-outline-secondary">
               RESET ALL
             </button>
-
+  
             <button
               onClick={handleSave}
               disabled={saveDisabled}
@@ -153,8 +139,31 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
               SAVE
             </button>
           </>
-        )}
+        ) : assignedSeats && assignedSeats.length > 0 ? (
+          <button
+            onClick={() =>
+              import('../handleDeleteSeats').then(mod =>
+                mod.handleDeleteSeats(() => {
+                  handleResetSeat();
+                })
+              )
+            }
+            style={{
+              border: '1px solid #000',
+              color: '#000',
+              backgroundColor: '#fff',
+              padding: '0.5rem 1.2rem',
+              fontWeight: 500,
+              borderRadius: '6px',
+              cursor: 'pointer',
+            }}
+          >
+            DELETE SEATS
+          </button>
+        ) : null}
       </div>
     </div>
   );
+
+
 };

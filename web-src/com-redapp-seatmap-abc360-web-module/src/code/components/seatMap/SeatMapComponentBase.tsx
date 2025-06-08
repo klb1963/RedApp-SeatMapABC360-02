@@ -325,7 +325,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     setSelectedPassengerId(String(cleanPassengers[0].id));
 
     // 📭 Notify parent about seat selection
-    onSeatChange?.(newSeats);
+    // onSeatChange?.(newSeats);
 
     // 🧭 Map Sabre cabin code to library-specific cabin code
     const mappedCabin = mapCabinToCode(cabinClass);
@@ -359,7 +359,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
       handleSave={handleSave}
       saveDisabled={saveDisabled}
       assignedSeats={assignedSeats}
-      handleDeleteSeats={handleDeleteSeats}
+      // handleDeleteSeats={handleDeleteSeats}
       handleAutomateSeating={onAutomateSeating}
     />
   );
