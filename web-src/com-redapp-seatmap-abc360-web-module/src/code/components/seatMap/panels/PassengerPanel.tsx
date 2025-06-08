@@ -15,6 +15,21 @@
  * Integrated into the SeatMap workflow for managing per-passenger seat selection.
  */
 
+/**
+ * PassengerPanel.tsx
+ * 
+ * 🧍 SeatMap Passenger Selection Panel – RedApp ABC360
+ * 
+ * A UI component that:
+ * - Displays the list of passengers
+ * - Shows currently selected passenger and their assigned seat
+ * - Allows agents to switch focus between passengers (radio buttons)
+ * - Shows boarding completion status if all passengers are seated
+ * - Provides a "Reset all" button to clear all seat assignments
+ * 
+ * Integrated into the SeatMap workflow for managing per-passenger seat selection.
+ */
+
 import * as React from 'react';
 import { SelectedSeat } from '../SeatMapComponentBase';
 import { PassengerOption } from '../../../utils/parsePnrData';
@@ -66,27 +81,23 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
 
   const onRemoveSeat = async (passengerIdToRemove: string) => {
     const remainingSeats = selectedSeats.filter(s => s.passengerId !== passengerIdToRemove);
-  
+
     try {
       setSelectedSeats(remainingSeats);
 
-      if (selectedPassengerId === passengerIdToRemove) {
-        setSelectedPassengerId('');
-      }
-  
       // 🔄 Обновляем карту: пассажиры остаются, просто без assigned seat
       if (iframeRef?.current && config && flight) {
         postSeatMapUpdate({
           config,
           flight,
           availability,
-          passengers, // полный список
+          passengers,
           selectedSeats: remainingSeats,
           selectedPassengerId,
           iframeRef
         });
       }
-  
+
     } catch (error) {
       console.error('❌ Ошибка при очистке места:', error);
       alert('Ошибка при обновлении карты.');
@@ -150,7 +161,7 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
                       >
                         ❌
                       </button>
-)}
+                    )}
                   </>
                 ) : (
                   <span style={{ color: 'gray' }}>—</span>
@@ -164,68 +175,49 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
       <div style={{ textAlign: 'right', marginTop: '1rem', fontWeight: 'bold' }}>
         Total: USD {totalPrice.toFixed(2)}
       </div>
-    
+
       <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
-        {saveDisabled === false ? (
-          <>
-            <button
-              onClick={handleAutomateSeating}
-              style={{
-                backgroundColor: '#212121',
-                color: '#fff',
-                padding: '0.5rem 1.2rem',
-                fontWeight: 600,
-                border: 'none',
-                borderRadius: '6px',
-                cursor: 'pointer',
-              }}
-            >
-              Auto-Assign Seats
-            </button>
-
-            <button onClick={handleResetSeat} className="btn btn-outline-secondary">
-              RESET ALL
-            </button>
-
-            <button
-              onClick={handleSave}
-              disabled={saveDisabled}
-              style={{
-                backgroundColor: '#000',
-                color: '#fff',
-                padding: '0.5rem 1.2rem',
-                fontWeight: 600,
-                border: 'none',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                opacity: saveDisabled ? 0.5 : 1,
-              }}
-            >
-              SAVE
-            </button>
-          </>
-        ) : assignedSeats && assignedSeats.length > 0 ? (
+        <>
           <button
-            onClick={() =>
-              import('../handleDeleteSeats').then(mod =>
-                mod.handleDeleteSeats(() => {
-                  handleResetSeat();
-                })
-              )
-            }
+            onClick={handleAutomateSeating}
             style={{
-              border: '1px solid #000',
-              color: '#000',
-              backgroundColor: '#fff',
+              backgroundColor: '#212121',
+              color: '#fff',
               padding: '0.5rem 1.2rem',
-              fontWeight: 500,
+              fontWeight: 600,
+              border: 'none',
               borderRadius: '6px',
               cursor: 'pointer',
             }}
           >
-            DELETE SEATS
+            Auto-Assign Seats
           </button>
-        ) : null}
+
+          <button
+            onClick={handleResetSeat}
+            disabled={selectedSeats.length === 0}
+            className="btn btn-outline-secondary"
+          >
+            RESET ALL
+          </button>
+
+          <button
+            onClick={handleSave}
+            disabled={saveDisabled || selectedSeats.length === 0}
+            style={{
+              backgroundColor: '#000',
+              color: '#fff',
+              padding: '0.5rem 1.2rem',
+              fontWeight: 600,
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              opacity: saveDisabled || selectedSeats.length === 0 ? 0.5 : 1,
+            }}
+          >
+            SAVE
+          </button>
+        </>
       </div>
     </div>
   );
