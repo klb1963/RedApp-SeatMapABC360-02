@@ -17,7 +17,11 @@ import { PublicModalsService } from 'sabre-ngv-modals/services/PublicModalServic
 import { loadPnrDetailsFromSabre } from '../../services/loadPnrDetailsFromSabre';
 import { SelectedSeat } from './SeatMapComponentBase';
 
-export const handleResetSeats = async (): Promise<void> => {
+/**
+ * Resets all seat assignments by sending AirSeatLLSRQ requests per passenger.
+ * @param onRefresh Optional callback to trigger after successful reset and PNR refresh
+ */
+export const handleResetSeats = async (onRefresh?: () => void): Promise<void> => {
   // Retrieve RedApp services
   const soap = getService(ISoapApiService);
   const pnrService = getService(PnrPublicService);
@@ -85,10 +89,14 @@ export const handleResetSeats = async (): Promise<void> => {
       return;
     }
 
-    // On success: refresh PNR and close modal
+    // On success: refresh PNR and notify UI
     console.log('✅ Seats reset successfully.');
     await pnrService.refreshData();
-    modalService.closeReactModal();
+
+    // 🔁 Instead of closing the modal, we call the external refresh handler
+    onRefresh?.();
+
+    // ❌ modalService.closeReactModal(); — intentionally removed
 
   } catch (error) {
     console.error('❌ Exception while resetting seats:', error);

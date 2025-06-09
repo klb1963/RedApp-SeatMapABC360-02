@@ -20,7 +20,7 @@ import { generateFlightData } from '../../../utils/generateFlightData';
 import { createPassengerPayload } from '../helpers/createPassengerPayload';
 import { SeatMapMessagePayload } from '../types/SeatMapMessagePayload';
 import { SelectedSeat } from '../SeatMapComponentBase';
-import { mapCabinToCode } from '../../../utils/mapCabinToCode';
+
 
 interface Props {
   iframeRef: React.RefObject<HTMLIFrameElement>;
@@ -28,6 +28,7 @@ interface Props {
   segment: any;
   initialSegmentIndex: number;
   cabinClass: string;
+  mappedCabinClass: 'E' | 'P' | 'B' | 'F' | 'A';
   availability: any[];
   cleanPassengers: PassengerOption[];
   selectedPassengerId: string;
@@ -40,6 +41,7 @@ export const useSyncOnCabinClassChange = ({
   segment,
   initialSegmentIndex,
   cabinClass,
+  mappedCabinClass,
   availability,
   cleanPassengers,
   selectedPassengerId,
@@ -49,8 +51,7 @@ export const useSyncOnCabinClassChange = ({
     const iframe = iframeRef.current;
     if (!iframe) return;
 
-    const mappedCabin = mapCabinToCode(cabinClass);
-    const flight = generateFlightData(segment, initialSegmentIndex, mappedCabin);
+    const flight = generateFlightData(segment, initialSegmentIndex, mappedCabinClass);
     const availabilityData = availability || [];
 
     const passengerList = cleanPassengers.map((p, index) =>

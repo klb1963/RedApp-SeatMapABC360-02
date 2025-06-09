@@ -17,7 +17,11 @@ import { ISoapApiService } from 'sabre-ngv-communication/interfaces/ISoapApiServ
 import { PnrPublicService } from 'sabre-ngv-app/app/services/impl/PnrPublicService';
 import { PublicModalsService } from 'sabre-ngv-modals/services/PublicModalService';
 
-export const handleDeleteSeats = async (): Promise<void> => {
+/**
+ * Deletes all seat assignments in the active PNR.
+ * @param onRefresh Optional callback to trigger after successful deletion and PNR refresh (e.g. UI rerender)
+ */
+export const handleDeleteSeats = async (onRefresh?: () => void): Promise<void> => {
   // Get required Sabre Red App services
   const soap = getService(ISoapApiService);
   const pnrService = getService(PnrPublicService);
@@ -62,10 +66,14 @@ export const handleDeleteSeats = async (): Promise<void> => {
       return;
     }
 
-    // Success: refresh PNR and close modal
+    // Success: refresh PNR and notify UI
     console.log('✅ Seats canceled in PNR.');
     await pnrService.refreshData();
-    modalService.closeReactModal();
+
+    // 🔁 Вместо закрытия модального окна — вызываем внешний обработчик обновления
+    onRefresh?.();
+
+    // ❌ modalService.closeReactModal(); — больше не вызывается автоматически
 
   } catch (error) {
     console.error('❌ Exception while cancelling seats:', error);

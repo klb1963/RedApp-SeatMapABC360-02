@@ -16,6 +16,7 @@ import { SelectedSeat } from './SeatMapComponentBase';
 interface AutomateSeatingParams {
   passengers: PassengerOption[];
   availableSeats: AvailabilityItem[];
+  segmentNumber: string;
 }
 
 // Generate passenger initials
@@ -32,6 +33,7 @@ function getAbbr(surname: string, givenName: string): string {
 export function handleAutomateSeating({
   passengers,
   availableSeats,
+  segmentNumber,
 }: AutomateSeatingParams): SelectedSeat[] {
   const assignments: SelectedSeat[] = [];
 
@@ -59,6 +61,7 @@ export function handleAutomateSeating({
       initials: getInitials(pax.surname, pax.givenName),
       abbr: getAbbr(pax.surname, pax.givenName),
       readOnly: false,
+      segmentNumber,
       seat: {
         seatLabel: seat.label,
         price: 'USD 0', // Placeholder price for automatic assignment

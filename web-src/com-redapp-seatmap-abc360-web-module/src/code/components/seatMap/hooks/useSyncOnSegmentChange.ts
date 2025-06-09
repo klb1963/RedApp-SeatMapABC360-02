@@ -27,6 +27,7 @@ interface Props {
   segment: any;
   initialSegmentIndex: number;
   cabinClass: string;
+  mappedCabinClass: 'E' | 'P' | 'B' | 'F' | 'A';
   availability: any[];
   passengers: PassengerOption[];
   selectedPassengerId: string;
@@ -40,6 +41,7 @@ export const useSyncOnSegmentChange = ({
   segment,
   initialSegmentIndex,
   cabinClass,
+  mappedCabinClass,
   availability,
   passengers,
   selectedPassengerId,
@@ -51,7 +53,7 @@ export const useSyncOnSegmentChange = ({
     const iframe = iframeRef.current;
     if (!iframe) return;
 
-    const mappedCabin = mapCabinToCode(cabinClass);
+    const mappedCabin = mappedCabinClass;
     const flight = generateFlightData(segment, initialSegmentIndex, mappedCabin);
     const availabilityData = availability || [];
 

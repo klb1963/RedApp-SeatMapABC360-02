@@ -23,7 +23,8 @@ export function createSelectedSeat(
   passenger: PassengerOption,
   seatLabel: string,
   readOnly: boolean = false,
-  availability?: AvailabilityEntry[]
+  availability?: AvailabilityEntry[],
+  segmentNumber?: string
 ): SelectedSeat {
   const initials = getInitials(passenger);
   const abbr = initials;
@@ -51,6 +52,7 @@ export function createSelectedSeat(
     initials,
     abbr,
     readOnly,
+    segmentNumber: segmentNumber || '1',
     seat: {
       seatLabel,
       price: seatPrice,
