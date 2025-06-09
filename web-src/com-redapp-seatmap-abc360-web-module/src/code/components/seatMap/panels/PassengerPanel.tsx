@@ -15,21 +15,6 @@
  * Integrated into the SeatMap workflow for managing per-passenger seat selection.
  */
 
-/**
- * PassengerPanel.tsx
- * 
- * 🧍 SeatMap Passenger Selection Panel – RedApp ABC360
- * 
- * A UI component that:
- * - Displays the list of passengers
- * - Shows currently selected passenger and their assigned seat
- * - Allows agents to switch focus between passengers (radio buttons)
- * - Shows boarding completion status if all passengers are seated
- * - Provides a "Reset all" button to clear all seat assignments
- * 
- * Integrated into the SeatMap workflow for managing per-passenger seat selection.
- */
-
 import * as React from 'react';
 import { SelectedSeat } from '../SeatMapComponentBase';
 import { PassengerOption } from '../../../utils/parsePnrData';
@@ -84,6 +69,7 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
 
     try {
       setSelectedSeats(remainingSeats);
+      setSelectedPassengerId(passengerIdToRemove);
 
       if (iframeRef?.current && config && flight) {
         postSeatMapUpdate({
@@ -92,13 +78,8 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
           availability,
           passengers,
           selectedSeats: remainingSeats,
-          selectedPassengerId,
+          selectedPassengerId: passengerIdToRemove,
           iframeRef
-        });
-    
-        console.log('[📤 Обновление карты после удаления места]', {
-          selectedPassengerId,
-          remainingSeats
         });
       }
     } catch (error) {
@@ -106,6 +87,8 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
       alert('Ошибка при обновлении карты.');
     }
   };
+
+  const allSeated = passengers.every(p => selectedSeats.some(s => s.passengerId === p.id));
 
   return (
     <div style={{ padding: '1rem', minWidth: '320px' }}>
@@ -145,13 +128,11 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
                     <span style={{ color: pax.passengerColor || 'gray', fontWeight: 600 }}>
                       {assigned.seatLabel}
                     </span>
-
                     {!assigned.readOnly && pax.nameNumber && (
                       <button
                         title="Cancel seat"
                         onClick={(e) => {
                           e.stopPropagation();
-                          console.log('🧪 Clicked cancel for:', pax.nameNumber, assigned.segmentNumber);
                           onRemoveSeat(paxId);
                         }}
                         style={{
@@ -199,7 +180,7 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
               cursor: 'pointer',
             }}
           >
-            DELETE SEATS
+            REASSIGN SEATS
           </button>
         ) : (
           <>
@@ -228,7 +209,7 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
 
             <button
               onClick={handleSave}
-              disabled={saveDisabled || selectedSeats.length === 0}
+              disabled={!allSeated}
               style={{
                 backgroundColor: '#000',
                 color: '#fff',
@@ -237,7 +218,7 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
                 border: 'none',
                 borderRadius: '6px',
                 cursor: 'pointer',
-                opacity: saveDisabled || selectedSeats.length === 0 ? 0.5 : 1,
+                opacity: !allSeated ? 0.5 : 1,
               }}
             >
               SAVE
@@ -245,8 +226,6 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
           </>
         )}
       </div>
-
-
     </div>
   );
 };
