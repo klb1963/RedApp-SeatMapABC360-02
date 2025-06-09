@@ -136,7 +136,9 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
       cabinClass &&
       !alreadyInitialized
     ) {
-      const flight = generateFlightData(segment, segmentIndex, mappedCabinClass);
+
+      const effectiveCabin = segment?.bookingClass || mappedCabinClass;
+      const flight = generateFlightData(segment, segmentIndex, mapCabinToCode(effectiveCabin));
       if (!flight) return;
 
       postSeatMapUpdate({
@@ -173,7 +175,9 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     const mappedCabin = mappedCabinClass;
 
     if (!segment) return;
-    const flight = generateFlightData(segment, segmentIndex, mappedCabin);
+
+    const effectiveCabin = segment?.bookingClass || mappedCabinClass;
+    const flight = generateFlightData(segment, segmentIndex, mapCabinToCode(effectiveCabin));
 
     postSeatMapUpdate({
       config,
@@ -194,10 +198,10 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     const iframe = iframeRef.current;
     if (!iframe) return;
 
-    const mappedCabin = mappedCabinClass;;
-
     if (!segment) return;
-    const flight = generateFlightData(segment, segmentIndex, mappedCabin);
+    const effectiveCabin = segment?.bookingClass || mappedCabinClass;
+    const flight = generateFlightData(segment, segmentIndex, mapCabinToCode(effectiveCabin));
+
     const passengerList = cleanPassengers.map((p, i) =>
       createPassengerPayload(p, i, selectedPassengerId, [])
     );
@@ -253,6 +257,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     segment,
     initialSegmentIndex,
     cabinClass,
+    mappedCabinClass,
     availability,
     passengers: cleanPassengers,
     selectedPassengerId,
@@ -292,8 +297,8 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     setSelectedSeats(newSeats);
     setSelectedPassengerId(String(cleanPassengers[0].id));
 
-    const mappedCabin = mappedCabinClass;
-    const flight = generateFlightData(segment, segmentIndex, mappedCabin);
+    const effectiveCabin = segment?.bookingClass || mappedCabinClass;
+    const flight = generateFlightData(segment, segmentIndex, mapCabinToCode(effectiveCabin));
 
     postSeatMapUpdate({
       config,

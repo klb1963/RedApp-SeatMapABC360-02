@@ -87,9 +87,11 @@ export function generateFlightData(
   // 🛫 Aircraft equipment description
   const rawEquipment = segment.equipmentType || '';
 
-  // 💺 Cabin class logic with mapping (Y, C → E, B, etc.)
-  const cabinClass = cabinClassOverride || segment.cabinClass || 'Y';
-  const mappedCabin = mapCabinToCode(cabinClass);
+  // 💺 Cabin class logic – use override as-is, only map if missing
+  const mappedCabin =
+    cabinClassOverride !== undefined
+      ? cabinClassOverride
+      : mapCabinToCode(segment.cabinClass || 'Y');
 
   // 🧩 Final object construction
   const result: FlightData = {
