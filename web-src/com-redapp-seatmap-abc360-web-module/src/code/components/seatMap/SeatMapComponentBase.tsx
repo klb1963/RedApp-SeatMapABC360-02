@@ -1,7 +1,7 @@
 // file: /code/components/seatMap/SeatMapComponentBase.tsx
 
 import * as React from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import { FlightData } from '../../utils/generateFlightData';
 import SeatMapModalLayout from './layout/SeatMapModalLayout';
 import { PassengerOption } from '../../utils/parsePnrData';
@@ -93,7 +93,11 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   const [segmentIndex, setSegmentIndex] = React.useState(initialSegmentIndex);
   const segment = flightSegments[segmentIndex];
 
-  const [mappedCabinClass] = useState(() => mapCabinToCode(cabinClass));
+  // const [mappedCabinClass] = useState(() => mapCabinToCode(cabinClass));
+
+  const mappedCabinClass = useMemo(() => {
+    return mapCabinToCode(cabinClass);
+  }, [cabinClass]);
 
   useEffect(() => {
     setSegmentIndex(initialSegmentIndex);
