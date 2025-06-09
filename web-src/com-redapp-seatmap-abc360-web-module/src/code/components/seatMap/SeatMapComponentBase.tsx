@@ -327,6 +327,11 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
       assignedSeats={assignedSeats}
       handleAutomateSeating={onAutomateSeating}
       setSelectedSeats={setSelectedSeats}
+      // 👇 вот эти 4 параметра — обязательны
+      config={config}
+      flight={generateFlightData(segment, segmentIndex, mapCabinToCode(segment?.bookingClass || mappedCabinClass))}
+      availability={availability}
+      iframeRef={iframeRef}
     />
   );
 
