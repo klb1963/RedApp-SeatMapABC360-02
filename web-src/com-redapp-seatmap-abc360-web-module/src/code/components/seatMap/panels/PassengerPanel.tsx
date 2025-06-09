@@ -177,48 +177,73 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
       </div>
 
       <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
-        <>
+        {assignedSeats && assignedSeats.length > 0 ? (
           <button
-            onClick={handleAutomateSeating}
+            onClick={() =>
+              import('../handleDeleteSeats').then(mod =>
+                mod.handleDeleteSeats(() => {
+                  handleResetSeat();
+                })
+              )
+            }
             style={{
-              backgroundColor: '#212121',
-              color: '#fff',
+              border: '1px solid #000',
+              color: '#000',
+              backgroundColor: '#fff',
               padding: '0.5rem 1.2rem',
-              fontWeight: 600,
-              border: 'none',
+              fontWeight: 500,
               borderRadius: '6px',
               cursor: 'pointer',
             }}
           >
-            Auto-Assign Seats
+            DELETE SEATS
           </button>
+        ) : (
+          <>
+            <button
+              onClick={handleAutomateSeating}
+              style={{
+                backgroundColor: '#212121',
+                color: '#fff',
+                padding: '0.5rem 1.2rem',
+                fontWeight: 600,
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+              }}
+            >
+              Auto-Assign Seats
+            </button>
 
-          <button
-            onClick={handleResetSeat}
-            disabled={selectedSeats.length === 0}
-            className="btn btn-outline-secondary"
-          >
-            RESET ALL
-          </button>
+            <button
+              onClick={handleResetSeat}
+              disabled={selectedSeats.length === 0}
+              className="btn btn-outline-secondary"
+            >
+              RESET ALL
+            </button>
 
-          <button
-            onClick={handleSave}
-            disabled={saveDisabled || selectedSeats.length === 0}
-            style={{
-              backgroundColor: '#000',
-              color: '#fff',
-              padding: '0.5rem 1.2rem',
-              fontWeight: 600,
-              border: 'none',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              opacity: saveDisabled || selectedSeats.length === 0 ? 0.5 : 1,
-            }}
-          >
-            SAVE
-          </button>
-        </>
+            <button
+              onClick={handleSave}
+              disabled={saveDisabled || selectedSeats.length === 0}
+              style={{
+                backgroundColor: '#000',
+                color: '#fff',
+                padding: '0.5rem 1.2rem',
+                fontWeight: 600,
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                opacity: saveDisabled || selectedSeats.length === 0 ? 0.5 : 1,
+              }}
+            >
+              SAVE
+            </button>
+          </>
+        )}
       </div>
+
+
     </div>
   );
 };

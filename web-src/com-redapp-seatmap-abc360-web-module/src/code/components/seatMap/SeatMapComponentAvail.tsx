@@ -26,8 +26,6 @@ interface SeatMapComponentAvailProps {
 
 const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, data }) => {
   const rawSegments = data.flightSegments || [];
-  const availability = data.availability || [];
-  const passengers = data.passengers || [];
 
   const [segmentIndex, setSegmentIndex] = React.useState(0);
   const [cabinClass, setCabinClass] = React.useState<'Y' | 'S' | 'C' | 'F' | 'A'>('Y');
