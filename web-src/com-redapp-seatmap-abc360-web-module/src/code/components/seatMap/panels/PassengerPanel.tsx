@@ -85,7 +85,6 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
     try {
       setSelectedSeats(remainingSeats);
 
-      // 🔄 Обновляем карту: пассажиры остаются, просто без assigned seat
       if (iframeRef?.current && config && flight) {
         postSeatMapUpdate({
           config,
@@ -96,8 +95,12 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
           selectedPassengerId,
           iframeRef
         });
+    
+        console.log('[📤 Обновление карты после удаления места]', {
+          selectedPassengerId,
+          remainingSeats
+        });
       }
-
     } catch (error) {
       console.error('❌ Ошибка при очистке места:', error);
       alert('Ошибка при обновлении карты.');
