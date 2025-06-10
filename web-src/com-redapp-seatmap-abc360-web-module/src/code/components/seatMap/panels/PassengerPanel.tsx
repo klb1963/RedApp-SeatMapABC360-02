@@ -20,6 +20,7 @@ import { SelectedSeat } from '../SeatMapComponentBase';
 import { PassengerOption } from '../../../utils/parsePnrData';
 import { postSeatMapUpdate } from '../helpers/postSeatMapUpdate';
 import { createPassengerPayload } from '../helpers/createPassengerPayload';
+import { handleReassignSeat } from '../handleReassignSeats';
 
 export interface PassengerPanelProps {
   passengers: PassengerOption[];
@@ -64,31 +65,40 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
     return acc + (isNaN(amount) ? 0 : amount);
   }, 0);
 
-  const onRemoveSeat = async (passengerIdToRemove: string) => {
-    const remainingSeats = selectedSeats.filter(s => s.passengerId !== passengerIdToRemove);
-
-    try {
-      setSelectedSeats(remainingSeats);
-      setSelectedPassengerId(passengerIdToRemove);
-
-      if (iframeRef?.current && config && flight) {
-        postSeatMapUpdate({
-          config,
-          flight,
-          availability,
-          passengers,
-          selectedSeats: remainingSeats,
-          selectedPassengerId: passengerIdToRemove,
-          iframeRef
-        });
-      }
-    } catch (error) {
-      console.error('❌ Ошибка при очистке места:', error);
-      alert('Ошибка при обновлении карты.');
+  const onRemoveSeat = (passengerIdToRemove: string) => {
+    handleReassignSeat({
+      passengerId: passengerIdToRemove,
+      selectedSeats,
+      setSelectedSeats,
+      setSelectedPassengerId
+    });
+  
+    if (iframeRef?.current && config && flight) {
+      postSeatMapUpdate({
+        config,
+        flight,
+        availability,
+        passengers,
+        selectedSeats: selectedSeats.filter(s => s.passengerId !== passengerIdToRemove),
+        selectedPassengerId: passengerIdToRemove,
+        iframeRef
+      });
     }
   };
 
   const allSeated = passengers.every(p => selectedSeats.some(s => s.passengerId === p.id));
+
+  const [reassignMode, setReassignMode] = React.useState(false);
+  console.log('🧪 assignedSeats.length:', assignedSeats.length);
+
+  React.useEffect(() => {
+    const allReassigned = passengers.every(p =>
+      selectedSeats.some(s => s.passengerId === p.id)
+    );
+    if (allReassigned) {
+      setReassignMode(false);
+    }
+  }, [selectedSeats, passengers]);
 
   return (
     <div style={{ padding: '1rem', minWidth: '320px' }}>
@@ -96,7 +106,7 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
         <span>Passengers: {passengers.length}</span>
         <span>Assigned seats: {selectedSeats.length}</span>
       </div>
-
+  
       <div style={{ marginTop: '0.5rem', borderTop: '1px solid #ccc' }}>
         {passengers.map((pax) => {
           const paxId = String(pax.id);
@@ -128,7 +138,7 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
                     <span style={{ color: pax.passengerColor || 'gray', fontWeight: 600 }}>
                       {assigned.seatLabel}
                     </span>
-                    {!assigned.readOnly && pax.nameNumber && (
+                    {reassignMode && pax.nameNumber && (
                       <button
                         title="Cancel seat"
                         onClick={(e) => {
@@ -155,21 +165,18 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
           );
         })}
       </div>
-
+  
       <div style={{ textAlign: 'right', marginTop: '1rem', fontWeight: 'bold' }}>
         Total: USD {totalPrice.toFixed(2)}
       </div>
-
+  
       <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
-        {assignedSeats && assignedSeats.length > 0 ? (
+        {selectedSeats.length > 0 && (
           <button
-            onClick={() =>
-              import('../handleDeleteSeats').then(mod =>
-                mod.handleDeleteSeats(() => {
-                  handleResetSeat();
-                })
-              )
-            }
+            onClick={() => {
+              console.log('🌀 REASSIGN mode activated');
+              setReassignMode(true);
+            }}
             style={{
               border: '1px solid #000',
               color: '#000',
@@ -182,50 +189,51 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
           >
             REASSIGN SEATS
           </button>
-        ) : (
-          <>
-            <button
-              onClick={handleAutomateSeating}
-              style={{
-                backgroundColor: '#212121',
-                color: '#fff',
-                padding: '0.5rem 1.2rem',
-                fontWeight: 600,
-                border: 'none',
-                borderRadius: '6px',
-                cursor: 'pointer',
-              }}
-            >
-              Auto-Assign Seats
-            </button>
-
-            <button
-              onClick={handleResetSeat}
-              disabled={selectedSeats.length === 0}
-              className="btn btn-outline-secondary"
-            >
-              RESET ALL
-            </button>
-
-            <button
-              onClick={handleSave}
-              disabled={!allSeated}
-              style={{
-                backgroundColor: '#000',
-                color: '#fff',
-                padding: '0.5rem 1.2rem',
-                fontWeight: 600,
-                border: 'none',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                opacity: !allSeated ? 0.5 : 1,
-              }}
-            >
-              SAVE
-            </button>
-          </>
         )}
+  
+        {selectedSeats.length === 0 && (
+          <button
+            onClick={handleAutomateSeating}
+            style={{
+              backgroundColor: '#212121',
+              color: '#fff',
+              padding: '0.5rem 1.2rem',
+              fontWeight: 600,
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+            }}
+          >
+            Auto-Assign Seats
+          </button>
+        )}
+  
+        <button
+          onClick={handleResetSeat}
+          disabled={selectedSeats.length === 0}
+          className="btn btn-outline-secondary"
+        >
+          RESET ALL
+        </button>
+  
+        <button
+          onClick={handleSave}
+          disabled={!allSeated}
+          style={{
+            backgroundColor: '#000',
+            color: '#fff',
+            padding: '0.5rem 1.2rem',
+            fontWeight: 600,
+            border: 'none',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            opacity: !allSeated ? 0.5 : 1,
+          }}
+        >
+          SAVE
+        </button>
       </div>
     </div>
   );
+
 };
