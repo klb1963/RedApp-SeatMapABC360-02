@@ -287,8 +287,16 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
 
   const saveDisabled = assignedSeats ? areSeatsEqual(selectedSeats, enrichedAssignedSeats) : false;
 
-  const handleSave = () => {
-    handleSaveSeats(selectedSeats);
+  const handleSave = async () => {
+    try {
+      const { handleDeleteSeats } = await import('./handleDeleteSeats');
+      await handleDeleteSeats(async () => {
+        await handleSaveSeats(selectedSeats);
+      });
+    } catch (error) {
+      console.error('❌ Ошибка при сохранении мест:', error);
+      alert('❌ Ошибка при сохранении. См. консоль.');
+    }
   };
 
   const onAutomateSeating = () => {
