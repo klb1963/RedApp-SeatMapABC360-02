@@ -24,6 +24,7 @@ import { FlightInfoPanel } from './panels/FlidhtInfoPanel';
 import { normalizeSegment } from '../../utils/normalizeSegment';
 import { t } from '../../Context';
 import { SegmentCabinSelector } from './panels/SegmentCabinSelector';
+import { extractStartAndEndRowFromCabin } from '../../utils/extractStartEndRow';
 
 interface SeatMapComponentPnrProps {
   config: any;
@@ -40,6 +41,9 @@ interface SeatMapComponentPnrProps {
   availability?: {
     price: number;
     currency: string;
+    xml?: string;
+    startRow?: string;
+    endRow?: string;
   }[];
 }
 
@@ -125,9 +129,29 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
           selectedSeats={selectedSeats}
           flightInfo={flightInfo}
           assignedSeats={assignedSeats}
-          generateFlightData={(segment, index, cabin) =>
-            generateFlightData(segment, index, cabin)
-          }
+          generateFlightData={(segment, index, cabin) => {
+            const baseFlight = generateFlightData(segment, index, cabin);
+          
+            // 👇 parse XML from availability[0]?.xml if available
+            let startRow, endRow;
+            try {
+              const xmlString = availability?.[0]?.xml;
+              if (typeof xmlString === 'string') {
+                const xmlDoc = new DOMParser().parseFromString(xmlString, 'application/xml');
+                const extracted = extractStartAndEndRowFromCabin(xmlDoc);
+                startRow = extracted.startRow;
+                endRow = extracted.endRow;
+              }
+            } catch (err) {
+              console.warn('⚠️ Failed to extract start/end rows:', err);
+            }
+          
+            return {
+              ...baseFlight,
+              startRow,
+              endRow,
+            };
+          }}
         />
       )}
     </div>

@@ -51,6 +51,8 @@ export interface FlightData {
   equipment: string;
   marketingCarrier?: string;
   passengerType: string; // Always 'ADT' (Adult) for now
+  startRow?: string; // 🆕 Added for seat map library schema
+  endRow?: string;   // 🆕
 }
 
 /**

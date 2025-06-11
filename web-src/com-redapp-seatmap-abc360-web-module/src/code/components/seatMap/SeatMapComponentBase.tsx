@@ -145,6 +145,13 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
       const flight = generateFlightData(segment, segmentIndex, mapCabinToCode(effectiveCabin));
       if (!flight) return;
 
+      console.log('📤📤📤!!! Sending to seatmap iframe:', {
+        flight,
+        startRow: flight?.startRow,
+        endRow: flight?.endRow,
+        availability,
+      });
+
       postSeatMapUpdate({
         config,
         flight,
@@ -182,6 +189,13 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
 
     const effectiveCabin = segment?.bookingClass || mappedCabinClass;
     const flight = generateFlightData(segment, segmentIndex, mapCabinToCode(effectiveCabin));
+
+    console.log('📤📤📤!!! Sending to seatmap iframe:', {
+      flight,
+      startRow: flight?.startRow,
+      endRow: flight?.endRow,
+      availability,
+    });
 
     postSeatMapUpdate({
       config,

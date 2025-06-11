@@ -35,7 +35,7 @@ export const handleDeleteSeats = async (onRefresh?: () => void): Promise<void> =
   }
 
   // Ask user to confirm seat deletion
-  const confirmed = window.confirm('❓ Are you sure you want to delete all seat assignments?');
+  const confirmed = window.confirm('❓ Are you sure you want to assign or reassign seats?');
   if (!confirmed) return;
 
   // Prepare XML payload for AirSeatCancelLLSRQ

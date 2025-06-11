@@ -17,6 +17,7 @@ import { ISoapApiService } from 'sabre-ngv-communication/interfaces/ISoapApiServ
 import { PassengerOption } from '../utils/parsePnrData';
 import { parseSeatMapResponse } from '../utils/parseSeatMapResponse';
 import { AgentProfileService } from 'sabre-ngv-app/app/services/impl/AgentProfileService';
+import { extractStartAndEndRowFromCabin } from '../utils/extractStartEndRow';
 import { sendXmlToUploader } from './sendXmlToUploader';
 
 // ✈️ Interface for the flight segment passed into the seat map request
@@ -34,7 +35,7 @@ interface FlightSegment {
 export const loadSeatMapFromSabre = async (
   segment: FlightSegment,
   passengers: PassengerOption[]
-): Promise<{ rawXml: string; availability: any }> => {
+): Promise<{ rawXml: string; availability: any[] }> => {
   try {
     const soapApiService = getService(ISoapApiService);
 
@@ -104,12 +105,25 @@ export const loadSeatMapFromSabre = async (
 
     // 📥 Get raw XML response and parse it for availability info
     const rawXml = response.value;
-
     const xmlDoc = new DOMParser().parseFromString(rawXml, 'application/xml');
     const { availability } = parseSeatMapResponse(xmlDoc);
 
-    // ✅ Return both raw XML and parsed availability
-    return { rawXml, availability };
+    // 🆕 Add startRow and endRow
+    const { startRow, endRow } = extractStartAndEndRowFromCabin(xmlDoc);
+
+    // 🧩 Обогащаем каждый availability-элемент полями xml + startRow/endRow
+    const enrichedAvailability = availability.map(item => ({
+      ...item,
+      xml: rawXml,
+      startRow,
+      endRow,
+    }));
+
+    // ✅ Return both raw XML and enriched availability[]
+    return {
+      rawXml,
+      availability: enrichedAvailability,
+    };
 
   } catch (error) {
     console.error('❌ Error in loadSeatMapFromSabre:', error);
