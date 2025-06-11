@@ -19,49 +19,30 @@
  * @param xmlDoc A parsed XML Document from EnhancedSeatMapRS
  * @returns An object containing startRow and endRow (or empty if not available)
  */
-export function extractStartAndEndRowFromCabin(xmlDoc: Document): {
-    startRow?: string;
-    endRow?: string;
-  } {
-    // Locate the first <Cabin> element
-    const cabin = xmlDoc.querySelector('Cabin');
-    if (!cabin) return {};
-  
-    // Extract row numbers from attributes
-    const firstRow = cabin.getAttribute('firstRow');
-    const lastRow = cabin.getAttribute('lastRow');
-    if (!firstRow || !lastRow) return {};
-  
-    // Get all <Row> elements in the document
-    const rows = Array.from(xmlDoc.getElementsByTagName('Row'));
-  
-    /**
-     * Helper: returns seat letters (A, B, C...) for a given row number
-     */
-    const getSeatLetters = (rowNumber: string): string | null => {
-      // Find the <Row> with the matching <RowNumber>
-      const row = rows.find(r => r.querySelector('RowNumber')?.textContent === rowNumber);
-      if (!row) return null;
-  
-      // Collect all seat letters from <Seat><Number>
-      const seatLetters = Array.from(row.getElementsByTagName('Seat'))
-        .map(seat => seat.querySelector('Number')?.textContent?.trim())
-        .filter(Boolean)
-        .map(letter => letter!.toUpperCase())
-        .join('');
-  
-      return seatLetters || null;
-    };
-  
-    const startLetters = getSeatLetters(firstRow);
-    const endLetters = getSeatLetters(lastRow);
-  
-    // If seat letters are missing, return nothing
-    if (!startLetters || !endLetters) return {};
-  
-    // Return formatted row information
+export function extractStartAndEndRowFromCabin(cabinEl?: Element | null): {
+  startRow?: string;
+  endRow?: string;
+} {
+  if (!cabinEl) return {};
+
+  const firstRow = cabinEl.getAttribute('firstRow');
+  const lastRow = cabinEl.getAttribute('lastRow');
+
+  const rowLetters = Array.from(cabinEl.querySelectorAll('Row'))
+    .flatMap(rowEl =>
+      Array.from(rowEl.querySelectorAll('Seat'))
+        .map(seatEl => seatEl.querySelector('Number')?.textContent?.trim())
+    )
+    .filter(Boolean) as string[];
+
+  const seatLetters = Array.from(new Set(rowLetters)).join('');
+
+  if (firstRow && lastRow && seatLetters) {
     return {
-      startRow: `${firstRow}:${startLetters}`,
-      endRow: `${lastRow}:${endLetters}`,
+      startRow: `${firstRow}:${seatLetters}`,
+      endRow: `${lastRow}:${seatLetters}`
     };
   }
+
+  return {};
+}

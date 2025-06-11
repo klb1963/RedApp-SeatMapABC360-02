@@ -20,6 +20,7 @@ import { handleDeleteSeats } from './handleDeleteSeats';
 import { postSeatMapUpdate } from './helpers/postSeatMapUpdate';
 import { handleAutomateSeating } from './handleAutomateSeating';
 import { mapCabinToCode } from '../../utils/mapCabinToCode';
+import { useSeatMapInitErrorLogger } from './hooks/useSeatMapInitErrorLogger';
 
 declare global {
   interface Window {
@@ -106,6 +107,8 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   useEffect(() => {
     setAlreadyInitialized(false);
   }, [initialSegmentIndex]);
+
+  useSeatMapInitErrorLogger();
 
   useEffect(() => {
     if (assignedSeats?.length && !alreadyInitialized) {
@@ -197,10 +200,10 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
       availability,
     });
 
-    console.table(availability.map(a => ({
-      seat: a.seatLabel,
-      type: a.type
-    })));
+    // console.table(availability.map(a => ({
+    //   seat: a.seatLabel,
+    //   type: a.type
+    // })));
 
     postSeatMapUpdate({
       config,

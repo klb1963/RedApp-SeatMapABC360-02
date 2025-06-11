@@ -109,7 +109,7 @@ export const loadSeatMapFromSabre = async (
     const { availability } = parseSeatMapResponse(xmlDoc);
 
     // 🆕 Add startRow and endRow
-    const { startRow, endRow } = extractStartAndEndRowFromCabin(xmlDoc);
+    const { startRow, endRow } = extractStartAndEndRowFromCabin(xmlDoc.querySelector('Cabin'))
 
     // 🧩 Обогащаем каждый availability-элемент полями xml + startRow/endRow
     const enrichedAvailability = availability.map(item => ({

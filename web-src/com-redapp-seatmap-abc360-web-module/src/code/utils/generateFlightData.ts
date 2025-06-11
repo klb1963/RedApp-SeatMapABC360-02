@@ -11,6 +11,7 @@
  */
 
 import { mapCabinToCode } from '../utils/mapCabinToCode';
+import { extractStartAndEndRowFromCabin } from './extractStartEndRow';
 
 /**
  * Flight segment input structure from various Sabre APIs.
@@ -35,6 +36,7 @@ export interface FlightSegmentInput {
     };
   };
   equipmentType?: string;
+  cabinXml?: Element; // Optional full cabin XML for row extraction
 }
 
 /**
@@ -95,7 +97,7 @@ export function generateFlightData(
       ? cabinClassOverride
       : mapCabinToCode(segment.cabinClass || 'Y');
 
-  // 🧩 Final object construction
+  // 🧰 Final object construction
   const result: FlightData = {
     id: String(index).padStart(3, '0'),
     airlineCode,
@@ -108,6 +110,13 @@ export function generateFlightData(
     marketingCarrier: airlineCode,
     passengerType: 'ADT'
   };
+
+  // ⬆️ Optionally enrich with startRow/endRow if valid pair exists
+  const rows = extractStartAndEndRowFromCabin(segment.cabinXml);
+  if (rows.startRow && rows.endRow) {
+    result.startRow = rows.startRow;
+    result.endRow = rows.endRow;
+  }
 
   console.log('[✅ FlightData Ready]', result);
 
