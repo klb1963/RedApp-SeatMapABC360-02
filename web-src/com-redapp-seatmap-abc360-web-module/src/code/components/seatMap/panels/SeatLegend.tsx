@@ -25,7 +25,7 @@ export const SeatLegend: React.FC = () => {
   const firstColumnItems = [
     // passanger
     {
-      color: '#212121', // #212121
+      color: '#D3D3D3', // #212121
       label: t('seatMap.legend.unavailable'),
     },
     // available

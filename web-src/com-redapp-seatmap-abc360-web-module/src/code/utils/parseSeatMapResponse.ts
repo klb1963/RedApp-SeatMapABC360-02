@@ -111,14 +111,19 @@ export function parseSeatMapResponse(xml: Document): {
       const type = getSeatType(seatEl);
       const color = getColorByType(type);
 
-      availability.push({
-        label: `${rowNumber}${seatLabel}`,
-        seatLabel: `${rowNumber}${seatLabel}`,
-        price,
-        currency,
-        color,
-        type
-      });
+      // 🎯 filter out non-selectable seats
+      const allowedTypes: SeatType[] = ['available', 'paid', 'preferred'];
+
+      if (allowedTypes.includes(type)) {
+        availability.push({
+          label: `${rowNumber}${seatLabel}`,
+          seatLabel: `${rowNumber}${seatLabel}`,
+          price,
+          currency,
+          color,
+          type
+        });
+      }
 
       row.seats.push({
         label: seatLabel,

@@ -148,8 +148,8 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
           
             return {
               ...baseFlight,
-              startRow,
-              endRow,
+              // startRow,
+              // endRow,
             };
           }}
         />

@@ -197,6 +197,11 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
       availability,
     });
 
+    console.table(availability.map(a => ({
+      seat: a.seatLabel,
+      type: a.type
+    })));
+
     postSeatMapUpdate({
       config,
       flight,
