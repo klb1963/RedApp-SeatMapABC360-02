@@ -9,10 +9,17 @@
  * for the embedded iframe-based seat map renderer.
  */
 
+import { getService } from '../Context';
+import { AgentProfileService } from 'sabre-ngv-app/app/services/impl/AgentProfileService';
+import { getLangFromLocale } from './getLangFromLocale';
+
+const agentService = getService(AgentProfileService);
+const locale = agentService.getLocale() || 'en_US';
+
 export const quicketConfig = {
   // === 📏 Base layout settings ===
   width: 400,               // Width of the rendering container in px
-  lang: 'EN',               // Interface language (EN, DE, etc.)
+  lang: getLangFromLocale(locale), // Interface language (EN, DE, etc.)
   horizontal: false,        // Seat map scroll direction (false = vertical)
   rightToLeft: false,       // RTL layout support (e.g. for Arabic)
   visibleFuselage: false,   // Show outer fuselage frame
