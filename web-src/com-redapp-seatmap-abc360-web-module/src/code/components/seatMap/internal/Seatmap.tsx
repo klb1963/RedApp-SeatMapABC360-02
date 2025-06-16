@@ -1,5 +1,4 @@
 import * as React from 'react';
-import './seatmap.css';
 
 export interface Seat {
   id: string;
@@ -21,26 +20,31 @@ interface SeatmapProps {
 
 const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick }) => {
   return (
-    <div className="seatmap">
+    <div>
       {rows.map((row) => (
-        <div className="row" key={row.rowNumber}>
-          <div className="row-number">{row.rowNumber}</div>
-          <div className="seats">
+        <div key={row.rowNumber} style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem' }}>
+          <div style={{ width: '2rem', fontWeight: 'bold' }}>{row.rowNumber}</div>
+          <div>
             {row.seats.map((seat) => {
               const isSelected = seat.id === selectedSeatId;
-              const className = [
-                'seat',
-                seat.isReserved ? 'reserved' : '',
-                isSelected ? 'selected' : ''
-              ].join(' ');
-
               return (
                 <button
                   key={seat.id}
-                  className={className}
                   title={seat.tooltip}
                   onClick={() => !seat.isReserved && onSeatClick(seat.id)}
                   disabled={seat.isReserved}
+                  style={{
+                    margin: '2px',
+                    padding: '0.5rem',
+                    backgroundColor: seat.isReserved
+                      ? '#ccc'
+                      : isSelected
+                      ? '#4caf50'
+                      : '#f0f0f0',
+                    border: '1px solid #999',
+                    cursor: seat.isReserved ? 'not-allowed' : 'pointer',
+                    minWidth: '2rem',
+                  }}
                 >
                   {seat.number || seat.id}
                 </button>

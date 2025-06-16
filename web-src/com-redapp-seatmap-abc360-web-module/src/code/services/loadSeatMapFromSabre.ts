@@ -114,6 +114,8 @@ export const loadSeatMapFromSabre = async (
 
     const { availability, seatInfo } = parseSeatMapResponse(xmlDoc);
 
+    // console.log('🪑 Parsed seatInfo:', JSON.stringify(seatInfo, null, 2));
+
     // 🆕 Add startRow and endRow
     const { startRow, endRow } = extractStartAndEndRowFromCabin(xmlDoc.querySelector('Cabin'))
 

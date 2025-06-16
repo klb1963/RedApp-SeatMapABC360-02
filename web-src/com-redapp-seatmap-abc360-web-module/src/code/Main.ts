@@ -40,7 +40,7 @@ import { t } from './Context'; // i18n
 
 import { normalizeSegment } from './utils/normalizeSegment';
 
-import { ReactSeatMapModal } from './components/seatMap/ReactSeatMapModal';
+import ReactSeatMapModal from './components/seatMap/ReactSeatMapModal';
 
 export class Main extends Module {
     init(): void {
@@ -149,7 +149,7 @@ export class Main extends Module {
   private showSeatMapReact(): void {
     getService(PublicModalsService).showReactModal({
         header: 'React Seat Map',
-        component: React.createElement(require('./components/seatMap/ReactSeatMapModal').ReactSeatMapModal),
+        component: React.createElement(require('./components/seatMap/ReactSeatMapModal').default),
         modalClassName: 'seatmap-modal-lower',
       });
   }

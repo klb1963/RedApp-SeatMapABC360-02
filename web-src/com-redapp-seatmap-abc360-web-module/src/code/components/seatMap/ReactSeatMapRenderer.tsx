@@ -1,26 +1,20 @@
+// file: /code/components/seatMap/ReactSeatMapRenderer.tsx
+
 import * as React from 'react';
 import Seatmap from './internal/Seatmap';
-import { convertSeatMapToReactSeatmapFormat, ReactSeatRow } from '../../utils/convertSeatMapToReactSeatmap';
-import { SeatInfo } from '../seatMap/types/SeatInfo';
 
-interface Props {
-  seatInfo: SeatInfo[];
+export const ReactSeatMapRenderer: React.FC<{
+  rows: any[];
   selectedSeatId: string | null;
   onSeatSelect: (seatId: string) => void;
-}
-
-const ReactSeatMapRenderer: React.FC<Props> = ({ seatInfo, selectedSeatId, onSeatSelect }) => {
-  const rows: ReactSeatRow[] = React.useMemo(() => convertSeatMapToReactSeatmapFormat(seatInfo), [seatInfo]);
-
+}> = ({ rows, selectedSeatId, onSeatSelect }) => {
   return (
-    <div style={{ padding: '1rem' }}>
+    <div>
       <Seatmap
         rows={rows}
-        selectedSeatId={selectedSeatId || undefined}
-        onSeatClick={(seatId) => onSeatSelect(seatId)}
+        selectedSeatId={selectedSeatId}
+        onSeatClick={onSeatSelect}
       />
     </div>
   );
 };
-
-export default ReactSeatMapRenderer;

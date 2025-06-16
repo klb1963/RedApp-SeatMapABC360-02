@@ -27,7 +27,9 @@ export function convertSeatMapToReactSeatmapFormat(seats: SeatInfo[]): ReactSeat
 
     const rowKey = rowMatch[1]; // строка, например '11'
     const column = rowMatch[2]; // буква, например 'F'
-    const isReserved = seat.seatStatus !== 'available'; // сравнение в нижнем регистре важно!
+    const isReserved = ['occupied', 'blocked', 'unavailable'].includes(
+      seat.seatStatus.toLowerCase()
+    );
 
     if (!rowsMap[rowKey]) {
       rowsMap[rowKey] = [];

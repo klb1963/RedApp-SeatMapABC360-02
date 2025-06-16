@@ -61,7 +61,8 @@ export async function openSeatMapPnr(): Promise<void> {
     const activeFlight = flightSegments[selectedSegmentIndex];
 
     // Load availability for this segment
-    const { availability } = await loadSeatMapFromSabre(activeFlight, enrichedPassengers);
+    const { availability, seatInfo } = await loadSeatMapFromSabre(activeFlight, enrichedPassengers);
+    // console.log('📌 seatInfo received in openSeatMapPnr:', seatInfo);
 
     // Show seat map modal with loaded data
     modals.showReactModal({
