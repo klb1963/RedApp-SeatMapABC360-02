@@ -1,7 +1,6 @@
-// file: /code/components/seatMap/ReactSeatMapRenderer.tsx
-
 import * as React from 'react';
-import Seatmap from './internal/Seatmap';
+import Seatmap from 'react-seatmap';
+import { convertSeatMapToReactSeatmapFormat, ReactSeatRow } from '../../utils/convertSeatMapToReactSeatmap';
 
 export const ReactSeatMapRenderer: React.FC<{
   rows: any[];
