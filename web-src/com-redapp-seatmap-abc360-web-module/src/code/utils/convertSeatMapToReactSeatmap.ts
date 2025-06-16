@@ -26,7 +26,7 @@ export function convertSeatMapToReactSeatmapFormat(seats: SeatInfo[]): ReactSeat
 
     const rowNumber = parseInt(rowMatch[1], 10);
     const column = rowMatch[2];
-    const isReserved = seat.seatStatus?.toLowerCase() !== 'available';
+    const isReserved = ['occupied', 'blocked', 'unavailable'].includes(seat.seatStatus.toLowerCase());
 
     const seatData: ReactSeat = {
       id: seat.seatNumber,
