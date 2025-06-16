@@ -22,8 +22,6 @@
     "sabre-ngv-commsg": "*",
     "sabre-ngv-xp": "*"
   },
-  "devDependencies": {},
-  "optionalDependencies": {},
   "ngv": {
     "buildDependencies": {
       "sabre-ngv-app": "*",

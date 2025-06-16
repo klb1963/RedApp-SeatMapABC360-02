@@ -1,5 +1,3 @@
-// file: /code/utils/parseSeatMapResponse.ts
-
 /**
  * parseSeatMapResponse.ts
  *
@@ -38,6 +36,14 @@ export interface AvailabilityItem {
   currency: string;
   color: string;
   type: SeatType;
+}
+
+// 🆕 Новый тип для JSX SeatMap (используется в ReactSeatMapRenderer)
+export interface SeatInfo {
+  seatNumber: string;
+  seatStatus: string;
+  seatPrice?: number;
+  seatCharacteristics?: string[];
 }
 
 function getSeatType(seatEl: Element): SeatType {
@@ -85,11 +91,13 @@ function getColorByType(type: SeatType): string {
 export function parseSeatMapResponse(xml: Document): {
   layout: { decks: Deck[] };
   availability: AvailabilityItem[];
+  seatInfo: SeatInfo[]; // 🆕 Добавляем новый результат
 } {
   const layout: { decks: Deck[] } = {
     decks: [{ id: 'main-deck', name: 'Main Deck', rows: [] }]
   };
   const availability: AvailabilityItem[] = [];
+  const seatInfo: SeatInfo[] = []; // 🆕 Новый массив мест
 
   const rowElements = Array.from(xml.querySelectorAll('Row'));
 
@@ -110,20 +118,29 @@ export function parseSeatMapResponse(xml: Document): {
 
       const type = getSeatType(seatEl);
       const color = getColorByType(type);
+      const seatNumber = `${rowNumber}${seatLabel}`;
 
       // 🎯 filter out non-selectable seats
       const allowedTypes: SeatType[] = ['available', 'paid', 'preferred'];
 
       if (allowedTypes.includes(type)) {
         availability.push({
-          label: `${rowNumber}${seatLabel}`,
-          seatLabel: `${rowNumber}${seatLabel}`,
+          label: seatNumber,
+          seatLabel: seatNumber,
           price,
           currency,
           color,
           type
         });
       }
+
+      // 🆕 Добавляем в seatInfo для JSX рендера
+      seatInfo.push({
+        seatNumber,
+        seatStatus: type,
+        seatPrice: price,
+        seatCharacteristics: [] // можно позже добавить на основе Facilities
+      });
 
       row.seats.push({
         label: seatLabel,
@@ -137,5 +154,5 @@ export function parseSeatMapResponse(xml: Document): {
 
   layout.decks[0].rows.sort((a, b) => parseInt(a.label) - parseInt(b.label));
 
-  return { layout, availability };
+  return { layout, availability, seatInfo }; // 🆕 Возвращаем seatInfo
 }

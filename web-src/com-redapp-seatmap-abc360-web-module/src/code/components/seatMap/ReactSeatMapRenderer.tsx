@@ -1,7 +1,7 @@
 import * as React from 'react';
-import Seatmap from 'react-seatmap';
+import Seatmap from './internal/Seatmap';
 import { convertSeatMapToReactSeatmapFormat, ReactSeatRow } from '../../utils/convertSeatMapToReactSeatmap';
-import { SeatInfo } from '../../types/SeatInfo'; // если есть, иначе временно оставим как any
+import { SeatInfo } from '../seatMap/types/SeatInfo';
 
 interface Props {
   seatInfo: SeatInfo[];

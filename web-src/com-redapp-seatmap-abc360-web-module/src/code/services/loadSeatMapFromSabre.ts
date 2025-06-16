@@ -19,6 +19,7 @@ import { parseSeatMapResponse } from '../utils/parseSeatMapResponse';
 import { AgentProfileService } from 'sabre-ngv-app/app/services/impl/AgentProfileService';
 import { extractStartAndEndRowFromCabin } from '../utils/extractStartEndRow';
 import { sendXmlToUploader } from './sendXmlToUploader';
+import { SeatInfo } from '../components/seatMap/types/SeatInfo';
 
 // ✈️ Interface for the flight segment passed into the seat map request
 interface FlightSegment {
@@ -35,7 +36,11 @@ interface FlightSegment {
 export const loadSeatMapFromSabre = async (
   segment: FlightSegment,
   passengers: PassengerOption[]
-): Promise<{ rawXml: string; availability: any[] }> => {
+): Promise<{
+  rawXml: string;
+  availability: any[];
+  seatInfo: SeatInfo[];
+}> => {
   try {
     const soapApiService = getService(ISoapApiService);
 
@@ -106,7 +111,8 @@ export const loadSeatMapFromSabre = async (
     // 📥 Get raw XML response and parse it for availability info
     const rawXml = response.value;
     const xmlDoc = new DOMParser().parseFromString(rawXml, 'application/xml');
-    const { availability } = parseSeatMapResponse(xmlDoc);
+
+    const { availability, seatInfo } = parseSeatMapResponse(xmlDoc);
 
     // 🆕 Add startRow and endRow
     const { startRow, endRow } = extractStartAndEndRowFromCabin(xmlDoc.querySelector('Cabin'))
@@ -123,6 +129,7 @@ export const loadSeatMapFromSabre = async (
     return {
       rawXml,
       availability: enrichedAvailability,
+      seatInfo,
     };
 
   } catch (error) {

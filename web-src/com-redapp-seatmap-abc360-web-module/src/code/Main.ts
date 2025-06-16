@@ -40,6 +40,8 @@ import { t } from './Context'; // i18n
 
 import { normalizeSegment } from './utils/normalizeSegment';
 
+import { ReactSeatMapModal } from './components/seatMap/ReactSeatMapModal';
+
 export class Main extends Module {
     init(): void {
         super.init();
@@ -118,6 +120,13 @@ export class Main extends Module {
           false
         ),
 
+        new RedAppSidePanelButton(
+          "SeatMap React",
+          "btn-secondary side-panel-button",
+          () => { this.showSeatMapReact(); },
+          false
+        ),
+
       ]);
 
       xp.addConfig("redAppSidePanel", sidepanelMenu);
@@ -133,6 +142,16 @@ export class Main extends Module {
   openSeatMapABC360(): void {
     getService(PublicModalsService).closeReactModal(); // ✅ Close any open modals
     openSeatMapPnr(); // delegate 
+  }
+
+  //============= 💺💺💺 open SeatMap React with PNR data =====
+
+  private showSeatMapReact(): void {
+    getService(PublicModalsService).showReactModal({
+        header: 'React Seat Map',
+        component: React.createElement(require('./components/seatMap/ReactSeatMapModal').ReactSeatMapModal),
+        modalClassName: 'seatmap-modal-lower',
+      });
   }
 
   // ========== 🪪 open showAgentProfile =====================
