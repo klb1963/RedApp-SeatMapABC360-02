@@ -1,6 +1,5 @@
 import * as React from 'react';
-import Seatmap from 'react-seatmap';
-import { convertSeatMapToReactSeatmapFormat, ReactSeatRow } from '../../utils/convertSeatMapToReactSeatmap';
+import Seatmap from './internal/Seatmap'; 
 
 export const ReactSeatMapRenderer: React.FC<{
   rows: any[];
