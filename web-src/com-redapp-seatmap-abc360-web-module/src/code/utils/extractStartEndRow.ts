@@ -19,30 +19,53 @@
  * @param xmlDoc A parsed XML Document from EnhancedSeatMapRS
  * @returns An object containing startRow and endRow (or empty if not available)
  */
-export function extractStartAndEndRowFromCabin(cabinEl?: Element | null): {
-  startRow?: string;
-  endRow?: string;
-} {
-  if (!cabinEl) return {};
+/**
+ * ✈️ extractStartAndEndRowFromCabin
+ *
+ * Aggregates `firstRow` and `lastRow` from all <Cabin> elements in the XML with matching classCode.
+ * Returns rows in format: `${rowNumber}:${seatLetters}` for better compatibility with seatmap libraries.
+ *
+ * @param xmlDoc Parsed XML Document from EnhancedSeatMapRS
+ * @param targetClassCode Class code to match (e.g., 'Y', 'J', 'C')
+ */
 
-  const firstRow = cabinEl.getAttribute('firstRow');
-  const lastRow = cabinEl.getAttribute('lastRow');
+export function extractStartAndEndRowFromCabin(
+  xmlDoc: Document,
+  _targetClassCode: string // не нужен больше, но оставим для сигнатуры
+): { startRow?: string; endRow?: string } {
+  const cabinEls = Array.from(xmlDoc.querySelectorAll('Cabin'));
+  if (cabinEls.length === 0) return {};
 
-  const rowLetters = Array.from(cabinEl.querySelectorAll('Row'))
-    .flatMap(rowEl =>
-      Array.from(rowEl.querySelectorAll('Seat'))
-        .map(seatEl => seatEl.querySelector('Number')?.textContent?.trim())
-    )
-    .filter(Boolean) as string[];
+  const allRows: number[] = [];
+  const allSeatLetters = new Set<string>();
 
-  const seatLetters = Array.from(new Set(rowLetters)).join('');
+  for (const cabinEl of cabinEls) {
+    const first = parseInt(cabinEl.getAttribute('firstRow') || '', 10);
+    const last = parseInt(cabinEl.getAttribute('lastRow') || '', 10);
+    if (!isNaN(first)) allRows.push(first);
+    if (!isNaN(last)) allRows.push(last);
 
-  if (firstRow && lastRow && seatLetters) {
-    return {
-      startRow: `${firstRow}:${seatLetters}`,
-      endRow: `${lastRow}:${seatLetters}`
-    };
+    const seatLetters = Array.from(cabinEl.querySelectorAll('Row'))
+      .flatMap(rowEl =>
+        Array.from(rowEl.querySelectorAll('Seat'))
+          .map(seatEl => seatEl.querySelector('Number')?.textContent?.trim())
+      )
+      .filter(Boolean) as string[];
+
+    seatLetters.forEach(code => {
+      const letterMatch = code.match(/[A-Z]/g);
+      if (letterMatch) letterMatch.forEach(l => allSeatLetters.add(l));
+    });
   }
 
-  return {};
+  if (allRows.length === 0 || allSeatLetters.size === 0) return {};
+
+  const sortedLetters = Array.from(allSeatLetters).sort().join('');
+  const minRow = Math.min(...allRows);
+  const maxRow = Math.max(...allRows);
+
+  return {
+    startRow: `${minRow}:${sortedLetters}`,
+    endRow: `${maxRow}:${sortedLetters}`,
+  };
 }

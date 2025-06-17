@@ -117,12 +117,13 @@ export const loadSeatMapFromSabre = async (
     // console.log('🪑 Parsed seatInfo:', JSON.stringify(seatInfo, null, 2));
 
     // 🆕 Add startRow and endRow
-    const { startRow, endRow } = extractStartAndEndRowFromCabin(xmlDoc.querySelector('Cabin'))
+    const { startRow, endRow } = extractStartAndEndRowFromCabin(xmlDoc, 'Y');
 
     // 🧩 Обогащаем каждый availability-элемент полями xml + startRow/endRow
     const enrichedAvailability = availability.map(item => ({
       ...item,
       xml: rawXml,
+      enhancedSeatMapXml: xmlDoc,
       startRow,
       endRow,
     }));

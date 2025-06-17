@@ -37,6 +37,7 @@ export interface FlightSegmentInput {
   };
   equipmentType?: string;
   cabinXml?: Element; // Optional full cabin XML for row extraction
+  enhancedSeatMapXml?: Document;
 }
 
 /**
@@ -111,12 +112,14 @@ export function generateFlightData(
     passengerType: 'ADT'
   };
 
-  // ⬆️ Optionally enrich with startRow/endRow if valid pair exists
-  const rows = extractStartAndEndRowFromCabin(segment.cabinXml);
+// ⬆️ Optionally enrich with startRow/endRow if valid pair exists
+if (segment.enhancedSeatMapXml) {
+  const rows = extractStartAndEndRowFromCabin(segment.enhancedSeatMapXml, 'ANY');
   if (rows.startRow && rows.endRow) {
     result.startRow = rows.startRow;
     result.endRow = rows.endRow;
   }
+}
 
   console.log('[✅ FlightData Ready]', result);
 

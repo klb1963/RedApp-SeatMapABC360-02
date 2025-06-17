@@ -138,7 +138,7 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
               const xmlString = availability?.[0]?.xml;
               if (typeof xmlString === 'string') {
                 const xmlDoc = new DOMParser().parseFromString(xmlString, 'application/xml');
-                const extracted = extractStartAndEndRowFromCabin(xmlDoc.querySelector('Cabin'))
+                const extracted = extractStartAndEndRowFromCabin(xmlDoc, segment?.cabinClass || 'Y');
                 startRow = extracted.startRow;
                 endRow = extracted.endRow;
               }
