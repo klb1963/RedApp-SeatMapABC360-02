@@ -15,38 +15,54 @@ export interface ReactSeatRow {
 }
 
 /**
- * Преобразует массив SeatInfo[] из EnhancedSeatMapRQ в формат, понятный react-seatmap
+ * Преобразует массив SeatInfo[] из EnhancedSeatMapRQ в формат React Seatmap,
+ * используя layoutLetters для вставки проходов
  */
-export function convertSeatMapToReactSeatmapFormat(seats: SeatInfo[]): ReactSeatRow[] {
-  const rowsMap: Record<string, ReactSeat[]> = {};
+export function convertSeatMapToReactSeatmapFormat(
+  seats: SeatInfo[],
+  layoutLetters: string[] // ← получено из parseSeatMapResponse
+): ReactSeatRow[] {
+  const rowsMap: Record<string, Record<string, SeatInfo>> = {};
 
   for (const seat of seats) {
-    const rowMatch = seat.seatNumber.match(/^(\d+)([A-Z])$/);
-    if (!rowMatch) continue;
+    const match = seat.seatNumber.match(/^(\d+)([A-Z])$/);
+    if (!match) continue;
 
-    const rowNumber = parseInt(rowMatch[1], 10);
-    const column = rowMatch[2];
-    const isReserved = ['occupied', 'blocked', 'unavailable'].includes(seat.seatStatus.toLowerCase());
-
-    const seatData: ReactSeat = {
-      id: seat.seatNumber,
-      number: column,
-      isReserved,
-      tooltip: seat.seatPrice ? `€${seat.seatPrice.toFixed(2)}` : undefined,
-    };
-
-    if (!rowsMap[rowNumber]) {
-      rowsMap[rowNumber] = [];
-    }
-
-    rowsMap[rowNumber].push(seatData);
+    const rowNumber = match[1];
+    const letter = match[2];
+    if (!rowsMap[rowNumber]) rowsMap[rowNumber] = {};
+    rowsMap[rowNumber][letter] = seat;
   }
 
-  // 🎯 Преобразуем rowsMap → массив ReactSeatRow[]
-  return Object.entries(rowsMap)
-    .map(([rowKey, seats]) => ({
-      rowNumber: parseInt(rowKey, 10),
-      seats: seats.sort((a, b) => a.number!.localeCompare(b.number!)),
-    }))
-    .sort((a, b) => a.rowNumber - b.rowNumber);
+  const result: ReactSeatRow[] = [];
+
+  for (const [rowNumberStr, letterSeatMap] of Object.entries(rowsMap)) {
+    const rowNumber = parseInt(rowNumberStr, 10);
+    const rowSeats: ReactSeat[] = [];
+
+    layoutLetters.forEach((col, idx) => {
+      if (col === '|') {
+        rowSeats.push({
+          id: `AISLE-${rowNumber}-${idx}`,
+          isReserved: true,
+        });
+      } else {
+        const seat = letterSeatMap[col];
+        if (!seat) return;
+
+        const isReserved = ['occupied', 'blocked', 'unavailable'].includes(seat.seatStatus.toLowerCase());
+
+        rowSeats.push({
+          id: seat.seatNumber,
+          number: col,
+          isReserved,
+          tooltip: seat.seatPrice ? `€${seat.seatPrice.toFixed(2)}` : undefined,
+        });
+      }
+    });
+
+    result.push({ rowNumber, seats: rowSeats });
+  }
+
+  return result.sort((a, b) => a.rowNumber - b.rowNumber);
 }

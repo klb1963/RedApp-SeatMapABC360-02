@@ -1,3 +1,5 @@
+// ✅ file: /code/utils/parseSeatMapResponse.ts
+
 /**
  * parseSeatMapResponse.ts
  *
@@ -9,6 +11,8 @@
  *
  * Used to prepare data for the seat map visualization library.
  */
+
+import { extractSeatLayoutFromXml } from '../utils/extractSeatLayoutFromXml';
 
 interface Seat {
   label: string;
@@ -38,7 +42,6 @@ export interface AvailabilityItem {
   type: SeatType;
 }
 
-// 🆕 Новый тип для JSX SeatMap (используется в ReactSeatMapRenderer)
 export interface SeatInfo {
   seatNumber: string;
   seatStatus: string;
@@ -49,7 +52,7 @@ export interface SeatInfo {
 function getSeatType(seatEl: Element): SeatType {
   const occupiedInd = seatEl.getAttribute('occupiedInd') === 'true';
   const availableInd = seatEl.getAttribute('availableInd') === 'true';
-  // 🔒 Not bookable — если есть Limited Detail с code="1" (RestrictedGeneral)
+
   const isRestricted = Array.from(seatEl.querySelectorAll('Limitations > Detail'))
     .some(detail => detail.getAttribute('code') === '1');
 
@@ -65,7 +68,6 @@ function getSeatType(seatEl: Element): SeatType {
   const offerTotalAmountEl = seatEl.querySelector('Offer TotalAmount');
   const price = offerTotalAmountEl ? parseFloat(offerTotalAmountEl.textContent || '0') : 0;
 
-  // Правила классификации
   if (isOccupied) return 'occupied';
   if (isRestricted && isFree && !occupiedInd) return 'unavailable';
   if (!availableInd && !isFree) return 'blocked';
@@ -78,12 +80,12 @@ function getSeatType(seatEl: Element): SeatType {
 
 function getColorByType(type: SeatType): string {
   switch (type) {
-    case 'available': return '#00C853'; // green #00C853
-    case 'paid': return '#F8CF00'; // yellow #F8CF00
-    case 'occupied': return '#212121'; // dark grey #212121
-    case 'unavailable': return '#212121'; // dark grey #212121
-    case 'blocked': return 'lightgray'; 
-    case 'preferred': return '#01D0CE'; // light blue #01D0CE
+    case 'available': return '#00C853'; // #00C853
+    case 'paid': return '#F8CF00'; // #F8CF00
+    case 'occupied': return '#212121'; // #212121
+    case 'unavailable': return '#212121'; // #212121
+    case 'blocked': return 'lightgray'; // 
+    case 'preferred': return '#01D0CE'; // #01D0CE
     default: return 'white';
   }
 }
@@ -91,13 +93,15 @@ function getColorByType(type: SeatType): string {
 export function parseSeatMapResponse(xml: Document): {
   layout: { decks: Deck[] };
   availability: AvailabilityItem[];
-  seatInfo: SeatInfo[]; // 🆕 Добавляем новый результат
+  seatInfo: SeatInfo[];
+  layoutLetters: string[]; // 🆕 добавлен для использования при вставке проходов
 } {
   const layout: { decks: Deck[] } = {
     decks: [{ id: 'main-deck', name: 'Main Deck', rows: [] }]
   };
   const availability: AvailabilityItem[] = [];
-  const seatInfo: SeatInfo[] = []; // 🆕 Новый массив мест
+  const seatInfo: SeatInfo[] = [];
+  const layoutLetters = extractSeatLayoutFromXml(xml);
 
   const rowElements = Array.from(xml.querySelectorAll('Row'));
 
@@ -120,9 +124,7 @@ export function parseSeatMapResponse(xml: Document): {
       const color = getColorByType(type);
       const seatNumber = `${rowNumber}${seatLabel}`;
 
-      // 🎯 filter out non-selectable seats
       const allowedTypes: SeatType[] = ['available', 'paid', 'preferred'];
-
       if (allowedTypes.includes(type)) {
         availability.push({
           label: seatNumber,
@@ -134,12 +136,21 @@ export function parseSeatMapResponse(xml: Document): {
         });
       }
 
-      // 🆕 Добавляем в seatInfo для JSX рендера
+      const rawCodes = Array.from(seatEl.querySelectorAll('RawSeatCharacteristics > Code'))
+        .map((codeEl) => codeEl.textContent?.trim())
+        .filter(Boolean) as string[];
+
+      const locationCodes = Array.from(seatEl.querySelectorAll('Location > Detail'))
+        .map((detailEl) => detailEl.getAttribute('code'))
+        .filter(Boolean) as string[];
+
+      const allCodes = Array.from(new Set([...rawCodes, ...locationCodes]));
+
       seatInfo.push({
         seatNumber,
         seatStatus: type,
         seatPrice: price,
-        seatCharacteristics: [] // можно позже добавить на основе Facilities
+        seatCharacteristics: allCodes
       });
 
       row.seats.push({
@@ -154,5 +165,10 @@ export function parseSeatMapResponse(xml: Document): {
 
   layout.decks[0].rows.sort((a, b) => parseInt(a.label) - parseInt(b.label));
 
-  return { layout, availability, seatInfo }; // 🆕 Возвращаем seatInfo
+  return { 
+    layout, 
+    availability, 
+    seatInfo, 
+    layoutLetters
+  };
 }

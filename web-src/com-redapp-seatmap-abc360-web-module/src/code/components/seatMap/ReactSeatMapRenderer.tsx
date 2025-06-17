@@ -1,3 +1,5 @@
+// file: /code/components/seatMap/ReactSeatMapRender.tsx
+
 import * as React from 'react';
 import Seatmap from './internal/Seatmap'; 
 

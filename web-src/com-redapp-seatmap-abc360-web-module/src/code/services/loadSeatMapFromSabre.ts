@@ -40,6 +40,7 @@ export const loadSeatMapFromSabre = async (
   rawXml: string;
   availability: any[];
   seatInfo: SeatInfo[];
+  layoutLetters: string[];
 }> => {
   try {
     const soapApiService = getService(ISoapApiService);
@@ -112,7 +113,7 @@ export const loadSeatMapFromSabre = async (
     const rawXml = response.value;
     const xmlDoc = new DOMParser().parseFromString(rawXml, 'application/xml');
 
-    const { availability, seatInfo } = parseSeatMapResponse(xmlDoc);
+    const { availability, seatInfo, layoutLetters } = parseSeatMapResponse(xmlDoc);
 
     // console.log('🪑 Parsed seatInfo:', JSON.stringify(seatInfo, null, 2));
 
@@ -133,6 +134,7 @@ export const loadSeatMapFromSabre = async (
       rawXml,
       availability: enrichedAvailability,
       seatInfo,
+      layoutLetters,
     };
 
   } catch (error) {

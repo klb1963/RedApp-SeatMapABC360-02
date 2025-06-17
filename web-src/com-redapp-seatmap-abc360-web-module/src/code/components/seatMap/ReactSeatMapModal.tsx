@@ -30,10 +30,12 @@ const ReactSeatMapModal: React.FC = () => {
         destination: segments[0].destination,
       };
 
-      const { seatInfo } = await loadSeatMapFromSabre(firstSegment, enrichedPassengers);
+      const { seatInfo, layoutLetters } = await loadSeatMapFromSabre(firstSegment, enrichedPassengers);
       // console.log('✅ seatInfo from Sabre:', seatInfo);
 
-      const reactSeatRows = convertSeatMapToReactSeatmapFormat(seatInfo);
+      const reactSeatRows = convertSeatMapToReactSeatmapFormat(seatInfo, layoutLetters);
+      // console.log('✅ ReactSeatRows with AISLE:', reactSeatRows);
+
       setRows(reactSeatRows);
     };
 

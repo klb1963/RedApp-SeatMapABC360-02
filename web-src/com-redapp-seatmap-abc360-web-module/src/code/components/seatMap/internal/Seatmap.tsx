@@ -1,3 +1,5 @@
+// file: /code/components/seatMap/internal/Seatmap.tsx
+
 import * as React from 'react';
 
 export interface Seat {
