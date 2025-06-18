@@ -1,5 +1,3 @@
-// ✅ file: /code/utils/convertSeatMapToReactSeatmap.ts
-
 import { SeatInfo } from '../components/seatMap/types/SeatInfo';
 
 export interface ReactSeat {
@@ -14,14 +12,15 @@ export interface ReactSeatRow {
   seats: ReactSeat[];
 }
 
-/**
- * Преобразует массив SeatInfo[] из EnhancedSeatMapRQ в формат React Seatmap,
- * используя layoutLetters для вставки проходов
- */
+export interface ReactSeatMapResult {
+  rows: ReactSeatRow[];
+  layoutLength: number;
+}
+
 export function convertSeatMapToReactSeatmapFormat(
   seats: SeatInfo[],
-  layoutLetters: string[] // ← получено из parseSeatMapResponse
-): ReactSeatRow[] {
+  layoutLetters: string[]
+): ReactSeatMapResult {
   const rowsMap: Record<string, Record<string, SeatInfo>> = {};
 
   for (const seat of seats) {
@@ -67,5 +66,8 @@ export function convertSeatMapToReactSeatmapFormat(
     result.push({ rowNumber, seats: rowSeats });
   }
 
-  return result.sort((a, b) => a.rowNumber - b.rowNumber);
+  return {
+    rows: result.sort((a, b) => a.rowNumber - b.rowNumber),
+    layoutLength: layoutLetters.length,
+  };
 }

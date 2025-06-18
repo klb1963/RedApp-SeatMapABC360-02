@@ -1,71 +1,71 @@
 /**
  * ✈️ extractStartAndEndRowFromCabin
  *
- * Extracts `startRow` and `endRow` information from the <Cabin> tag in an EnhancedSeatMapRS XML document.
- * These values help the seatmaps.com library more accurately match aircraft seating layouts.
- *
- * Output example:
- *   {
- *     startRow: "9:ABCDEF",
- *     endRow: "30:ACDF"
- *   }
- *
- * Behavior:
- * - Reads `firstRow` and `lastRow` attributes from the <Cabin> element.
- * - Collects seat letter codes from the corresponding <Row> elements.
- * - Returns both values in the required "RowNumber:LETTERS" format.
- * - If either row or seat letters are missing, returns an empty object.
- *
- * @param xmlDoc A parsed XML Document from EnhancedSeatMapRS
- * @returns An object containing startRow and endRow (or empty if not available)
- */
-/**
- * ✈️ extractStartAndEndRowFromCabin
- *
- * Aggregates `firstRow` and `lastRow` from all <Cabin> elements in the XML with matching classCode.
- * Returns rows in format: `${rowNumber}:${seatLetters}` for better compatibility with seatmap libraries.
+ * Aggregates `firstRow` and `lastRow` from all <Cabin> elements in the XML.
+ * Filters out fake seats like NoSeatHere, NoSeatAtThisLocation, and RawSeatCharacteristics codes (e.g., 8, GN).
+ * Returns rows in format: `${rowNumber}:${seatLetters}` for compatibility with seatmap libraries.
  *
  * @param xmlDoc Parsed XML Document from EnhancedSeatMapRS
- * @param targetClassCode Class code to match (e.g., 'Y', 'J', 'C')
+ * @param _targetClassCode Class code to match (e.g., 'Y', 'J', 'C') — unused
  */
 
 export function extractStartAndEndRowFromCabin(
   xmlDoc: Document,
-  _targetClassCode: string // не нужен больше, но оставим для сигнатуры
+  _targetClassCode: string
 ): { startRow?: string; endRow?: string } {
   const cabinEls = Array.from(xmlDoc.querySelectorAll('Cabin'));
   if (cabinEls.length === 0) return {};
 
-  const allRows: number[] = [];
-  const allSeatLetters = new Set<string>();
+  // 1. Находим минимальный firstRow и максимальный lastRow по всем <Cabin>
+  const firstRows = cabinEls.map(c => parseInt(c.getAttribute('firstRow') || '', 10)).filter(n => !isNaN(n));
+  const lastRows = cabinEls.map(c => parseInt(c.getAttribute('lastRow') || '', 10)).filter(n => !isNaN(n));
 
-  for (const cabinEl of cabinEls) {
-    const first = parseInt(cabinEl.getAttribute('firstRow') || '', 10);
-    const last = parseInt(cabinEl.getAttribute('lastRow') || '', 10);
-    if (!isNaN(first)) allRows.push(first);
-    if (!isNaN(last)) allRows.push(last);
+  if (firstRows.length === 0 || lastRows.length === 0) return {};
 
-    const seatLetters = Array.from(cabinEl.querySelectorAll('Row'))
-      .flatMap(rowEl =>
-        Array.from(rowEl.querySelectorAll('Seat'))
-          .map(seatEl => seatEl.querySelector('Number')?.textContent?.trim())
-      )
-      .filter(Boolean) as string[];
+  const minRow = Math.min(...firstRows);
+  const maxRow = Math.max(...lastRows);
 
-    seatLetters.forEach(code => {
-      const letterMatch = code.match(/[A-Z]/g);
-      if (letterMatch) letterMatch.forEach(l => allSeatLetters.add(l));
-    });
-  }
+  // 2. Находим <Row>, у которых номер равен minRow и maxRow
+  const rowEls = Array.from(xmlDoc.querySelectorAll('Row'));
+  const firstRowEl = rowEls.find(r => parseInt(r.querySelector('RowNumber')?.textContent || '', 10) === minRow);
+  const lastRowEl = rowEls.find(r => parseInt(r.querySelector('RowNumber')?.textContent || '', 10) === maxRow);
 
-  if (allRows.length === 0 || allSeatLetters.size === 0) return {};
+  const extractValidSeatLetters = (rowEl: Element | undefined): string[] => {
+    if (!rowEl) return [];
 
-  const sortedLetters = Array.from(allSeatLetters).sort().join('');
-  const minRow = Math.min(...allRows);
-  const maxRow = Math.max(...allRows);
+    const validLetters = new Set<string>();
+    const seatEls = Array.from(rowEl.querySelectorAll('Seat'));
+
+    for (const seatEl of seatEls) {
+      const number = seatEl.querySelector('Number')?.textContent?.trim();
+      if (!number || !/^[A-Z]$/.test(number)) continue;
+
+      const occupation = seatEl.querySelector('Occupation > Detail')?.textContent;
+      const location = seatEl.querySelector('Location > Detail')?.textContent;
+
+      const isNoSeat = occupation === 'NoSeatHere' || location === 'NoSeatAtThisLocation';
+      if (!isNoSeat) {
+        validLetters.add(number);
+      }
+    }
+
+    return Array.from(validLetters).sort();
+  };
+
+  const startLetters = extractValidSeatLetters(firstRowEl);
+  const endLetters = extractValidSeatLetters(lastRowEl);
+
+  console.log('🧩 SeatMap Debug:', {
+    minRow,
+    maxRow,
+    startLetters,
+    endLetters,
+  });
+
+  if (startLetters.length === 0 || endLetters.length === 0) return {};
 
   return {
-    startRow: `${minRow}:${sortedLetters}`,
-    endRow: `${maxRow}:${sortedLetters}`,
+    startRow: `${minRow}:${startLetters.join('')}`,
+    endRow: `${maxRow}:${endLetters.join('')}`,
   };
 }

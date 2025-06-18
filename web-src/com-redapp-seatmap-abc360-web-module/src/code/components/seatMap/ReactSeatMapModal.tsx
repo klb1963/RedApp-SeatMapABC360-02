@@ -10,49 +10,57 @@ import { convertSeatMapToReactSeatmapFormat } from '../../utils/convertSeatMapTo
 const ReactSeatMapModal: React.FC = () => {
   const [selectedSeatId, setSelectedSeatId] = React.useState<string | null>(null);
   const [rows, setRows] = React.useState([]);
+  const [layoutLength, setLayoutLength] = React.useState(0);
 
-  React.useEffect(() => {
-    const fetchData = async () => {
-      const { parsedData: pnrData } = await loadPnrDetailsFromSabre();
-      const segments = pnrData.segments;
-      const passengers = pnrData.passengers;
+    React.useEffect(() => {
+        const fetchData = async () => {
+            const { parsedData: pnrData } = await loadPnrDetailsFromSabre();
+            const segments = pnrData.segments;
+            const passengers = pnrData.passengers;
 
-      const enriched = enrichPassengerData(passengers);
-      const enrichedPassengers = enriched.enrichedPassengers;
+            const enriched = enrichPassengerData(passengers);
+            const enrichedPassengers = enriched.enrichedPassengers;
 
-      const firstSegment = {
-        bookingClass: segments[0].bookingClass || 'Y',
-        marketingCarrier: segments[0].marketingCarrier || 'XX',
-        marketingFlightNumber: segments[0].marketingFlightNumber || '000',
-        flightNumber: segments[0].marketingFlightNumber || '000',
-        departureDate: segments[0].departureDate,
-        origin: segments[0].origin,
-        destination: segments[0].destination,
-      };
+            const firstSegment = {
+                bookingClass: segments[0].bookingClass || 'Y',
+                marketingCarrier: segments[0].marketingCarrier || 'XX',
+                marketingFlightNumber: segments[0].marketingFlightNumber || '000',
+                flightNumber: segments[0].marketingFlightNumber || '000',
+                departureDate: segments[0].departureDate,
+                origin: segments[0].origin,
+                destination: segments[0].destination,
+            };
 
-      const { seatInfo, layoutLetters } = await loadSeatMapFromSabre(firstSegment, enrichedPassengers);
-      // console.log('✅ seatInfo from Sabre:', seatInfo);
+            const { seatInfo, layoutLetters } = await loadSeatMapFromSabre(firstSegment, enrichedPassengers);
+            // console.log('✅ seatInfo from Sabre:', seatInfo);
 
-      const reactSeatRows = convertSeatMapToReactSeatmapFormat(seatInfo, layoutLetters);
-      // console.log('✅ ReactSeatRows with AISLE:', reactSeatRows);
+            const { rows, layoutLength } = convertSeatMapToReactSeatmapFormat(seatInfo, layoutLetters);
+            setRows(rows);
+            setLayoutLength(layoutLength);
 
-      setRows(reactSeatRows);
-    };
+            // console.log('✅ ReactSeatRows with AISLE:', reactSeatRows);
 
-    fetchData();
-  }, []);
+        };
 
-  return (
-    <div style={{ padding: '1rem' }}>
-      <h3>🧪 SEAT MAP TEST</h3>
-      {selectedSeatId && (
-        <p style={{ marginTop: '1rem' }}>
-          🪑 Вы выбрали место: <strong>{selectedSeatId}</strong>
-        </p>
-      )}
-      <Seatmap rows={rows} selectedSeatId={selectedSeatId} onSeatClick={setSelectedSeatId} />
-    </div>
-  );
+        fetchData();
+    }, []);
+
+    return (
+        <div style={{ padding: '1rem' }}>
+            <h3>🧪 SEAT MAP TEST</h3>
+            {selectedSeatId && (
+                <p style={{ marginTop: '1rem' }}>
+                    🪑 Вы выбрали место: <strong>{selectedSeatId}</strong>
+                </p>
+            )}
+            <Seatmap
+                rows={rows}
+                selectedSeatId={selectedSeatId}
+                onSeatClick={setSelectedSeatId}
+                layoutLength={layoutLength}
+            />
+        </div>
+    );
 };
 
 export default ReactSeatMapModal;

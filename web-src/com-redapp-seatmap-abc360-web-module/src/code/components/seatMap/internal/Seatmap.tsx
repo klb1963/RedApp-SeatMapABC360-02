@@ -18,9 +18,10 @@ interface SeatmapProps {
   rows: Row[];
   selectedSeatId?: string;
   onSeatClick: (seatId: string) => void;
+  layoutLength: number;
 }
 
-const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick }) => {
+const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, layoutLength }) => {
   return (
     <div>
       {rows.map((row) => (
@@ -31,6 +32,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick }) 
             alignItems: 'center',
             marginBottom: '1rem',
             fontFamily: 'sans-serif',
+            marginLeft: row.seats.length < layoutLength ? '4rem' : 0, // 👈 это и есть смещение
           }}
         >
           <div style={{ width: '2rem', fontWeight: 'bold' }}>{row.rowNumber}</div>
@@ -50,8 +52,8 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick }) 
               })();
 
               const buttonStyle: React.CSSProperties = {
-                width: '6rem',
-                height: '6rem',
+                width: '4rem',
+                height: '4rem',
                 backgroundColor,
                 border: 'none',
                 borderRadius: '0.75rem',
@@ -66,7 +68,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick }) 
               return (
                 <div key={seat.id}>
                   {isAisle ? (
-                    <div style={{ width: '3rem' }} />
+                    <div style={{ width: '2rem' }} />
                   ) : (
                     <button
                       title={seat.tooltip}
