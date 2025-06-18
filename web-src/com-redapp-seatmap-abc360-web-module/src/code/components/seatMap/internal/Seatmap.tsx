@@ -41,14 +41,18 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick }) 
               const isLast = seatIndex === row.seats.length - 1;
               const nextIsAisle = row.seats[seatIndex + 1]?.id.startsWith('AISLE');
 
+              const backgroundColor = (() => {
+                if (seat.isReserved && !seat.tooltip) return '#ccc'; // Unavailable
+                if (!seat.isReserved && !seat.tooltip) return '#4caf50'; // Available
+                if (seat.tooltip?.toUpperCase().includes('PREFERRED')) return '#26c6da'; // Preferred paid
+                if (seat.tooltip?.includes('€')) return '#fdd835'; // Paid seat
+                return '#f0f0f0';
+              })();
+
               const buttonStyle: React.CSSProperties = {
                 width: '6rem',
                 height: '6rem',
-                backgroundColor: seat.isReserved
-                  ? '#ddd'
-                  : isSelected
-                  ? '#4caf50'
-                  : '#4fc3f7',
+                backgroundColor,
                 border: 'none',
                 borderRadius: '0.75rem',
                 color: '#000',

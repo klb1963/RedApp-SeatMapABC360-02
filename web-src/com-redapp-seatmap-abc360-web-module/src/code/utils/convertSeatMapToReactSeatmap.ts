@@ -56,7 +56,10 @@ export function convertSeatMapToReactSeatmapFormat(
           id: seat.seatNumber,
           number: col,
           isReserved,
-          tooltip: seat.seatPrice ? `€${seat.seatPrice.toFixed(2)}` : undefined,
+          tooltip: [
+            seat.seatCharacteristics?.includes('O') ? 'PREFERRED' : '',
+            seat.seatPrice ? `€${seat.seatPrice.toFixed(2)}` : '',
+          ].filter(Boolean).join(' ')
         });
       }
     });
