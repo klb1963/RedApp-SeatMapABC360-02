@@ -17,26 +17,31 @@ export function extractSeatLayoutFromXml(xml: Document): string[] {
       })
       .filter((col) => !!col.letter);
   
-    const layout: string[] = [];
+    let layout: string[] = columns.map((col) => col.letter!);
+    const aisleIndices = columns
+      .map((col, idx) => (col.isAisle ? idx : -1))
+      .filter((idx) => idx !== -1);
   
-    for (let i = 0; i < columns.length; i++) {
-      const curr = columns[i];
-      const next = columns[i + 1];
+    if (aisleIndices.length === 2) {
+      // 🔹 Один проход: вставить между двумя креслами с A
+      const [first, second] = aisleIndices;
+      if (second - first === 1) {
+        layout.splice(second, 0, '|');
+      }
+    } else if (aisleIndices.length > 2) {
+      // 🔹 Два прохода: вставить после первого и перед последним
+      const first = aisleIndices[0];
+      const last = aisleIndices[aisleIndices.length - 1];
   
-      layout.push(curr.letter!);
-  
-      // ✅ вставляем проход ТОЛЬКО между двумя подряд креслами с характеристикой A
-      if (
-        next &&
-        curr.isAisle &&
-        next.isAisle
-      ) {
-        layout.push('|');
+      if (last < layout.length) {
+        layout.splice(last, 0, '|');
+      }
+      if (first + 1 < layout.length) {
+        layout.splice(first + 1, 0, '|');
       }
     }
-    
+  
     console.log('[🧩 DEBUG] layoutLetters:', layout);
-
+    
     return layout;
   }
-
