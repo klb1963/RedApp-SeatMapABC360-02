@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Passenger Panel React Sandbox</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    body { font-family: sans-serif; padding: 2rem; }
+    .passenger { border: 1px solid #ccc; padding: 1rem; margin-bottom: 1rem; border-radius: 5px; }
+    .active { background-color: #eef; }
+    .seat { font-weight: bold; margin-left: 0.5rem; }
+    .initials { margin-left: 0.5rem; font-size: 0.9rem; color: #555; }
+    pre { background: #f5f5f5; padding: 1rem; }
+    .footer { display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; }
+  </style>
+</head>
+<body>
+
+  <h2>🧪 Passenger Panel Sandbox (React)</h2>
+  <div id="root"></div>
+  useEffect(() => {
+    const handleSeatMessage = (event) => {
+      if (event.origin !== window.origin) return;
+  
+      const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+      if (!data?.onSeatSelected) return;
+  
+      const seatArray = typeof data.onSeatSelected === 'string'
+        ? JSON.parse(data.onSeatSelected)
+        : data.onSeatSelected;
+  
+      const selectedSeatData = seatArray.find(p => p.seat?.seatLabel);
+      if (!selectedSeatData) return;
+  
+      setPassengers(prev => {
+        return prev.map(p => {
+          if (p.id === activePassengerId) {
+            return {
+              ...p,
+              seat: selectedSeatData.seat.seatLabel,
+            };
+          }
+          return p;
+        });
+      });
+  
+      // Автоматически переключаемся на следующего
+      const currentIndex = passengers.findIndex(p => p.id === activePassengerId);
+      const nextIndex = (currentIndex + 1) % passengers.length;
+      setActivePassengerId(passengers[nextIndex].id);
+    };
+  
+    window.addEventListener('message', handleSeatMessage);
+    return () => window.removeEventListener('message', handleSeatMessage);
+  }, [activePassengerId, passengers]);
+  <script type="text/babel">
+    
+  </script>
+</body>
+</html>
