@@ -53,13 +53,23 @@ export function convertSeatMapToReactSeatmapFormat(
         const seat = letterSeatMap[col];
         if (!seat) return;
 
+        // 🛑 Убираем метки вида "60", "70" — не настоящие места
+        if (/^\d+$/.test(seat.seatNumber)) {
+          return;
+        }
+        
         // 🔍 Filter out non-physical ("fake") seats based on seatCharacteristics
         const isFakeSeat =
           seat.seatCharacteristics?.includes('GN') || // Galley / No seat here
           seat.seatCharacteristics?.includes('8');    // NoSeatAtThisLocation
 
         if (isFakeSeat) {
-          console.log(`⛔ Skipping fake seat: ${seat.seatNumber}`);
+          rowSeats.push({
+            id: `EMPTY-${rowNumber}-${col}`,
+            number: '',
+            isReserved: true,
+            tooltip: '',
+          });
           return;
         }
 
