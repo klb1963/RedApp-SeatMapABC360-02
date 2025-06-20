@@ -10,6 +10,8 @@ export interface ReactSeat {
 export interface ReactSeatRow {
   rowNumber: number;
   seats: ReactSeat[];
+  isExitRow?: boolean;
+  isOverwingRow?: boolean;
 }
 
 export interface ReactSeatMapResult {
@@ -41,6 +43,14 @@ export function convertSeatMapToReactSeatmapFormat(
   for (const [rowNumberStr, letterSeatMap] of Object.entries(rowsMap)) {
     const rowNumber = parseInt(rowNumberStr, 10);
     const rowSeats: ReactSeat[] = [];
+
+    const isExitRow = Object.values(letterSeatMap).some(seat =>
+      seat.seatCharacteristics?.includes('E')
+    );
+    
+    const isOverwingRow = Object.values(letterSeatMap).some(seat =>
+      seat.seatCharacteristics?.includes('OW')
+    );
 
     layoutLetters.forEach((col, idx) => {
       // If the layoutLetter is '|', treat it as an aisle
@@ -94,7 +104,11 @@ export function convertSeatMapToReactSeatmapFormat(
     });
 
     // Add processed row to result
-    result.push({ rowNumber, seats: rowSeats });
+    result.push({ rowNumber, 
+      seats: rowSeats,
+      isExitRow,
+      isOverwingRow,
+    });
   }
 
   return {
