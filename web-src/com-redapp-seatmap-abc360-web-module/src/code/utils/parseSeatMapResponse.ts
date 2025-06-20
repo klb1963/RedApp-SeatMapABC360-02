@@ -47,6 +47,7 @@ export interface SeatInfo {
   seatStatus: string;
   seatPrice?: number;
   seatCharacteristics?: string[];
+  rowTypeCode?: string; // 🆕 indicates if this row is overwing ('K'), exit, etc.
 }
 
 function getSeatType(seatEl: Element): SeatType {
@@ -57,7 +58,7 @@ function getSeatType(seatEl: Element): SeatType {
     .some(detail => detail.getAttribute('code') === '1');
 
   const occupationDetails = Array.from(seatEl.querySelectorAll('Occupation > Detail'))
-    .map((d) => d.textContent?.trim());
+    .map(d => d.textContent?.trim());
 
   const isOccupied = occupiedInd || occupationDetails.includes('SeatIsOccupied');
   const isFree = occupationDetails.includes('SeatIsFree');
@@ -80,12 +81,12 @@ function getSeatType(seatEl: Element): SeatType {
 
 function getColorByType(type: SeatType): string {
   switch (type) {
-    case 'available': return '#00C853'; // #00C853
-    case 'paid': return '#F8CF00'; // #F8CF00
-    case 'occupied': return '#212121'; // #212121
-    case 'unavailable': return '#212121'; // #212121
-    case 'blocked': return 'lightgray'; // 
-    case 'preferred': return '#01D0CE'; // #01D0CE
+    case 'available': return '#00C853';
+    case 'paid': return '#F8CF00';
+    case 'occupied': return '#212121';
+    case 'unavailable': return '#212121';
+    case 'blocked': return 'lightgray';
+    case 'preferred': return '#01D0CE';
     default: return 'white';
   }
 }
@@ -94,11 +95,12 @@ export function parseSeatMapResponse(xml: Document): {
   layout: { decks: Deck[] };
   availability: AvailabilityItem[];
   seatInfo: SeatInfo[];
-  layoutLetters: string[]; // 🆕 добавлен для использования при вставке проходов
+  layoutLetters: string[];
 } {
   const layout: { decks: Deck[] } = {
     decks: [{ id: 'main-deck', name: 'Main Deck', rows: [] }]
   };
+
   const availability: AvailabilityItem[] = [];
   const seatInfo: SeatInfo[] = [];
   const layoutLetters = extractSeatLayoutFromXml(xml);
@@ -110,6 +112,10 @@ export function parseSeatMapResponse(xml: Document): {
     if (!/^\d+$/.test(rowNumber)) return;
 
     const row: Row = { label: rowNumber, seats: [] };
+
+    // 🆕 Read <Type code="..."> to identify row-level characteristics
+    const rowTypeCode = rowEl.querySelector('Type')?.getAttribute('code') || undefined;
+
     const seatElements = Array.from(rowEl.querySelectorAll('Seat'));
 
     seatElements.forEach((seatEl, seatIndex) => {
@@ -137,11 +143,11 @@ export function parseSeatMapResponse(xml: Document): {
       }
 
       const rawCodes = Array.from(seatEl.querySelectorAll('RawSeatCharacteristics > Code'))
-        .map((codeEl) => codeEl.textContent?.trim())
+        .map(codeEl => codeEl.textContent?.trim())
         .filter(Boolean) as string[];
 
       const locationCodes = Array.from(seatEl.querySelectorAll('Location > Detail'))
-        .map((detailEl) => detailEl.getAttribute('code'))
+        .map(detailEl => detailEl.getAttribute('code'))
         .filter(Boolean) as string[];
 
       const allCodes = Array.from(new Set([...rawCodes, ...locationCodes]));
@@ -150,7 +156,8 @@ export function parseSeatMapResponse(xml: Document): {
         seatNumber,
         seatStatus: type,
         seatPrice: price,
-        seatCharacteristics: allCodes
+        seatCharacteristics: allCodes,
+        rowTypeCode // ← 🆕 injected into each seat
       });
 
       row.seats.push({
@@ -165,10 +172,10 @@ export function parseSeatMapResponse(xml: Document): {
 
   layout.decks[0].rows.sort((a, b) => parseInt(a.label) - parseInt(b.label));
 
-  return { 
-    layout, 
-    availability, 
-    seatInfo, 
+  return {
+    layout,
+    availability,
+    seatInfo,
     layoutLetters
   };
 }

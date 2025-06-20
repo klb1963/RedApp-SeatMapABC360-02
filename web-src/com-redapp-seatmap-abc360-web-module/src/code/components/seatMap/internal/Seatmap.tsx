@@ -49,7 +49,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                 justifyContent: 'center',
               }}>
                 {row.isExitRow && <span style={{ color: 'red', fontWeight: 'bold' }}>Exit</span>}
-                {row.isOverwingRow && <span style={{ color: 'orange', fontWeight: 'bold' }}>W</span>}
+                {row.isOverwingRow && <span style={{ color: '#848484', fontWeight: 'bold' }}>W</span>}
               </div>
 
               {/* 🪑 Сами кресла */}
@@ -113,7 +113,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                 justifyContent: 'center',
               }}>
                 {row.isExitRow && <span style={{ color: 'red', fontWeight: 'bold' }}>Exit</span>}
-                {row.isOverwingRow && <span style={{ color: 'orange', fontWeight: 'bold' }}>W</span>}
+                {row.isOverwingRow && <span style={{ color: '#848484', fontWeight: 'bold' }}>W</span>}
               </div>
 
             </div>

@@ -48,8 +48,10 @@ export function convertSeatMapToReactSeatmapFormat(
       seat.seatCharacteristics?.includes('E')
     );
     
-    const isOverwingRow = Object.values(letterSeatMap).some(seat =>
-      seat.seatCharacteristics?.includes('OW')
+    const isOverwingRow = Object.values(letterSeatMap).some(
+      seat =>
+        seat.seatCharacteristics?.includes('OW') ||
+        seat.rowTypeCode === 'K'
     );
 
     layoutLetters.forEach((col, idx) => {
