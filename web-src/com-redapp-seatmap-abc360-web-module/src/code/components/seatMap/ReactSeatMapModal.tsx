@@ -12,7 +12,9 @@ const ReactSeatMapModal: React.FC = () => {
   const [selectedSeatId, setSelectedSeatId] = React.useState<string | null>(null);
   const [rows, setRows] = React.useState([]);
   const [layoutLength, setLayoutLength] = React.useState(0);
-  const [selectedDeck, setSelectedDeck] = React.useState('Maindeck');
+
+  const [selectedDeck, setSelectedDeck] = React.useState('');
+
   const filteredRows = rows.filter((row: any) => row.deckId === selectedDeck);
 
     React.useEffect(() => {
@@ -35,6 +37,7 @@ const ReactSeatMapModal: React.FC = () => {
             };
 
             const { seatInfo, layoutLetters } = await loadSeatMapFromSabre(firstSegment, enrichedPassengers);
+            
             // console.log('✅ seatInfo from Sabre:', seatInfo);
 
             const { rows, layoutLength } = convertSeatMapToReactSeatmapFormat(seatInfo, layoutLetters);
@@ -47,6 +50,12 @@ const ReactSeatMapModal: React.FC = () => {
 
         fetchData();
     }, []);
+
+    React.useEffect(() => {
+        if (rows.length > 0 && !selectedDeck) {
+          setSelectedDeck(rows[0].deckId || 'Maindeck');
+        }
+      }, [rows]);
 
     const decks = Array.from(new Set(rows.map(row => row.deckId || 'Maindeck')));
 
@@ -79,8 +88,12 @@ const ReactSeatMapModal: React.FC = () => {
               selectedSeatId={selectedSeatId}
               onSeatClick={setSelectedSeatId}
               layoutLength={layoutLength}
-            />
-          </div>
+                />
+            </div>
+            {/* 🧾 Информация о текущей палубе */}
+            <p style={{ marginTop: '1rem', textAlign: 'center', fontStyle: 'italic', color: '#666' }}>
+                Deck: <strong>{selectedDeck}</strong>, rows: <strong>{filteredRows.length}</strong>
+            </p>
         </div>
       );
 

@@ -50,6 +50,8 @@ export function convertSeatMapToReactSeatmapFormat(
     const firstSeat = Object.values(letterSeatMap)[0];
     const deckId = firstSeat && 'deckId' in firstSeat ? (firstSeat as any).deckId : 'Maindeck'; // 🆕
 
+    // console.log(`🎯 Seat ${firstSeat?.seatNumber} → deckId = ${deckId}`); // new log
+
     const isExitRow = Object.values(letterSeatMap).some(seat =>
       seat.seatCharacteristics?.includes('E')
     );
@@ -70,6 +72,8 @@ export function convertSeatMapToReactSeatmapFormat(
       } else {
         const seat = letterSeatMap[col];
         if (!seat) return;
+
+        // console.log('🚨 Проверка места:', seat.seatNumber, seat.seatCharacteristics, seat.seatStatus);
 
         // ❌ Пропускаем "места", которые — просто цифры, без букв (например, "60")
         if (/^\d+$/.test(seat.seatNumber)) return;
@@ -109,6 +113,8 @@ export function convertSeatMapToReactSeatmapFormat(
     });
 
     // ✅ Добавляем строку с данными
+    console.log(`🧩 row ${rowNumber} → ${rowSeats.length} seats`);
+
     result.push({
       rowNumber,
       seats: rowSeats,
