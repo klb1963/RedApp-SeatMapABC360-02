@@ -1,3 +1,5 @@
+// file: /code/utils/convertSeatMapToReactSeatmap.ts
+
 import { SeatInfo } from '../components/seatMap/types/SeatInfo';
 
 export interface ReactSeat {
@@ -12,6 +14,7 @@ export interface ReactSeatRow {
   seats: ReactSeat[];
   isExitRow?: boolean;
   isOverwingRow?: boolean;
+  deckId?: string; // 🆕 добавлено для поддержки мультидек
 }
 
 export interface ReactSeatMapResult {
@@ -23,9 +26,9 @@ export function convertSeatMapToReactSeatmapFormat(
   seats: SeatInfo[],
   layoutLetters: string[]
 ): ReactSeatMapResult {
-  // Organize seats by row number, then by seat letter
   const rowsMap: Record<string, Record<string, SeatInfo>> = {};
 
+  // 🧩 Сначала собираем все кресла по строкам и буквам
   for (const seat of seats) {
     const match = seat.seatNumber.match(/^(\d+)([A-Z])$/);
     if (!match) continue;
@@ -39,15 +42,18 @@ export function convertSeatMapToReactSeatmapFormat(
 
   const result: ReactSeatRow[] = [];
 
-  // For each row, construct a visual row object
+  // 🔁 Обрабатываем каждую строку, собираем из неё массив ReactSeat[]
   for (const [rowNumberStr, letterSeatMap] of Object.entries(rowsMap)) {
     const rowNumber = parseInt(rowNumberStr, 10);
     const rowSeats: ReactSeat[] = [];
 
+    const firstSeat = Object.values(letterSeatMap)[0];
+    const deckId = firstSeat && 'deckId' in firstSeat ? (firstSeat as any).deckId : 'Maindeck'; // 🆕
+
     const isExitRow = Object.values(letterSeatMap).some(seat =>
       seat.seatCharacteristics?.includes('E')
     );
-    
+
     const isOverwingRow = Object.values(letterSeatMap).some(
       seat =>
         seat.seatCharacteristics?.includes('OW') ||
@@ -55,25 +61,23 @@ export function convertSeatMapToReactSeatmapFormat(
     );
 
     layoutLetters.forEach((col, idx) => {
-      // If the layoutLetter is '|', treat it as an aisle
       if (col === '|') {
+        // 🚪 Проход между кресел
         rowSeats.push({
           id: `AISLE-${rowNumber}-${idx}`,
-          isReserved: true, // aisle is not selectable
+          isReserved: true
         });
       } else {
         const seat = letterSeatMap[col];
         if (!seat) return;
 
-        // 🛑 Убираем метки вида "60", "70" — не настоящие места
-        if (/^\d+$/.test(seat.seatNumber)) {
-          return;
-        }
-        
-        // 🔍 Filter out non-physical ("fake") seats based on seatCharacteristics
+        // ❌ Пропускаем "места", которые — просто цифры, без букв (например, "60")
+        if (/^\d+$/.test(seat.seatNumber)) return;
+
+        // 🪑 Пропускаем места с характеристиками GN (галерея) или кодом 8 (no seat)
         const isFakeSeat =
-          seat.seatCharacteristics?.includes('GN') || // Galley / No seat here
-          seat.seatCharacteristics?.includes('8');    // NoSeatAtThisLocation
+          seat.seatCharacteristics?.includes('GN') ||
+          seat.seatCharacteristics?.includes('8');
 
         if (isFakeSeat) {
           rowSeats.push({
@@ -85,36 +89,37 @@ export function convertSeatMapToReactSeatmapFormat(
           return;
         }
 
-        // Determine if seat is already reserved/unavailable
         const isReserved = ['occupied', 'blocked', 'unavailable'].includes(
           seat.seatStatus.toLowerCase()
         );
 
-        // Build the seat object for rendering
+        // 📝 Формируем тултип: если место платное или предпочтительное
+        const tooltip = [
+          seat.seatCharacteristics?.includes('O') ? 'PREFERRED' : '',
+          seat.seatPrice ? `€${seat.seatPrice.toFixed(2)}` : ''
+        ].filter(Boolean).join(' ');
+
         rowSeats.push({
           id: seat.seatNumber,
           number: col,
           isReserved,
-          tooltip: [
-            seat.seatCharacteristics?.includes('O') ? 'PREFERRED' : '',
-            seat.seatPrice ? `€${seat.seatPrice.toFixed(2)}` : '',
-          ]
-            .filter(Boolean)
-            .join(' '), // Combine tooltip parts if present
+          tooltip
         });
       }
     });
 
-    // Add processed row to result
-    result.push({ rowNumber, 
+    // ✅ Добавляем строку с данными
+    result.push({
+      rowNumber,
       seats: rowSeats,
       isExitRow,
       isOverwingRow,
+      deckId
     });
   }
 
   return {
-    rows: result.sort((a, b) => a.rowNumber - b.rowNumber), // Sort rows numerically
-    layoutLength: layoutLetters.length, // Used to align seat rows visually
+    rows: result.sort((a, b) => a.rowNumber - b.rowNumber),
+    layoutLength: layoutLetters.length
   };
 }

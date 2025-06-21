@@ -14,6 +14,7 @@ export interface Row {
   seats: Seat[];
   isExitRow?: boolean;
   isOverwingRow?: boolean;
+  deckId?: string;
 }
 
 interface SeatmapProps {

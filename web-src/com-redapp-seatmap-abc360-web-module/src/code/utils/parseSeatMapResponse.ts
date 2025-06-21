@@ -23,6 +23,7 @@ interface Seat {
 interface Row {
   label: string;
   seats: Seat[];
+  deckId?: string;
 }
 
 interface Deck {
@@ -48,6 +49,7 @@ export interface SeatInfo {
   seatPrice?: number;
   seatCharacteristics?: string[];
   rowTypeCode?: string; // 🆕 indicates if this row is overwing ('K'), exit, etc.
+  deckId?: string;
 }
 
 function getSeatType(seatEl: Element): SeatType {
@@ -98,22 +100,46 @@ export function parseSeatMapResponse(xml: Document): {
   layoutLetters: string[];
 } {
   const layout: { decks: Deck[] } = {
-    decks: [{ id: 'main-deck', name: 'Main Deck', rows: [] }]
+    decks: []
   };
 
   const availability: AvailabilityItem[] = [];
   const seatInfo: SeatInfo[] = [];
   const layoutLetters = extractSeatLayoutFromXml(xml);
 
+  // 🆕 Извлекаем список палуб из <Cabin>
+  const cabins = Array.from(xml.querySelectorAll('Cabin')).map(cabinEl => ({
+    deckId: cabinEl.getAttribute('classLocation') || 'Maindeck',
+    firstRow: parseInt(cabinEl.getAttribute('firstRow') || '0', 10),
+    lastRow: parseInt(cabinEl.getAttribute('lastRow') || '999', 10)
+  }));
+
+  // 🆕 Создаем по палубе свой Deck
+  cabins.forEach(cabin => {
+    layout.decks.push({
+      id: cabin.deckId,
+      name: cabin.deckId,
+      rows: []
+    });
+  });
+
   const rowElements = Array.from(xml.querySelectorAll('Row'));
 
   rowElements.forEach((rowEl, rowIndex) => {
-    const rowNumber = rowEl.querySelector('RowNumber')?.textContent?.trim() || '';
-    if (!/^\d+$/.test(rowNumber)) return;
+    const rowNumberStr = rowEl.querySelector('RowNumber')?.textContent?.trim() || '';
+    const rowNumber = parseInt(rowNumberStr, 10);
+    if (isNaN(rowNumber)) return;
 
-    const row: Row = { label: rowNumber, seats: [] };
+    // 🧠 Находим палубу, к которой относится ряд
+    const cabin = cabins.find(c => rowNumber >= c.firstRow && rowNumber <= c.lastRow);
+    const deckId = cabin?.deckId || 'Maindeck';
 
-    // 🆕 Read <Type code="..."> to identify row-level characteristics
+    const row: Row = {
+      label: rowNumberStr,
+      seats: [],
+      deckId // ✅ добавили
+    };
+
     const rowTypeCode = rowEl.querySelector('Type')?.getAttribute('code') || undefined;
 
     const seatElements = Array.from(rowEl.querySelectorAll('Seat'));
@@ -128,7 +154,7 @@ export function parseSeatMapResponse(xml: Document): {
 
       const type = getSeatType(seatEl);
       const color = getColorByType(type);
-      const seatNumber = `${rowNumber}${seatLabel}`;
+      const seatNumber = `${rowNumberStr}${seatLabel}`;
 
       const allowedTypes: SeatType[] = ['available', 'paid', 'preferred'];
       if (allowedTypes.includes(type)) {
@@ -157,7 +183,8 @@ export function parseSeatMapResponse(xml: Document): {
         seatStatus: type,
         seatPrice: price,
         seatCharacteristics: allCodes,
-        rowTypeCode // ← 🆕 injected into each seat
+        rowTypeCode,
+        deckId
       });
 
       row.seats.push({
@@ -167,10 +194,15 @@ export function parseSeatMapResponse(xml: Document): {
       });
     });
 
-    layout.decks[0].rows.push(row);
+    // 🆕 Добавляем ряд в соответствующую палубу
+    const deck = layout.decks.find(d => d.id === deckId);
+    deck?.rows.push(row);
   });
 
-  layout.decks[0].rows.sort((a, b) => parseInt(a.label) - parseInt(b.label));
+  // Сортировка рядов внутри каждой палубы
+  layout.decks.forEach(deck => {
+    deck.rows.sort((a, b) => parseInt(a.label) - parseInt(b.label));
+  });
 
   return {
     layout,

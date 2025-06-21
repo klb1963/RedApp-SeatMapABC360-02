@@ -6,11 +6,14 @@ import { loadPnrDetailsFromSabre } from '../../services/loadPnrDetailsFromSabre'
 import { enrichPassengerData } from './utils/enrichPassengerData';
 import { loadSeatMapFromSabre } from '../../services/loadSeatMapFromSabre';
 import { convertSeatMapToReactSeatmapFormat } from '../../utils/convertSeatMapToReactSeatmap';
+import DeckSelector from '../seatMap/internal/DeckSelector';
 
 const ReactSeatMapModal: React.FC = () => {
   const [selectedSeatId, setSelectedSeatId] = React.useState<string | null>(null);
   const [rows, setRows] = React.useState([]);
   const [layoutLength, setLayoutLength] = React.useState(0);
+  const [selectedDeck, setSelectedDeck] = React.useState('Maindeck');
+  const filteredRows = rows.filter((row: any) => row.deckId === selectedDeck);
 
     React.useEffect(() => {
         const fetchData = async () => {
@@ -45,22 +48,42 @@ const ReactSeatMapModal: React.FC = () => {
         fetchData();
     }, []);
 
+    const decks = Array.from(new Set(rows.map(row => row.deckId || 'Maindeck')));
+
     return (
-        <div style={{ padding: '1rem' }}>
-            <h3>🧪 SEAT MAP TEST</h3>
-            {selectedSeatId && (
-                <p style={{ marginTop: '1rem' }}>
-                    🪑 Вы выбрали место: <strong>{selectedSeatId}</strong>
-                </p>
+        <div style={{ padding: '1rem', textAlign: 'center' }}>
+          <h3 style={{ marginBottom: '1.5rem' }}>💺 Seatmap React</h3>
+      
+          {/* 🔀 Переключатель палуб — показываем только если больше одной */}
+            {decks.length > 1 && (
+                <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'center' }}>
+                    <DeckSelector
+                        decks={decks}
+                        selectedDeck={selectedDeck}
+                        onChange={setSelectedDeck}
+                    />
+                </div>
             )}
+      
+          {/* 🪑 Выбранное место */}
+          {selectedSeatId && (
+            <p style={{ marginBottom: '1rem' }}>
+              🪑 Вы выбрали место: <strong>{selectedSeatId}</strong>
+            </p>
+          )}
+      
+          {/* 💺 Сама схема */}
+          <div style={{ display: 'inline-block' }}>
             <Seatmap
-                rows={rows}
-                selectedSeatId={selectedSeatId}
-                onSeatClick={setSelectedSeatId}
-                layoutLength={layoutLength}
+              rows={filteredRows}
+              selectedSeatId={selectedSeatId}
+              onSeatClick={setSelectedSeatId}
+              layoutLength={layoutLength}
             />
+          </div>
         </div>
-    );
+      );
+
 };
 
 export default ReactSeatMapModal;
