@@ -9,13 +9,13 @@ import { convertSeatMapToReactSeatmapFormat } from '../../utils/convertSeatMapTo
 import DeckSelector from '../seatMap/internal/DeckSelector';
 
 const ReactSeatMapModal: React.FC = () => {
-  const [selectedSeatId, setSelectedSeatId] = React.useState<string | null>(null);
-  const [rows, setRows] = React.useState([]);
-  const [layoutLength, setLayoutLength] = React.useState(0);
+    const [selectedSeatId, setSelectedSeatId] = React.useState<string | null>(null);
+    const [rows, setRows] = React.useState([]);
+    const [layoutLength, setLayoutLength] = React.useState(0);
 
-  const [selectedDeck, setSelectedDeck] = React.useState('');
+    const [selectedDeck, setSelectedDeck] = React.useState('');
 
-  const filteredRows = rows.filter((row: any) => row.deckId === selectedDeck);
+    const filteredRows = rows.filter((row: any) => row.deckId === selectedDeck);
 
     React.useEffect(() => {
         const fetchData = async () => {
@@ -53,17 +53,17 @@ const ReactSeatMapModal: React.FC = () => {
 
     React.useEffect(() => {
         if (rows.length > 0 && !selectedDeck) {
-          setSelectedDeck(rows[0].deckId || 'Maindeck');
+            setSelectedDeck(rows[0].deckId || 'Maindeck');
         }
-      }, [rows]);
+    }, [rows]);
 
     const decks = Array.from(new Set(rows.map(row => row.deckId || 'Maindeck')));
 
     return (
         <div style={{ padding: '1rem', textAlign: 'center' }}>
-          <h3 style={{ marginBottom: '1.5rem' }}> Seatmap React </h3>
-      
-          {/* 🔀 Переключатель палуб — показываем только если больше одной */}
+            <h3 style={{ marginBottom: '1.5rem' }}> Seatmap React </h3>
+
+            {/* 🔀 Переключатель палуб — показываем только если больше одной */}
             {decks.length > 1 && (
                 <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'center' }}>
                     <DeckSelector
@@ -73,21 +73,21 @@ const ReactSeatMapModal: React.FC = () => {
                     />
                 </div>
             )}
-      
-          {/* 🪑 Выбранное место */}
-          {selectedSeatId && (
-            <p style={{ marginBottom: '1rem' }}>
-              🪑 Вы выбрали место: <strong>{selectedSeatId}</strong>
-            </p>
-          )}
-      
-          {/* 💺 Сама схема */}
-          <div style={{ display: 'inline-block' }}>
-            <Seatmap
-              rows={filteredRows}
-              selectedSeatId={selectedSeatId}
-              onSeatClick={setSelectedSeatId}
-              layoutLength={layoutLength}
+
+            {/* 🪑 Выбранное место */}
+            {selectedSeatId && (
+                <p style={{ marginBottom: '1rem' }}>
+                    🪑 Вы выбрали место: <strong>{selectedSeatId}</strong>
+                </p>
+            )}
+
+            {/* 💺 Сама схема */}
+            <div style={{ display: 'inline-block' }}>
+                <Seatmap
+                    rows={filteredRows}
+                    selectedSeatId={selectedSeatId}
+                    onSeatClick={setSelectedSeatId}
+                    layoutLength={layoutLength}
                 />
             </div>
             {/* 🧾 Информация о текущей палубе */}
@@ -95,7 +95,7 @@ const ReactSeatMapModal: React.FC = () => {
                 Deck: <strong>{selectedDeck}</strong>, rows: <strong>{filteredRows.length}</strong>
             </p>
         </div>
-      );
+    );
 
 };
 
