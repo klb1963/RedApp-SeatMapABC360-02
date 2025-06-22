@@ -1,4 +1,5 @@
 // file: /code/components/seatMap/internal/Seatmap.tsx
+import SeatTooltip from './SeatTooltip';
 
 import * as React from 'react';
 
@@ -7,6 +8,7 @@ export interface Seat {
   number?: string;
   isReserved?: boolean;
   tooltip?: string;
+  seatCharacteristics?: string[];
 }
 
 export interface Row {
@@ -25,6 +27,8 @@ interface SeatmapProps {
 }
 
 const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, layoutLength }) => {
+
+  const [hoveredSeatId, setHoveredSeatId] = React.useState<string | null>(null);
 
   const overwingRowIndexes = rows
     .map((row, index) => (row.isOverwingRow ? index : -1))
@@ -52,7 +56,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
   return (
     <div style={{ display: 'flex', justifyContent: 'center' }}>
       <div>
-      {rows.map((row, rowIndex) => (
+        {rows.map((row, rowIndex) => (
           <div
             key={row.rowNumber}
             style={{
@@ -64,9 +68,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center' }}>
-
               {/* Exit / Overwing слева */}
-
               <div
                 style={{
                   width: '4rem',
@@ -76,20 +78,22 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                   justifyContent: 'center',
                 }}
               >
-                {/* Exit */}
                 {row.isExitRow && (
                   <span style={{ color: 'red', fontWeight: 'bold', fontSize: '2rem' }}>{'<<'}</span>
                 )}
-
-              {/* Overwing start (/) */}
-              {row.isOverwingRow && rowIndex === firstOverwingIndex && <DiagonalIconLeft />}
-              {/* Overwing end (--) */}
-              {row.isOverwingRow && rowIndex === lastOverwingIndex && <Line />}
-
-            </div>
+                {row.isOverwingRow && rowIndex === firstOverwingIndex && <DiagonalIconLeft />}
+                {row.isOverwingRow && rowIndex === lastOverwingIndex && <Line />}
+              </div>
 
               {/* 🪑 Сами кресла */}
-              <div style={{ display: 'flex' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  minHeight: '4rem',
+                  minWidth: `${layoutLength * 4.5}rem`,
+                  justifyContent: 'center',
+                }}
+              >
                 {row.seats.map((seat, seatIndex) => {
                   const isSelected = seat.id === selectedSeatId;
                   const isAisle = seat.id.startsWith('AISLE');
@@ -122,26 +126,35 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                   };
 
                   return (
-                    <div key={seat.id}>
+
+                    <div key={seat.id} style={{ position: 'relative' }}>
                       {isAisle ? (
                         <div style={{ width: '2rem' }} />
                       ) : (
-                        <button
-                          title={seat.tooltip}
-                          onClick={() => !seat.isReserved && onSeatClick(seat.id)}
-                          disabled={seat.isReserved}
-                          style={buttonStyle}
-                        >
-                          {isPlaceholder ? '' : `${row.rowNumber}${seat.number ?? ''}`}
-                        </button>
+                        <>
+                          <button
+                            title=""
+                            onClick={() => !seat.isReserved && onSeatClick(seat.id)}
+                            disabled={seat.isReserved}
+                            style={buttonStyle}
+                            onMouseEnter={() => setHoveredSeatId(seat.id)}
+                            onMouseLeave={() => setHoveredSeatId(null)}
+                          >
+                            {isPlaceholder ? ' ' : `${row.rowNumber}${seat.number ?? ''}`}
+                          </button>
+                          {/* 📌 Теперь тултип рендерится всегда при наведении */}
+                          {hoveredSeatId === seat.id && seat.seatCharacteristics?.length > 0 && (
+                            <SeatTooltip codes={seat.seatCharacteristics} />
+                          )}
+                        </>
                       )}
                     </div>
+
                   );
                 })}
               </div>
 
               {/* Exit / Overwing справа */}
-
               <div
                 style={{
                   width: '4rem',
@@ -151,24 +164,17 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                   justifyContent: 'center',
                 }}
               >
-                {/* Exit */}
                 {row.isExitRow && (
                   <span style={{ color: 'red', fontWeight: 'bold', fontSize: '2rem' }}>{'>>'}</span>
-              )}
-
-              {/* Overwing start (/) */}
-              {row.isOverwingRow && rowIndex === firstOverwingIndex && <DiagonalIconRight />}
-              {/* Overwing end (--) */}
-              {row.isOverwingRow && rowIndex === lastOverwingIndex && <Line />}
-
-            </div>
-
+                )}
+                {row.isOverwingRow && rowIndex === firstOverwingIndex && <DiagonalIconRight />}
+                {row.isOverwingRow && rowIndex === lastOverwingIndex && <Line />}
+              </div>
             </div>
           </div>
         ))}
       </div>
     </div>
   );
-};
-
+}
 export default Seatmap;

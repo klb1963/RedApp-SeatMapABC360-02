@@ -7,6 +7,7 @@ export interface ReactSeat {
   number?: string;
   isReserved?: boolean;
   tooltip?: string;
+  seatCharacteristics?: string[];
 }
 
 export interface ReactSeatRow {
@@ -14,7 +15,7 @@ export interface ReactSeatRow {
   seats: ReactSeat[];
   isExitRow?: boolean;
   isOverwingRow?: boolean;
-  deckId?: string; // 🆕 добавлено для поддержки мультидек
+  deckId?: string;
 }
 
 export interface ReactSeatMapResult {
@@ -28,7 +29,6 @@ export function convertSeatMapToReactSeatmapFormat(
 ): ReactSeatMapResult {
   const rowsMap: Record<string, Record<string, SeatInfo>> = {};
 
-  // 🧩 Сначала собираем все кресла по строкам и буквам
   for (const seat of seats) {
     const match = seat.seatNumber.match(/^(\d+)([A-Z])$/);
     if (!match) continue;
@@ -42,15 +42,12 @@ export function convertSeatMapToReactSeatmapFormat(
 
   const result: ReactSeatRow[] = [];
 
-  // 🔁 Обрабатываем каждую строку, собираем из неё массив ReactSeat[]
   for (const [rowNumberStr, letterSeatMap] of Object.entries(rowsMap)) {
     const rowNumber = parseInt(rowNumberStr, 10);
     const rowSeats: ReactSeat[] = [];
 
     const firstSeat = Object.values(letterSeatMap)[0];
-    const deckId = firstSeat && 'deckId' in firstSeat ? (firstSeat as any).deckId : 'Maindeck'; // 🆕
-
-    // console.log(`🎯 Seat ${firstSeat?.seatNumber} → deckId = ${deckId}`); // new log
+    const deckId = firstSeat && 'deckId' in firstSeat ? (firstSeat as any).deckId : 'Maindeck';
 
     const isExitRow = Object.values(letterSeatMap).some(seat =>
       seat.seatCharacteristics?.includes('E')
@@ -64,7 +61,6 @@ export function convertSeatMapToReactSeatmapFormat(
 
     layoutLetters.forEach((col, idx) => {
       if (col === '|') {
-        // 🚪 Проход между кресел
         rowSeats.push({
           id: `AISLE-${rowNumber}-${idx}`,
           isReserved: true
@@ -73,12 +69,8 @@ export function convertSeatMapToReactSeatmapFormat(
         const seat = letterSeatMap[col];
         if (!seat) return;
 
-        // console.log('🚨 Проверка места:', seat.seatNumber, seat.seatCharacteristics, seat.seatStatus);
-
-        // ❌ Пропускаем "места", которые — просто цифры, без букв (например, "60")
         if (/^\d+$/.test(seat.seatNumber)) return;
 
-        // 🪑 Пропускаем места с характеристиками GN (галерея) или кодом 8 (no seat)
         const isFakeSeat =
           seat.seatCharacteristics?.includes('GN') ||
           seat.seatCharacteristics?.includes('8');
@@ -89,6 +81,7 @@ export function convertSeatMapToReactSeatmapFormat(
             number: '',
             isReserved: true,
             tooltip: '',
+            seatCharacteristics: seat.seatCharacteristics,
           });
           return;
         }
@@ -97,23 +90,36 @@ export function convertSeatMapToReactSeatmapFormat(
           seat.seatStatus.toLowerCase()
         );
 
-        // 📝 Формируем тултип: если место платное или предпочтительное
+        const characteristicFlags = seat.seatCharacteristics?.filter(code =>
+          ['L', 'G', 'Z', 'B', 'Y', 'R', 'D'].includes(code)
+        ).map(code => {
+          switch (code) {
+            case 'L': return 'Near lavatory';
+            case 'G': return 'Near galley';
+            case 'Z': return 'Extra legroom';
+            case 'B': return 'Bulkhead';
+            case 'Y': return 'Power outlet';
+            case 'R': return 'Restricted recline';
+            case 'D': return 'Bassinet seat';
+            default: return '';
+          }
+        }) ?? [];
+
         const tooltip = [
           seat.seatCharacteristics?.includes('O') ? 'PREFERRED' : '',
-          seat.seatPrice ? `€${seat.seatPrice.toFixed(2)}` : ''
-        ].filter(Boolean).join(' ');
+          seat.seatPrice ? `€${seat.seatPrice.toFixed(2)}` : '',
+          ...characteristicFlags
+        ].filter(Boolean).join(' • ');
 
         rowSeats.push({
           id: seat.seatNumber,
           number: col,
           isReserved,
-          tooltip
+          tooltip,
+          seatCharacteristics: seat.seatCharacteristics
         });
       }
     });
-
-    // ✅ Добавляем строку с данными
-    console.log(`🧩 row ${rowNumber} → ${rowSeats.length} seats`);
 
     result.push({
       rowNumber,
