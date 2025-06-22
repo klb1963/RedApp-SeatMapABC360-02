@@ -37,7 +37,7 @@ const ReactSeatMapModal: React.FC = () => {
             };
 
             const { seatInfo, layoutLetters } = await loadSeatMapFromSabre(firstSegment, enrichedPassengers);
-            
+
             // console.log('✅ seatInfo from Sabre:', seatInfo);
 
             const { rows, layoutLength } = convertSeatMapToReactSeatmapFormat(seatInfo, layoutLetters);
@@ -61,7 +61,7 @@ const ReactSeatMapModal: React.FC = () => {
 
     return (
         <div style={{ padding: '1rem', textAlign: 'center' }}>
-          <h3 style={{ marginBottom: '1.5rem' }}>💺 Seatmap React</h3>
+          <h3 style={{ marginBottom: '1.5rem' }}> Seatmap React </h3>
       
           {/* 🔀 Переключатель палуб — показываем только если больше одной */}
             {decks.length > 1 && (

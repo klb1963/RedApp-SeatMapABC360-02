@@ -25,10 +25,34 @@ interface SeatmapProps {
 }
 
 const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, layoutLength }) => {
+
+  const overwingRowIndexes = rows
+    .map((row, index) => (row.isOverwingRow ? index : -1))
+    .filter(index => index !== -1);
+
+  const firstOverwingIndex = overwingRowIndexes[0];
+  const lastOverwingIndex = overwingRowIndexes[overwingRowIndexes.length - 1];
+
+  const DiagonalIconLeft = () => (
+    <svg width="24" height="24" viewBox="0 0 16 16">
+      <line x1="0" y1="16" x2="16" y2="0" stroke="#848484" strokeWidth="2" />
+    </svg>
+  );
+  const DiagonalIconRight = () => (
+    <svg width="24" height="24" viewBox="0 0 16 16">
+      <line x1="0" y1="0" x2="16" y2="16" stroke="#848484" strokeWidth="2" />
+    </svg>
+  );
+  const Line = () => (
+    <svg width="24" height="6" viewBox="0 0 20 6">
+      <line x1="0" y1="3" x2="20" y2="3" stroke="#848484" strokeWidth="3" />
+    </svg>
+  );
+
   return (
     <div style={{ display: 'flex', justifyContent: 'center' }}>
       <div>
-        {rows.map((row) => (
+      {rows.map((row, rowIndex) => (
           <div
             key={row.rowNumber}
             style={{
@@ -42,16 +66,27 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
             <div style={{ display: 'flex', alignItems: 'center' }}>
 
               {/* Exit / Overwing слева */}
-              <div style={{
-                width: '4rem',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}>
-                {row.isExitRow && <span style={{ color: 'red', fontWeight: 'bold' }}>Exit</span>}
-                {row.isOverwingRow && <span style={{ color: '#848484', fontWeight: 'bold' }}>W</span>}
-              </div>
+
+              <div
+                style={{
+                  width: '4rem',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                {/* Exit */}
+                {row.isExitRow && (
+                  <span style={{ color: 'red', fontWeight: 'bold', fontSize: '2rem' }}>{'<<'}</span>
+                )}
+
+              {/* Overwing start (/) */}
+              {row.isOverwingRow && rowIndex === firstOverwingIndex && <DiagonalIconLeft />}
+              {/* Overwing end (--) */}
+              {row.isOverwingRow && rowIndex === lastOverwingIndex && <Line />}
+
+            </div>
 
               {/* 🪑 Сами кресла */}
               <div style={{ display: 'flex' }}>
@@ -106,16 +141,27 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
               </div>
 
               {/* Exit / Overwing справа */}
-              <div style={{
-                width: '4rem',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}>
-                {row.isExitRow && <span style={{ color: 'red', fontWeight: 'bold' }}>Exit</span>}
-                {row.isOverwingRow && <span style={{ color: '#848484', fontWeight: 'bold' }}>W</span>}
-              </div>
+
+              <div
+                style={{
+                  width: '4rem',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                {/* Exit */}
+                {row.isExitRow && (
+                  <span style={{ color: 'red', fontWeight: 'bold', fontSize: '2rem' }}>{'>>'}</span>
+              )}
+
+              {/* Overwing start (/) */}
+              {row.isOverwingRow && rowIndex === firstOverwingIndex && <DiagonalIconRight />}
+              {/* Overwing end (--) */}
+              {row.isOverwingRow && rowIndex === lastOverwingIndex && <Line />}
+
+            </div>
 
             </div>
           </div>
