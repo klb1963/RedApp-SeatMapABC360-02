@@ -32,7 +32,7 @@ interface Deck {
   rows: Row[];
 }
 
-type SeatType = 'available' | 'occupied' | 'paid' | 'blocked' | 'preferred' | 'unavailable';
+export type SeatType = 'available' | 'occupied' | 'paid' | 'blocked' | 'preferred' | 'unavailable';
 
 export interface AvailabilityItem {
   label: string;
@@ -81,15 +81,15 @@ function getSeatType(seatEl: Element): SeatType {
   return 'available';
 }
 
-function getColorByType(type: SeatType): string {
+export function getColorByType(type: SeatType): string {
   switch (type) {
-    case 'available': return '#00C853';
-    case 'paid': return '#F8CF00';
-    case 'occupied': return '#212121';
-    case 'unavailable': return '#212121';
-    case 'blocked': return 'lightgray';
-    case 'preferred': return '#01D0CE';
-    default: return 'white';
+    case 'available': return '#00C853'; // #00C853
+    case 'paid': return '#F8CF00'; // #F8CF00
+    case 'preferred': return '#01D0CE'; // #01D0CE
+    case 'occupied': return '#D3D3D3'; // #D3D3D3
+    case 'unavailable': return '#D3D3D3'; // #D3D3D3
+    case 'blocked': return '#D3D3D3'; // #D3D3D3
+    default: return '#D3D3D3'; // #D3D3D3
   }
 }
 

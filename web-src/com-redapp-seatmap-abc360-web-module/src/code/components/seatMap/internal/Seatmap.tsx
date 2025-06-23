@@ -1,5 +1,8 @@
 // file: /code/components/seatMap/internal/Seatmap.tsx
+
 import SeatTooltip from './SeatTooltip';
+import { getColorByType, SeatType } from '../../../utils/parseSeatMapResponse';
+import { getTooltipPosition } from '../helpers/getTooltipPosition';
 
 import * as React from 'react';
 
@@ -9,6 +12,7 @@ export interface Seat {
   isReserved?: boolean;
   tooltip?: string;
   seatCharacteristics?: string[];
+  type: SeatType;
 }
 
 export interface Row {
@@ -101,14 +105,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                   const isLast = seatIndex === row.seats.length - 1;
                   const nextIsAisle = row.seats[seatIndex + 1]?.id.startsWith('AISLE');
 
-                  const backgroundColor = (() => {
-                    if (isPlaceholder) return '#fff';
-                    if (seat.isReserved && !seat.tooltip) return '#ccc';
-                    if (!seat.isReserved && !seat.tooltip) return '#4caf50';
-                    if (seat.tooltip?.toUpperCase().includes('PREFERRED')) return '#26c6da';
-                    if (seat.tooltip?.includes('€')) return '#fdd835';
-                    return '#f0f0f0';
-                  })();
+                  const backgroundColor = getColorByType(seat.type || 'available');
 
                   const buttonStyle: React.CSSProperties = {
                     width: '4rem',
@@ -133,19 +130,21 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                       ) : (
                         <>
                           <button
-                            title=""
                             onClick={() => !seat.isReserved && onSeatClick(seat.id)}
                             disabled={seat.isReserved}
                             style={buttonStyle}
                             onMouseEnter={() => setHoveredSeatId(seat.id)}
                             onMouseLeave={() => setHoveredSeatId(null)}
                           >
-                            {isPlaceholder ? ' ' : `${row.rowNumber}${seat.number ?? ''}`}
+                            {isPlaceholder ? ' ' : `${row.rowNumber}${seat.number || ''}`}
                           </button>
-                          {/* 📌 Теперь тултип рендерится всегда при наведении */}
-                          {hoveredSeatId === seat.id && seat.seatCharacteristics?.length > 0 && (
-                            <SeatTooltip codes={seat.seatCharacteristics} />
-                          )}
+                            {/* 📌 Теперь тултип рендерится всегда при наведении */}
+                            {hoveredSeatId === seat.id && seat.tooltip && (
+                              <SeatTooltip
+                                text={seat.tooltip}
+                                position={getTooltipPosition(rowIndex)}
+                              />
+                            )}
                         </>
                       )}
                     </div>

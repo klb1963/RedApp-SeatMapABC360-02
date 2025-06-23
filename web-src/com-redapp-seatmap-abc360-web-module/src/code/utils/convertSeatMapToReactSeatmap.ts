@@ -1,6 +1,7 @@
 // file: /code/utils/convertSeatMapToReactSeatmap.ts
 
 import { SeatInfo } from '../components/seatMap/types/SeatInfo';
+import { getColorByType, SeatType } from './parseSeatMapResponse';
 
 export interface ReactSeat {
   id: string;
@@ -8,6 +9,7 @@ export interface ReactSeat {
   isReserved?: boolean;
   tooltip?: string;
   seatCharacteristics?: string[];
+  type: SeatType;
 }
 
 export interface ReactSeatRow {
@@ -63,18 +65,19 @@ export function convertSeatMapToReactSeatmapFormat(
       if (col === '|') {
         rowSeats.push({
           id: `AISLE-${rowNumber}-${idx}`,
-          isReserved: true
+          isReserved: true,
+          type: 'blocked',
         });
       } else {
         const seat = letterSeatMap[col];
         if (!seat) return;
-
+    
         if (/^\d+$/.test(seat.seatNumber)) return;
-
+    
         const isFakeSeat =
           seat.seatCharacteristics?.includes('GN') ||
           seat.seatCharacteristics?.includes('8');
-
+    
         if (isFakeSeat) {
           rowSeats.push({
             id: `EMPTY-${rowNumber}-${col}`,
@@ -82,41 +85,48 @@ export function convertSeatMapToReactSeatmapFormat(
             isReserved: true,
             tooltip: '',
             seatCharacteristics: seat.seatCharacteristics,
+            type: 'blocked',
           });
           return;
         }
-
-        const isReserved = ['occupied', 'blocked', 'unavailable'].includes(
-          seat.seatStatus.toLowerCase()
-        );
-
-        const characteristicFlags = seat.seatCharacteristics?.filter(code =>
-          ['L', 'G', 'Z', 'B', 'Y', 'R', 'D'].includes(code)
-        ).map(code => {
-          switch (code) {
-            case 'L': return 'Near lavatory';
-            case 'G': return 'Near galley';
-            case 'Z': return 'Extra legroom';
-            case 'B': return 'Bulkhead';
-            case 'Y': return 'Power outlet';
-            case 'R': return 'Restricted recline';
-            case 'D': return 'Bassinet seat';
-            default: return '';
-          }
-        }) ?? [];
-
-        const tooltip = [
-          seat.seatCharacteristics?.includes('O') ? 'PREFERRED' : '',
-          seat.seatPrice ? `€${seat.seatPrice.toFixed(2)}` : '',
-          ...characteristicFlags
-        ].filter(Boolean).join(' • ');
-
+    
+        // 💡 Определяем тип кресла (цвет)
+        let type: SeatType = 'available';
+    
+        if (seat.seatCharacteristics?.includes('O')) {
+          type = 'preferred';
+        } else if (seat.seatPrice != null && seat.seatPrice > 0) {
+          type = 'paid';
+        } else if (['occupied', 'blocked', 'unavailable'].includes(seat.seatStatus.toLowerCase())) {
+          type = seat.seatStatus.toLowerCase() as SeatType;
+        }
+    
+        const characteristicsMap: Record<string, string> = {
+          K: 'Bulkhead row',
+          G: 'Near galley',
+          L: 'Near lavatory',
+          R: 'Limited recline',
+          Y: 'Power outlet',
+          Z: 'Extra legroom',
+          B: 'Bassinet seat',
+        };
+        
+        const flags = seat.seatCharacteristics?.filter(c => characteristicsMap[c]).map(c => characteristicsMap[c]) ?? [];
+        
+        const tooltipParts = [
+          seat.seatPrice != null ? `USD ${seat.seatPrice.toFixed(2)}` : null,
+          ...flags.map(flag => `• ${flag}`)
+        ];
+        
+        const tooltip = tooltipParts.filter(Boolean).join('\n');
+    
         rowSeats.push({
           id: seat.seatNumber,
           number: col,
-          isReserved,
+          isReserved: ['occupied', 'blocked', 'unavailable'].includes(type),
           tooltip,
-          seatCharacteristics: seat.seatCharacteristics
+          seatCharacteristics: seat.seatCharacteristics,
+          type,
         });
       }
     });
