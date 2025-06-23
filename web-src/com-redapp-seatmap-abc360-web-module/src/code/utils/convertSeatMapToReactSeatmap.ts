@@ -17,6 +17,7 @@ export interface ReactSeatRow {
   seats: ReactSeat[];
   isExitRow?: boolean;
   isOverwingRow?: boolean;
+  isBulkheadRow?: boolean;
   deckId?: string;
 }
 
@@ -47,6 +48,10 @@ export function convertSeatMapToReactSeatmapFormat(
   for (const [rowNumberStr, letterSeatMap] of Object.entries(rowsMap)) {
     const rowNumber = parseInt(rowNumberStr, 10);
     const rowSeats: ReactSeat[] = [];
+
+    const isBulkheadRow = Object.values(letterSeatMap).some(
+      seat => seat.seatCharacteristics?.includes('K')
+    );
 
     const firstSeat = Object.values(letterSeatMap)[0];
     const deckId = firstSeat && 'deckId' in firstSeat ? (firstSeat as any).deckId : 'Maindeck';
@@ -102,7 +107,6 @@ export function convertSeatMapToReactSeatmapFormat(
         }
     
         const characteristicsMap: Record<string, string> = {
-          K: 'Bulkhead row',
           G: 'Near galley',
           L: 'Near lavatory',
           R: 'Limited recline',
@@ -136,7 +140,8 @@ export function convertSeatMapToReactSeatmapFormat(
       seats: rowSeats,
       isExitRow,
       isOverwingRow,
-      deckId
+      deckId,
+      isBulkheadRow
     });
   }
 

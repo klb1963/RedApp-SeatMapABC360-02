@@ -20,6 +20,7 @@ export interface Row {
   seats: Seat[];
   isExitRow?: boolean;
   isOverwingRow?: boolean;
+  isBulkheadRow?: boolean; 
   deckId?: string;
 }
 
@@ -85,6 +86,13 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                 {row.isExitRow && (
                   <span style={{ color: 'red', fontWeight: 'bold', fontSize: '2rem' }}>{'<<'}</span>
                 )}
+
+                {/* <div style={{ width: '4rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  {row.isBulkheadRow && (
+                    <span style={{ color: '#4285f4', fontWeight: 'bold', fontSize: '1.4rem' }}>Bulkhead</span>
+                  )}
+                </div> */}
+
                 {row.isOverwingRow && rowIndex === firstOverwingIndex && <DiagonalIconLeft />}
                 {row.isOverwingRow && rowIndex === lastOverwingIndex && <Line />}
               </div>
