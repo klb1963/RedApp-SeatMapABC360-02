@@ -108,15 +108,21 @@ export function convertSeatMapToReactSeatmapFormat(
     
         const characteristicsMap: Record<string, string> = {
           G: 'Near galley',
-          L: 'Near lavatory',
+          LA: 'Near lavatory',
           R: 'Limited recline',
           Y: 'Power outlet',
-          Z: 'Extra legroom',
           B: 'Bassinet seat',
+          CH: 'Chargeable seat',
+          L: 'Extra legroom',
+          '1A': 'Not allowed for infants',
+          V: 'Seat offered last',
+          '1': 'Restricted seat',
         };
         
-        const flags = seat.seatCharacteristics?.filter(c => characteristicsMap[c]).map(c => characteristicsMap[c]) ?? [];
-        
+        const flags = seat.seatCharacteristics
+          ?.filter(c => characteristicsMap[c])
+          .map(c => characteristicsMap[c]) ?? [];
+
         const seatNumberWithClass = `• ${seat.cabinClass || 'Unknown'}`;
 
         const tooltipParts = [
