@@ -1,3 +1,5 @@
+// file: /code/components/seatMap/types/SeatInfo.ts
+
 export interface SeatInfo {
   seatNumber: string; // например, A, B, C
   seatStatus: string; // например, "Available", "Occupied"
@@ -6,4 +8,5 @@ export interface SeatInfo {
   tooltip?: string; // текст при наведении
   isReserved?: boolean; // зарезервировано
   rowTypeCode?: string; // "E" (Exit), "K" (Overwing), и др.
+  cabinClass?: string;
 }

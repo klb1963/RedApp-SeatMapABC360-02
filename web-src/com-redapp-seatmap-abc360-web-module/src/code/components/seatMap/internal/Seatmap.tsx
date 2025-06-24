@@ -149,7 +149,16 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                             {/* 📌 Теперь тултип рендерится всегда при наведении */}
                             {hoveredSeatId === seat.id && seat.tooltip && (
                               <SeatTooltip
-                                text={seat.tooltip}
+                                seatInfo={{
+                                  rowNumber: row.rowNumber.toString(),
+                                  column: seat.number || '',
+                                  cabinClass: seat.tooltip?.split('\n')[0] || 'Economy', // например: "Economy"
+                                  price: seat.tooltip?.split('\n')[1] || '',             // например: "Price: 90.20"
+                                  characteristicsText: seat.tooltip
+                                    ?.split('\n')
+                                    .slice(2)
+                                    .join('\n') || '',                                   // флаги и т.д.
+                                }}
                                 position={getTooltipPosition(rowIndex)}
                               />
                             )}

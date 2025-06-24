@@ -117,7 +117,10 @@ export function convertSeatMapToReactSeatmapFormat(
         
         const flags = seat.seatCharacteristics?.filter(c => characteristicsMap[c]).map(c => characteristicsMap[c]) ?? [];
         
+        const seatNumberWithClass = `• ${seat.cabinClass || 'Unknown'}`;
+
         const tooltipParts = [
+          seatNumberWithClass,
           seat.seatPrice != null ? `USD ${seat.seatPrice.toFixed(2)}` : null,
           ...flags.map(flag => `• ${flag}`)
         ];

@@ -50,6 +50,7 @@ export interface SeatInfo {
   seatCharacteristics?: string[];
   rowTypeCode?: string; // 🆕 indicates if this row is overwing ('K'), exit, etc.
   deckId?: string;
+  cabinClass?: string;
 }
 
 function getSeatType(seatEl: Element): SeatType {
@@ -111,7 +112,8 @@ export function parseSeatMapResponse(xml: Document): {
   const cabins = Array.from(xml.querySelectorAll('Cabin')).map(cabinEl => ({
     deckId: cabinEl.getAttribute('classLocation') || 'Maindeck',
     firstRow: parseInt(cabinEl.getAttribute('firstRow') || '0', 10),
-    lastRow: parseInt(cabinEl.getAttribute('lastRow') || '999', 10)
+    lastRow: parseInt(cabinEl.getAttribute('lastRow') || '999', 10),
+    cabinClass: cabinEl.querySelector('CabinClass > CabinType')?.textContent?.trim() || 'Unknown'
   }));
 
   // 🆕 Создаем по палубе свой Deck
@@ -132,6 +134,7 @@ export function parseSeatMapResponse(xml: Document): {
 
     // 🧠 Находим палубу, к которой относится ряд
     const cabin = cabins.find(c => rowNumber >= c.firstRow && rowNumber <= c.lastRow);
+    const cabinClassText = cabin?.cabinClass || 'Unknown';
     const deckId = cabin?.deckId || 'Maindeck';
 
     const row: Row = {
@@ -184,7 +187,8 @@ export function parseSeatMapResponse(xml: Document): {
         seatPrice: price,
         seatCharacteristics: allCodes,
         rowTypeCode,
-        deckId
+        deckId,
+        cabinClass: cabinClassText
       });
 
       row.seats.push({
