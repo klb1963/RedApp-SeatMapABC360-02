@@ -16,7 +16,7 @@ interface SeatTooltipProps {
 const SeatTooltip: React.FC<SeatTooltipProps> = ({ seatInfo, position = 'top' }) => {
     if (!seatInfo) return null;
 
-    const tooltipTop = position === 'bottom' ? '5rem' : '-0.8rem';
+    const tooltipTop = position === 'bottom' ? '6.5rem' : '2rem';
 
     return (
         <div

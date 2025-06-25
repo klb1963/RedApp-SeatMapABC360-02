@@ -3,6 +3,10 @@
 import SeatTooltip from './SeatTooltip';
 import { getColorByType, SeatType } from '../../../utils/parseSeatMapResponse';
 import { getTooltipPosition } from '../helpers/getTooltipPosition';
+import SeatItem from './SeatItem';
+import SeatSvg from './SeatSvg';
+import SeatGraphic from './SeatGraphic';
+import SeatItemSvg from './SeatItemSvg';
 
 import * as React from 'react';
 
@@ -65,34 +69,30 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
           <div
             key={row.rowNumber}
             style={{
+              position: 'relative', // 🔑 чтобы abs-позиционирование работало
               display: 'flex',
               alignItems: 'center',
-              marginBottom: '1rem',
+              marginBottom: '-1.75rem',
               fontFamily: 'sans-serif',
               marginLeft: row.seats.length < layoutLength ? '4rem' : 0,
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center' }}>
+
               {/* Exit / Overwing слева */}
               <div
                 style={{
-                  width: '0rem',
+                  position: 'absolute',
+                  left: '0rem', // подгони при необходимости
                   display: 'flex',
                   flexDirection: 'column',
-                  alignItems: 'center',
+                  alignItems: 'flex-end',
                   justifyContent: 'center',
                 }}
               >
                 {row.isExitRow && (
                   <span style={{ color: 'red', fontWeight: 'bold', fontSize: '2rem' }}>{'<<'}</span>
                 )}
-
-                {/* <div style={{ width: '4rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  {row.isBulkheadRow && (
-                    <span style={{ color: '#4285f4', fontWeight: 'bold', fontSize: '1.4rem' }}>Bulkhead</span>
-                  )}
-                </div> */}
-
                 {row.isOverwingRow && rowIndex === firstOverwingIndex && <DiagonalIconLeft />}
                 {row.isOverwingRow && rowIndex === lastOverwingIndex && <Line />}
               </div>
@@ -115,39 +115,27 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
 
                   const backgroundColor = getColorByType(seat.type || 'available');
 
-                  const buttonStyle: React.CSSProperties = {
-                    width: '4rem',
-                    height: '4rem',
-                    backgroundColor,
-                    border: 'none',
-                    borderRadius: '0.75rem 0.75rem 0 0',
-                    color: isPlaceholder ? '#fff' : '#fff',
-                    fontWeight: 'bold',
-                    fontSize: '1.3rem',
-                    cursor: seat.isReserved ? 'not-allowed' : 'pointer',
-                    boxShadow: isPlaceholder ? 'none' : '0 1px 3px rgba(0,0,0,0.3)',
-                    transition: 'background-color 0.2s',
-                    marginRight: nextIsAisle || isLast ? 0 : '0.4rem',
-                  };
-
                   return (
 
                     <div key={seat.id} style={{ position: 'relative' }}>
                       {isAisle ? (
                         <div style={{ width: '2rem' }} />
                       ) : (
-                        <>
-                          <button
-                            onClick={() => !seat.isReserved && onSeatClick(seat.id)}
-                            disabled={seat.isReserved}
-                            style={buttonStyle}
-                            onMouseEnter={() => setHoveredSeatId(seat.id)}
-                            onMouseLeave={() => setHoveredSeatId(null)}
-                          >
-                            {isPlaceholder ? ' ' : `${row.rowNumber}${seat.number || ''}`}
-                          </button>
-                            {/* 📌 Теперь тултип рендерится всегда при наведении */}
-                            {hoveredSeatId === seat.id && seat.tooltip && (
+                          <>
+
+                            <div
+                              onMouseEnter={() => setHoveredSeatId(seat.id)}
+                              onMouseLeave={() => setHoveredSeatId(null)}
+                            >
+                              <SeatItemSvg
+                                color={backgroundColor}
+                                onClick={() => !seat.isReserved && onSeatClick(seat.id)}
+                                label={`${row.rowNumber}${seat.number || ''}`}
+                              />
+                            </div>
+
+                          {/* 📌 Теперь тултип рендерится всегда при наведении */}
+                          {hoveredSeatId === seat.id && seat.tooltip && (
                               <SeatTooltip
                                 seatInfo={{
                                   rowNumber: row.rowNumber.toString(),
@@ -173,10 +161,11 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
               {/* Exit / Overwing справа */}
               <div
                 style={{
-                  width: '0rem',
+                  position: 'absolute',
+                  right: '0rem', // подгони при необходимости
                   display: 'flex',
                   flexDirection: 'column',
-                  alignItems: 'center',
+                  alignItems: 'flex-start',
                   justifyContent: 'center',
                 }}
               >
@@ -186,6 +175,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                 {row.isOverwingRow && rowIndex === firstOverwingIndex && <DiagonalIconRight />}
                 {row.isOverwingRow && rowIndex === lastOverwingIndex && <Line />}
               </div>
+
             </div>
           </div>
         ))}
