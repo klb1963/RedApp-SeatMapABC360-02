@@ -16,17 +16,17 @@ interface SeatTooltipProps {
 const SeatTooltip: React.FC<SeatTooltipProps> = ({ seatInfo, position = 'top' }) => {
     if (!seatInfo) return null;
 
-    const tooltipTop = position === 'bottom' ? '3.2rem' : '-7.2rem';
+    const tooltipTop = position === 'bottom' ? '5rem' : '-0.8rem';
 
     return (
         <div
             style={{
                 position: 'absolute',
-                top: tooltipTop,
+                top: tooltipTop,               // ✅ снова включаем top
                 left: '-3rem',
-                transform: position === 'top' ? 'translateY(-86%)' : 'translateY(94%)',
-                backgroundColor: '#fff', // теперь белый фон
-                color: '#000',           // текст черный
+                transform: position === 'top' ? 'translateY(-100%)' : 'translateY(0%)', // ✅ ключевой момент
+                backgroundColor: '#fff',
+                color: '#000',
                 padding: '0.8rem 1rem',
                 borderRadius: '0.6rem',
                 whiteSpace: 'pre-line',
@@ -51,12 +51,11 @@ const SeatTooltip: React.FC<SeatTooltipProps> = ({ seatInfo, position = 'top' })
                 <div>{seatInfo.characteristicsText}</div>
             )}
 
-            {/* ▼ Добавляем стрелочку */}
             {/* Внешний серый треугольник (обводка) */}
             <div
                 style={{
                     position: 'absolute',
-                    left: '3.2rem',
+                    left: '4rem',
                     width: 0,
                     height: 0,
                     borderLeft: '0.8rem solid transparent',
@@ -78,7 +77,7 @@ const SeatTooltip: React.FC<SeatTooltipProps> = ({ seatInfo, position = 'top' })
             <div
                 style={{
                     position: 'absolute',
-                    left: '3.2rem',
+                    left: '4rem',
                     width: 0,
                     height: 0,
                     borderLeft: '0.7rem solid transparent',
@@ -95,7 +94,6 @@ const SeatTooltip: React.FC<SeatTooltipProps> = ({ seatInfo, position = 'top' })
                     zIndex: 102,
                 }}
             />
-
         </div>
     );
 };
