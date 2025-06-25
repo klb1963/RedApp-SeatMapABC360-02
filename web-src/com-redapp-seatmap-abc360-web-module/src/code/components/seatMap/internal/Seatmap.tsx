@@ -76,7 +76,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
               {/* Exit / Overwing слева */}
               <div
                 style={{
-                  width: '4rem',
+                  width: '0rem',
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
@@ -173,7 +173,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
               {/* Exit / Overwing справа */}
               <div
                 style={{
-                  width: '4rem',
+                  width: '0rem',
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
