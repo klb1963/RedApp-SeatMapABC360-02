@@ -65,7 +65,7 @@ const SeatItemSvg: React.FC<SeatItemSvgProps> = ({
         {label && (
           <text
             x="43%"
-            y="110"          // подгони при необходимости
+            y="110"
             textAnchor="middle"
             fill="#fff"
             fontSize="24"

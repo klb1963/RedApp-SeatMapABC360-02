@@ -3,10 +3,8 @@
 import SeatTooltip from './SeatTooltip';
 import { getColorByType, SeatType } from '../../../utils/parseSeatMapResponse';
 import { getTooltipPosition } from '../helpers/getTooltipPosition';
-import SeatItem from './SeatItem';
-import SeatSvg from './SeatSvg';
-import SeatGraphic from './SeatGraphic';
-import SeatItemSvg from './SeatItemSvg';
+import EconomySeatSvg from './EconomySeatSvg';
+import PremiumSeatSvg from './PremiumSeatSvg';
 
 import * as React from 'react';
 
@@ -24,7 +22,7 @@ export interface Row {
   seats: Seat[];
   isExitRow?: boolean;
   isOverwingRow?: boolean;
-  isBulkheadRow?: boolean; 
+  isBulkheadRow?: boolean;
   deckId?: string;
 }
 
@@ -36,7 +34,6 @@ interface SeatmapProps {
 }
 
 const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, layoutLength }) => {
-
   const [hoveredSeatId, setHoveredSeatId] = React.useState<string | null>(null);
 
   const overwingRowIndexes = rows
@@ -46,141 +43,244 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
   const firstOverwingIndex = overwingRowIndexes[0];
   const lastOverwingIndex = overwingRowIndexes[overwingRowIndexes.length - 1];
 
+  // 🔁 Левая диагональ – "/"
   const DiagonalIconLeft = () => (
-    <svg width="24" height="24" viewBox="0 0 16 16">
-      <line x1="0" y1="16" x2="16" y2="0" stroke="#848484" strokeWidth="2" />
+    <svg width="24" height="24" viewBox="0 0 24 24">
+      <line x1="0" y1="24" x2="24" y2="0" stroke="#848484" strokeWidth="2" />
     </svg>
   );
+
+  // ✅ Правая диагональ – "\"
   const DiagonalIconRight = () => (
-    <svg width="24" height="24" viewBox="0 0 16 16">
-      <line x1="0" y1="0" x2="16" y2="16" stroke="#848484" strokeWidth="2" />
+    <svg width="24" height="24" viewBox="0 0 24 24">
+      <line x1="0" y1="0" x2="24" y2="24" stroke="#848484" strokeWidth="2" />
     </svg>
   );
+
+  // 🔄 Горизонтальная линия по центру
   const Line = () => (
-    <svg width="24" height="6" viewBox="0 0 20 6">
-      <line x1="0" y1="3" x2="20" y2="3" stroke="#848484" strokeWidth="3" />
+    <svg width="24" height="6" viewBox="0 0 24 6">
+      <line x1="0" y1="3" x2="24" y2="3" stroke="#848484" strokeWidth="3" />
     </svg>
   );
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center' }}>
       <div>
-        {rows.map((row, rowIndex) => (
-          <div
-            key={row.rowNumber}
-            style={{
-              position: 'relative', // 🔑 чтобы abs-позиционирование работало
-              display: 'flex',
-              alignItems: 'center',
-              marginBottom: '-1.75rem',
-              fontFamily: 'sans-serif',
-              marginLeft: row.seats.length < layoutLength ? '4rem' : 0,
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center' }}>
+        {rows.map((row, rowIndex) => {
+          const firstSeat = row.seats.find(s => !s.id.startsWith('AISLE') && !s.id.startsWith('EMPTY'));
+          const cabinClass = firstSeat?.tooltip?.split('\n')[0]?.toLowerCase() || '';
+          const isEconomy = cabinClass.includes('economy');
 
-              {/* Exit / Overwing слева */}
-              <div
-                style={{
-                  position: 'absolute',
-                  left: '0rem', // подгони при необходимости
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'flex-end',
-                  justifyContent: 'center',
-                }}
-              >
-                {row.isExitRow && (
-                  <span style={{ color: 'red', fontWeight: 'bold', fontSize: '2rem' }}>{'<<'}</span>
-                )}
-                {row.isOverwingRow && rowIndex === firstOverwingIndex && <DiagonalIconLeft />}
-                {row.isOverwingRow && rowIndex === lastOverwingIndex && <Line />}
-              </div>
+          const rowMarginBottom = isEconomy ? '-1.75rem' : '-2.75rem';
+          const seatMinHeight = isEconomy ? '4rem' : '6rem';
+          const overwingIconOffset = isEconomy ? '0rem' : '0.6rem';
 
-              {/* 🪑 Сами кресла */}
-              <div
-                style={{
-                  display: 'flex',
-                  minHeight: '4rem',
-                  minWidth: `${layoutLength * 4.5}rem`,
-                  justifyContent: 'center',
-                }}
-              >
-                {row.seats.map((seat, seatIndex) => {
-                  const isSelected = seat.id === selectedSeatId;
-                  const isAisle = seat.id.startsWith('AISLE');
-                  const isPlaceholder = seat.id.startsWith('EMPTY');
-                  const isLast = seatIndex === row.seats.length - 1;
-                  const nextIsAisle = row.seats[seatIndex + 1]?.id.startsWith('AISLE');
+          return (
+            <div
+              key={row.rowNumber}
+              style={{
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center',
+                marginBottom: rowMarginBottom,
+                fontFamily: 'sans-serif',
+                marginLeft: row.seats.length < layoutLength ? '4rem' : 0,
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: '0rem',
+                    top: overwingIconOffset,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'flex-end',
+                    justifyContent: 'center',
+                    width: '3rem',
+                  }}
+                >
+                  {/* Exit - left */}
+                  {row.isExitRow && (
+                    <span
+                      style={{
+                        color: 'red',
+                        fontWeight: 'bold',
+                        fontSize: '2rem',
+                        position: 'relative',
+                        top: isEconomy ? '3rem' : '1.5rem', // 👈 регулируем вертикальное положение
+                        left: isEconomy ? '-4rem' : undefined, // 👈 регулируем положение по горизонтали
+                      }}
+                    >
+                      {'<<'}
+                    </span>
+                  )}
 
-                  const backgroundColor = getColorByType(seat.type || 'available');
+                  {/* Wing - left */}
+                  {row.isOverwingRow && rowIndex === firstOverwingIndex && (
+                    <div
+                      style={{
+                        position: 'relative',
+                        width: '3rem',
+                        height: '3rem',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        left: isEconomy ? '-3rem' : '-3.5rem',
+                        top: isEconomy ? '2rem' : '0rem',
+                      }}
+                    >
+                      <DiagonalIconLeft />
+                    </div>
+                  )}
 
-                  return (
+                  {row.isOverwingRow && rowIndex === lastOverwingIndex && (
+                    <div
+                      style={{
+                        position: 'relative',
+                        width: '3rem',
+                        height: '3rem',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        left: isEconomy ? '-4rem' : '-4rem',
+                        top: isEconomy ? '5rem' : '3rem',
+                      }}
+                    >
+                      <Line />
+                    </div>
+                  )}
+                </div>
 
-                    <div key={seat.id} style={{ position: 'relative' }}>
-                      {isAisle ? (
-                        <div style={{ width: '2rem' }} />
-                      ) : (
+                {/* Seats */}
+                <div
+                  style={{
+                    display: 'flex',
+                    minHeight: seatMinHeight,
+                    width: `auto`,
+                    justifyContent: 'center',
+                  }}
+                >
+                  {row.seats.map((seat, seatIndex) => {
+                    const isAisle = seat.id.startsWith('AISLE');
+                    const backgroundColor = getColorByType(seat.type || 'available');
+
+                    // по умолчанию считаем все кресла экономом, кроме тех, где явно указан бизнес или премиум
+                    const tooltipClass = seat.tooltip?.split('\n')[0]?.toLowerCase() || '';
+                    const isPremium = tooltipClass.includes('business') || tooltipClass.includes('premium');
+                    const SeatIcon = isPremium ? PremiumSeatSvg : EconomySeatSvg;
+
+                    return (
+                      <div key={seat.id} style={{ position: 'relative' }}>
+                        {isAisle ? (
+                          <div style={{ width: '2rem' }} />
+                        ) : (
                           <>
-
                             <div
                               onMouseEnter={() => setHoveredSeatId(seat.id)}
                               onMouseLeave={() => setHoveredSeatId(null)}
                             >
-                              <SeatItemSvg
+                              <SeatIcon
                                 color={backgroundColor}
                                 onClick={() => !seat.isReserved && onSeatClick(seat.id)}
                                 label={`${row.rowNumber}${seat.number || ''}`}
                               />
                             </div>
 
-                          {/* 📌 Теперь тултип рендерится всегда при наведении */}
-                          {hoveredSeatId === seat.id && seat.tooltip && (
+                            {hoveredSeatId === seat.id && seat.tooltip && (
                               <SeatTooltip
                                 seatInfo={{
                                   rowNumber: row.rowNumber.toString(),
                                   column: seat.number || '',
-                                  cabinClass: seat.tooltip?.split('\n')[0] || 'Economy', // например: "Economy"
-                                  price: seat.tooltip?.split('\n')[1] || '',             // например: "Price: 90.20"
+                                  cabinClass: seat.tooltip?.split('\n')[0] || 'Economy',
+                                  price: seat.tooltip?.split('\n')[1] || '',
                                   characteristicsText: seat.tooltip
                                     ?.split('\n')
                                     .slice(2)
-                                    .join('\n') || '',                                   // флаги и т.д.
+                                    .join('\n') || '',
                                 }}
                                 position={getTooltipPosition(rowIndex)}
                               />
                             )}
-                        </>
-                      )}
+                          </>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div
+                  style={{
+                    position: 'absolute',
+                    right: '0rem',
+                    top: overwingIconOffset,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'flex-start',
+                    justifyContent: 'center',
+                    width: '3rem',
+                  }}
+                >
+
+                  {/* Exit - right */}
+                  {row.isExitRow && (
+                    <span
+                      style={{
+                        color: 'red',
+                        fontWeight: 'bold',
+                        fontSize: '2rem',
+                        position: 'relative',
+                        top: isEconomy ? '3rem' : '1.5rem',
+                        left: isEconomy ? '4rem' : undefined, // 👈 регулируем положение по горизонтали
+                      }}
+                    >
+                      {'>>'}
+                    </span>
+                  )}
+
+                  {/* Wing - right */}
+                  {row.isOverwingRow && rowIndex === firstOverwingIndex && (
+                    <div
+                      style={{
+                        position: 'relative',
+                        width: '3rem',
+                        height: '3rem',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        left: isEconomy ? '3rem' : '3rem',
+                        top: isEconomy ? '2rem' : '0rem',
+                      }}
+                    >
+                      <DiagonalIconRight/>
                     </div>
+                  )}
 
-                  );
-                })}
+                  {row.isOverwingRow && rowIndex === lastOverwingIndex && (
+                    <div
+                      style={{
+                        position: 'relative',
+                        width: '3rem',
+                        height: '3rem',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        left: isEconomy ? '4rem' : '3rem',
+                        top: isEconomy ? '5rem' : '3rem',
+                      }}
+                    >
+                      <Line />
+                    </div>
+                  )}
+                </div>
               </div>
-
-              {/* Exit / Overwing справа */}
-              <div
-                style={{
-                  position: 'absolute',
-                  right: '0rem', // подгони при необходимости
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'flex-start',
-                  justifyContent: 'center',
-                }}
-              >
-                {row.isExitRow && (
-                  <span style={{ color: 'red', fontWeight: 'bold', fontSize: '2rem' }}>{'>>'}</span>
-                )}
-                {row.isOverwingRow && rowIndex === firstOverwingIndex && <DiagonalIconRight />}
-                {row.isOverwingRow && rowIndex === lastOverwingIndex && <Line />}
-              </div>
-
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
-}
+};
+
 export default Seatmap;
