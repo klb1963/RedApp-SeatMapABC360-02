@@ -10,6 +10,7 @@ export interface ReactSeat {
   tooltip?: string;
   seatCharacteristics?: string[];
   type: SeatType;
+  hidden?: boolean;
 }
 
 export interface ReactSeatRow {
@@ -90,6 +91,7 @@ export function convertSeatMapToReactSeatmapFormat(
             tooltip: '',
             seatCharacteristics: seat.seatCharacteristics,
             type: 'blocked',
+            hidden: true, 
           });
           return;
         }

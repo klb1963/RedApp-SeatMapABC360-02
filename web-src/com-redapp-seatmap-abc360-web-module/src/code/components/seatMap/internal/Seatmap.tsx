@@ -15,6 +15,7 @@ export interface Seat {
   tooltip?: string;
   seatCharacteristics?: string[];
   type: SeatType;
+  hidden?: boolean;
 }
 
 export interface Row {
@@ -175,18 +176,32 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                     justifyContent: 'center',
                   }}
                 >
+                  {/* ============= */}
+
                   {row.seats.map((seat, seatIndex) => {
                     const isAisle = seat.id.startsWith('AISLE');
                     const backgroundColor = getColorByType(seat.type || 'available');
 
-                    // по умолчанию считаем все кресла экономом, кроме тех, где явно указан бизнес или премиум
                     const tooltipClass = seat.tooltip?.split('\n')[0]?.toLowerCase() || '';
                     const isPremium = tooltipClass.includes('business') || tooltipClass.includes('premium');
                     const SeatIcon = isPremium ? PremiumSeatSvg : EconomySeatSvg;
 
                     return (
                       <div key={seat.id} style={{ position: 'relative' }}>
-                        {isAisle ? (
+                        {seat.hidden ? (
+                           <div
+                           style={{
+                             position: 'relative',
+                             width: '4rem',
+                             height: '3rem',
+                             top: '2.5rem',
+                             backgroundColor: '#ffffff', // цвет “пола” или neutral-заглушки
+                             borderRadius: 0,
+                             opacity: 0.5,
+                             margin: '0.25rem',
+                           }}
+                         />
+                        ) : isAisle ? (
                           <div style={{ width: '2rem' }} />
                         ) : (
                           <>
@@ -221,6 +236,8 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                       </div>
                     );
                   })}
+                  {/* ============= */}
+
                 </div>
 
                 <div
@@ -278,7 +295,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                         top: isEconomy ? '2rem' : '0rem',
                       }}
                     >
-                      <DiagonalIconRight/>
+                      <DiagonalIconRight />
                     </div>
                   )}
 
