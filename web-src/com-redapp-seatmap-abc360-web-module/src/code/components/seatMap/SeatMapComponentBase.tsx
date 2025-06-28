@@ -182,6 +182,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   // 🔁 Fallback update effect – triggers when segmentIndex or cabinClass changes,
 // but only if no seats are currently selected.
 // Prevents map from becoming stale after user changes flight segment or cabin dropdown manually.
+
   useEffect(() => {
     if (!iframeRef.current) return;
     if (selectedSeats.length > 0) return;
@@ -199,11 +200,6 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
       endRow: flight?.endRow,
       availability,
     });
-
-    // console.table(availability.map(a => ({
-    //   seat: a.seatLabel,
-    //   type: a.type
-    // })));
 
     postSeatMapUpdate({
       config,

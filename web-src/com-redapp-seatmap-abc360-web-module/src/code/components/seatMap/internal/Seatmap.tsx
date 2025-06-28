@@ -113,7 +113,20 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                         left: isEconomy ? '-4rem' : undefined, // 👈 регулируем положение по горизонтали
                       }}
                     >
-                      {'<<'}
+                      {/* << */}
+                      <svg
+                        version="1.0"
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24" // или нужный размер
+                        height="24"
+                        viewBox="0 0 114 114"
+                        preserveAspectRatio="xMidYMid meet"
+                      >
+                        <g transform="translate(0,114) scale(0.1,-0.1)" fill="red" stroke="none">
+                          <path d="M635 922 c-115 -85 -269 -198 -341 -251 l-132 -96 344 -252 344 -252 0 129 0 129 95 -54 95 -54 0 354 0 354 -95 -54 -94 -53 -3 127 -3 127 -210 -154z" />
+                        </g>
+                      </svg>
+
                     </span>
                   )}
 
@@ -235,7 +248,19 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                         left: isEconomy ? '4rem' : undefined, // 👈 регулируем положение по горизонтали
                       }}
                     >
-                      {'>>'}
+                      {/* {'>>'} */}
+                      <svg
+                        version="1.0"
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 114 114"
+                        preserveAspectRatio="xMidYMid meet"
+                      >
+                        <g transform="translate(114,0) scale(-0.1,0.1)" fill="red" stroke="none">
+                          <path d="M635 922 c-115 -85 -269 -198 -341 -251 l-132 -96 344 -252 344 -252 0 129 0 129 95 -54 95 -54 0 354 0 354 -95 -54 -94 -53 -3 127 -3 127 -210 -154z" />
+                        </g>
+                      </svg>
                     </span>
                   )}
 
