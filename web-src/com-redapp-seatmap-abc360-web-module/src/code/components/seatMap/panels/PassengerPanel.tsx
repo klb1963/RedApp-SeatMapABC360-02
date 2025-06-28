@@ -138,7 +138,8 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
                     <span style={{ color: pax.passengerColor || 'gray', fontWeight: 600 }}>
                       {assigned.seatLabel}
                     </span>
-                    {reassignMode && pax.nameNumber && (
+
+                    {reassignMode && pax.nameNumber && paxId === selectedPassengerId && (
                       <button
                         title="Cancel seat"
                         onClick={(e) => {
@@ -156,6 +157,7 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
                         ❌
                       </button>
                     )}
+
                   </>
                 ) : (
                   <span style={{ color: 'gray' }}>—</span>
@@ -187,7 +189,7 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
               cursor: 'pointer',
             }}
           >
-            REASSIGN SEATS
+            REASSIGN SEAT
           </button>
         )}
   

@@ -75,9 +75,8 @@ export function convertSeatMapToReactSeatmapFormat(
         });
       } else {
         const seat = letterSeatMap[col];
-        if (!seat) return;
-    
-        if (/^\d+$/.test(seat.seatNumber)) return;
+
+        if (!seat || !seat.seatNumber.match(/^\d+[A-Z]$/)) return;
     
         const isFakeSeat =
           seat.seatCharacteristics?.includes('GN') ||
