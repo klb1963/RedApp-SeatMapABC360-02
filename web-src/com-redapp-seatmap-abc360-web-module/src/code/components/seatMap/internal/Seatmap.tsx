@@ -73,6 +73,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
         style={{
           backgroundColor: '#1E3C5A',
           padding: '5px',
+          paddingBottom: '4rem',
           borderRadius: '8px',
           display: 'inline-block', // 👈 сужает ширину до содержимого
           boxShadow: '0 0 6px rgba(0, 0, 0, 0.4)', // (опц.) для контраста

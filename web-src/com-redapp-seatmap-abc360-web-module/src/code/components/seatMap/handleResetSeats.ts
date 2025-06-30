@@ -15,7 +15,6 @@ import { ISoapApiService } from 'sabre-ngv-communication/interfaces/ISoapApiServ
 import { PnrPublicService } from 'sabre-ngv-app/app/services/impl/PnrPublicService';
 import { PublicModalsService } from 'sabre-ngv-modals/services/PublicModalService';
 import { loadPnrDetailsFromSabre } from '../../services/loadPnrDetailsFromSabre';
-import { SelectedSeat } from './SeatMapComponentBase';
 
 /**
  * Resets all seat assignments by sending AirSeatLLSRQ requests per passenger.
