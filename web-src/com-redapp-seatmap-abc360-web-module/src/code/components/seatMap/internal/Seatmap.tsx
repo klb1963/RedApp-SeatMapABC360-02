@@ -67,7 +67,17 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center' }}>
-      <div>
+
+      {/* Floor color */}
+      <div
+        style={{
+          backgroundColor: '#1E3C5A',
+          padding: '5px',
+          borderRadius: '8px',
+          display: 'inline-block', // 👈 сужает ширину до содержимого
+          boxShadow: '0 0 6px rgba(0, 0, 0, 0.4)', // (опц.) для контраста
+        }}
+      >
         {rows.map((row, rowIndex) => {
           const firstSeat = row.seats.find(s => !s.id.startsWith('AISLE') && !s.id.startsWith('EMPTY'));
           const cabinClass = firstSeat?.tooltip?.split('\n')[0]?.toLowerCase() || '';
@@ -86,7 +96,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                 alignItems: 'center',
                 marginBottom: rowMarginBottom,
                 fontFamily: 'sans-serif',
-                marginLeft: row.seats.length < layoutLength ? '4rem' : 0,
+                margin: '0 0rem'
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -168,16 +178,17 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                 </div>
 
                 {/* Seats */}
+                {/* ============= */}
+
                 <div
                   style={{
                     display: 'flex',
                     minHeight: seatMinHeight,
-                    width: `auto`,
                     justifyContent: 'center',
+                    alignItems: 'center',
+                    gap: '0.5rem', // ⬅️ для равных отступов
                   }}
                 >
-                  {/* ============= */}
-
                   {row.seats.map((seat, seatIndex) => {
                     const isAisle = seat.id.startsWith('AISLE');
                     const backgroundColor = getColorByType(seat.type || 'available');
@@ -187,23 +198,26 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                     const SeatIcon = isPremium ? PremiumSeatSvg : EconomySeatSvg;
 
                     return (
-                      <div key={seat.id} style={{ position: 'relative' }}>
+                      <div
+                        key={seat.id}
+                        style={{
+                          position: 'relative',
+                          width: isAisle ? '2rem' : '3rem', // ⬅️ фиксированная ширина
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                        }}
+                      >
                         {seat.hidden ? (
-                           <div
-                           style={{
-                             position: 'relative',
-                             width: '4rem',
-                             height: '3rem',
-                             top: '2.5rem',
-                             backgroundColor: '#ffffff', // цвет “пола” или neutral-заглушки
-                             borderRadius: 0,
-                             opacity: 0.5,
-                             margin: '0.25rem',
-                           }}
-                         />
-                        ) : isAisle ? (
-                          <div style={{ width: '2rem' }} />
-                        ) : (
+                          <div
+                            style={{
+                              width: '3rem',
+                              height: '3rem',
+                              backgroundColor: '#1E3C5A',
+                              opacity: 0.5,
+                            }}
+                          />
+                        ) : isAisle ? null : (
                           <>
                             <div
                               onMouseEnter={() => setHoveredSeatId(seat.id)}
@@ -223,10 +237,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                                   column: seat.number || '',
                                   cabinClass: seat.tooltip?.split('\n')[0] || 'Economy',
                                   price: seat.tooltip?.split('\n')[1] || '',
-                                  characteristicsText: seat.tooltip
-                                    ?.split('\n')
-                                    .slice(2)
-                                    .join('\n') || '',
+                                  characteristicsText: seat.tooltip?.split('\n').slice(2).join('\n') || '',
                                 }}
                                 position={getTooltipPosition(rowIndex)}
                               />
@@ -236,9 +247,9 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                       </div>
                     );
                   })}
-                  {/* ============= */}
-
                 </div>
+
+                {/* ============= */}
 
                 <div
                   style={{
@@ -252,7 +263,6 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                     width: '3rem',
                   }}
                 >
-
                   {/* Exit - right */}
                   {row.isExitRow && (
                     <span
