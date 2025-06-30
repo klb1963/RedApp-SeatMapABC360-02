@@ -44,21 +44,21 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
   const firstOverwingIndex = overwingRowIndexes[0];
   const lastOverwingIndex = overwingRowIndexes[overwingRowIndexes.length - 1];
 
-  // 🔁 Левая диагональ – "/"
+  // 🔁 Левая диагональ – "/" (начало крыла слева)
   const DiagonalIconLeft = () => (
     <svg width="24" height="24" viewBox="0 0 24 24">
       <line x1="0" y1="24" x2="24" y2="0" stroke="#848484" strokeWidth="2" />
     </svg>
   );
 
-  // ✅ Правая диагональ – "\"
+  // ✅ Правая диагональ – "\" (начало крыла справа)
   const DiagonalIconRight = () => (
     <svg width="24" height="24" viewBox="0 0 24 24">
       <line x1="0" y1="0" x2="24" y2="24" stroke="#848484" strokeWidth="2" />
     </svg>
   );
 
-  // 🔄 Горизонтальная линия по центру
+  // 🔄 Горизонтальная линия (конец крыла)
   const Line = () => (
     <svg width="24" height="6" viewBox="0 0 24 6">
       <line x1="0" y1="3" x2="24" y2="3" stroke="#848484" strokeWidth="3" />
@@ -96,7 +96,6 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                 alignItems: 'center',
                 marginBottom: rowMarginBottom,
                 fontFamily: 'sans-serif',
-                margin: '0 0rem'
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -128,7 +127,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                       <svg
                         version="1.0"
                         xmlns="http://www.w3.org/2000/svg"
-                        width="24" // или нужный размер
+                        width="24"
                         height="24"
                         viewBox="0 0 114 114"
                         preserveAspectRatio="xMidYMid meet"
@@ -186,7 +185,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                     minHeight: seatMinHeight,
                     justifyContent: 'center',
                     alignItems: 'center',
-                    gap: '0.5rem', // ⬅️ для равных отступов
+                    gap: '0.5rem', // ⬅️ для равных отступов между креслами
                   }}
                 >
                   {row.seats.map((seat, seatIndex) => {
@@ -202,7 +201,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                         key={seat.id}
                         style={{
                           position: 'relative',
-                          width: isAisle ? '2rem' : '3rem', // ⬅️ фиксированная ширина
+                          width: isAisle ? '2rem' : isPremium ? '3.5rem' : '3rem',
                           display: 'flex',
                           justifyContent: 'center',
                           alignItems: 'center',
@@ -213,7 +212,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                             style={{
                               width: '3rem',
                               height: '3rem',
-                              backgroundColor: '#1E3C5A',
+                              backgroundColor: '#1E3C5A',  // цвет ковролина
                               opacity: 0.5,
                             }}
                           />
@@ -272,7 +271,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                         fontSize: '2rem',
                         position: 'relative',
                         top: isEconomy ? '3rem' : '1.5rem',
-                        left: isEconomy ? '4rem' : undefined, // 👈 регулируем положение по горизонтали
+                        left: isEconomy ? '4rem' : undefined,
                       }}
                     >
                       {/* {'>>'} */}
@@ -301,7 +300,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                         display: 'flex',
                         justifyContent: 'center',
                         alignItems: 'center',
-                        left: isEconomy ? '3rem' : '3rem',
+                        left: isEconomy ? '3rem' : '3.5rem', // 
                         top: isEconomy ? '2rem' : '0rem',
                       }}
                     >
@@ -318,7 +317,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                         display: 'flex',
                         justifyContent: 'center',
                         alignItems: 'center',
-                        left: isEconomy ? '4rem' : '3rem',
+                        left: isEconomy ? '4rem' : '4rem',
                         top: isEconomy ? '5rem' : '3rem',
                       }}
                     >

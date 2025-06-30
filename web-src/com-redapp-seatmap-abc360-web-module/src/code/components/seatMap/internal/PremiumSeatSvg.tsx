@@ -28,7 +28,8 @@ const PremiumSeatSvg: React.FC<PremiumSeatSvgProps> = ({
       onClick={onClick}
       style={{ cursor: 'pointer', ...style }}
     >
-      <g transform="scale(1)">
+      {/* 👇 добавлено смещение вправо на 3px */}
+      <g transform="translate(3, 0)">
         <rect fill={strokeColor} y="4.3" width="5.36" height="32.29" rx="1.97" ry="1.97" />
         <rect fill={strokeColor} x="49.02" y="4.3" width="5.36" height="32.29" rx="1.97" ry="1.97" />
 
