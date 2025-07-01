@@ -32,9 +32,10 @@ interface SeatmapProps {
   selectedSeatId?: string;
   onSeatClick: (seatId: string) => void;
   layoutLength: number;
+  selectedSeatsMap?: Record<string, { initials: string }>;
 }
 
-const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, layoutLength }) => {
+const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, layoutLength, selectedSeatsMap = {} }) => {
   const [hoveredSeatId, setHoveredSeatId] = React.useState<string | null>(null);
 
   const overwingRowIndexes = rows
@@ -44,21 +45,18 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
   const firstOverwingIndex = overwingRowIndexes[0];
   const lastOverwingIndex = overwingRowIndexes[overwingRowIndexes.length - 1];
 
-  // 🔁 Левая диагональ – "/" (начало крыла слева)
   const DiagonalIconLeft = () => (
     <svg width="24" height="24" viewBox="0 0 24 24">
       <line x1="0" y1="24" x2="24" y2="0" stroke="#848484" strokeWidth="2" />
     </svg>
   );
 
-  // ✅ Правая диагональ – "\" (начало крыла справа)
   const DiagonalIconRight = () => (
     <svg width="24" height="24" viewBox="0 0 24 24">
       <line x1="0" y1="0" x2="24" y2="24" stroke="#848484" strokeWidth="2" />
     </svg>
   );
 
-  // 🔄 Горизонтальная линия (конец крыла)
   const Line = () => (
     <svg width="24" height="6" viewBox="0 0 24 6">
       <line x1="0" y1="3" x2="24" y2="3" stroke="#848484" strokeWidth="3" />
@@ -67,16 +65,14 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center' }}>
-
-      {/* Floor color */}
       <div
         style={{
           backgroundColor: '#1E3C5A',
           padding: '5px',
           paddingBottom: '4rem',
           borderRadius: '8px',
-          display: 'inline-block', // 👈 сужает ширину до содержимого
-          boxShadow: '0 0 6px rgba(0, 0, 0, 0.4)', // (опц.) для контраста
+          display: 'inline-block',
+          boxShadow: '0 0 6px rgba(0, 0, 0, 0.4)',
         }}
       >
         {rows.map((row, rowIndex) => {
@@ -112,7 +108,6 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                     width: '3rem',
                   }}
                 >
-                  {/* Exit - left */}
                   {row.isExitRow && (
                     <span
                       style={{
@@ -120,28 +115,18 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                         fontWeight: 'bold',
                         fontSize: '2rem',
                         position: 'relative',
-                        top: isEconomy ? '3rem' : '1.5rem', // 👈 регулируем вертикальное положение
-                        left: isEconomy ? '-4rem' : undefined, // 👈 регулируем положение по горизонтали
+                        top: isEconomy ? '3rem' : '1.5rem',
+                        left: isEconomy ? '-4rem' : undefined,
                       }}
                     >
-                      {/* << */}
-                      <svg
-                        version="1.0"
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 114 114"
-                        preserveAspectRatio="xMidYMid meet"
-                      >
+                      <svg version="1.0" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 114 114" preserveAspectRatio="xMidYMid meet">
                         <g transform="translate(0,114) scale(0.1,-0.1)" fill="red" stroke="none">
                           <path d="M635 922 c-115 -85 -269 -198 -341 -251 l-132 -96 344 -252 344 -252 0 129 0 129 95 -54 95 -54 0 354 0 354 -95 -54 -94 -53 -3 127 -3 127 -210 -154z" />
                         </g>
                       </svg>
-
                     </span>
                   )}
 
-                  {/* Wing - left */}
                   {row.isOverwingRow && rowIndex === firstOverwingIndex && (
                     <div
                       style={{
@@ -177,16 +162,13 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                   )}
                 </div>
 
-                {/* Seats */}
-                {/* ============= */}
-
                 <div
                   style={{
                     display: 'flex',
                     minHeight: seatMinHeight,
                     justifyContent: 'center',
                     alignItems: 'center',
-                    gap: '0.5rem', // ⬅️ для равных отступов между креслами
+                    gap: '0.5rem',
                   }}
                 >
                   {row.seats.map((seat, seatIndex) => {
@@ -196,6 +178,8 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                     const tooltipClass = seat.tooltip?.split('\n')[0]?.toLowerCase() || '';
                     const isPremium = tooltipClass.includes('business') || tooltipClass.includes('premium');
                     const SeatIcon = isPremium ? PremiumSeatSvg : EconomySeatSvg;
+
+                    const passenger = selectedSeatsMap[seat.id];
 
                     return (
                       <div
@@ -213,7 +197,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                             style={{
                               width: '3rem',
                               height: '3rem',
-                              backgroundColor: '#1E3C5A',  // цвет ковролина
+                              backgroundColor: '#1E3C5A',
                               opacity: 0.5,
                             }}
                           />
@@ -228,6 +212,27 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                                 onClick={() => !seat.isReserved && onSeatClick(seat.id)}
                                 label={`${row.rowNumber}${seat.number || ''}`}
                               />
+                              {passenger && (
+                                <div
+                                  style={{
+                                    position: 'absolute',
+                                    top: '4px',
+                                    right: '4px',
+                                    backgroundColor: 'white',
+                                    borderRadius: '50%',
+                                    width: '1.8rem',
+                                    height: '1.8rem',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: '0.8rem',
+                                    fontWeight: 'bold',
+                                    boxShadow: '0 0 3px rgba(0,0,0,0.4)'
+                                  }}
+                                >
+                                  {passenger.initials}
+                                </div>
+                              )}
                             </div>
 
                             {hoveredSeatId === seat.id && seat.tooltip && (
@@ -249,8 +254,6 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                   })}
                 </div>
 
-                {/* ============= */}
-
                 <div
                   style={{
                     position: 'absolute',
@@ -263,7 +266,6 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                     width: '3rem',
                   }}
                 >
-                  {/* Exit - right */}
                   {row.isExitRow && (
                     <span
                       style={{
@@ -275,15 +277,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                         left: isEconomy ? '4rem' : undefined,
                       }}
                     >
-                      {/* {'>>'} */}
-                      <svg
-                        version="1.0"
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 114 114"
-                        preserveAspectRatio="xMidYMid meet"
-                      >
+                      <svg version="1.0" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 114 114" preserveAspectRatio="xMidYMid meet">
                         <g transform="translate(114,0) scale(-0.1,0.1)" fill="red" stroke="none">
                           <path d="M635 922 c-115 -85 -269 -198 -341 -251 l-132 -96 344 -252 344 -252 0 129 0 129 95 -54 95 -54 0 354 0 354 -95 -54 -94 -53 -3 127 -3 127 -210 -154z" />
                         </g>
@@ -291,7 +285,6 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                     </span>
                   )}
 
-                  {/* Wing - right */}
                   {row.isOverwingRow && rowIndex === firstOverwingIndex && (
                     <div
                       style={{
@@ -301,7 +294,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                         display: 'flex',
                         justifyContent: 'center',
                         alignItems: 'center',
-                        left: isEconomy ? '3rem' : '3.5rem', // 
+                        left: isEconomy ? '3rem' : '3.5rem',
                         top: isEconomy ? '2rem' : '0rem',
                       }}
                     >

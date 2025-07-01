@@ -64,6 +64,7 @@ interface SeatMapComponentBaseProps {
   selectedSeats?: SelectedSeat[];
   flightInfo?: React.ReactNode;
   galleryPanel?: React.ReactNode;
+  legendPanel?: React.ReactNode;
 }
 
 function ensurePassengerIds(passengers: PassengerOption[]): PassengerOption[] {
@@ -85,7 +86,8 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   onSeatChange,
   flightInfo,
   assignedSeats,
-  galleryPanel
+  galleryPanel, 
+  legendPanel
 }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [cleanPassengers] = useState(() => ensurePassengerIds(passengers));
@@ -97,6 +99,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
 
   // const [mappedCabinClass] = useState(() => mapCabinToCode(cabinClass));
 
+  // turn On/Off fallBack seatMap React
   const [useFallback, setUseFallback] = useState(true);
 
   const mappedCabinClass = useMemo(() => {
@@ -368,6 +371,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     <SeatMapModalLayout
       flightInfo={flightInfo}
       passengerPanel={passengerPanel}
+      legendPanel={legendPanel}
       galleryPanel={<GalleryPanel />}
     >
       <div

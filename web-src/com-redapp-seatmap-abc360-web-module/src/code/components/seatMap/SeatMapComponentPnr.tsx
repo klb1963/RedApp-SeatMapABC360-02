@@ -80,23 +80,22 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
   } = normalizedSegment;
 
   const flightInfo = (
-    <>
-      <FlightInfoPanel
-        airlineCode={marketingAirline}
-        airlineName={marketingAirlineName}
-        flightNumber={flightNumber}
-        fromCode={origin}
-        fromCity={originCityName}
-        toCode={destination}
-        toCity={destinationCityName}
-        date={departureDateTime?.split?.('T')[0] || t('seatMap.dateUnknown')}
-        duration={duration}
-        aircraft={aircraftDescription}
-        availability={Array.isArray(availability) ? availability : []}
-      />
-      <SeatLegend />
-    </>
+    <FlightInfoPanel
+      airlineCode={marketingAirline}
+      airlineName={marketingAirlineName}
+      flightNumber={flightNumber}
+      fromCode={origin}
+      fromCity={originCityName}
+      toCode={destination}
+      toCity={destinationCityName}
+      date={departureDateTime?.split?.('T')[0] || t('seatMap.dateUnknown')}
+      duration={duration}
+      aircraft={aircraftDescription}
+      availability={Array.isArray(availability) ? availability : []}
+    />
   );
+
+  const legendPanel = <SeatLegend />;
 
   console.log('💡 SeatMapComponentPnr: passengers =', passengers);
 
@@ -128,6 +127,7 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
           }}
           selectedSeats={selectedSeats}
           flightInfo={flightInfo}
+          legendPanel={legendPanel} 
           assignedSeats={assignedSeats}
           generateFlightData={(segment, index, cabin) => {
             const baseFlight = generateFlightData(segment, index, cabin);

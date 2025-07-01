@@ -216,7 +216,7 @@ export const SeatLegend: React.FC = () => {
 
   return (
     <div style={{ marginBottom: '1rem' }}>
-      <div style={{ paddingLeft: '1rem', marginTop: '1rem' }}>
+      <div style={{ paddingLeft: '1rem', marginTop: '2rem' }}>
         <strong>{t('seatMap.legendTitle')}:</strong>
       </div>
       <div style={{
