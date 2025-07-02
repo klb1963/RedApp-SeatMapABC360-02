@@ -8,6 +8,9 @@ import { loadSeatMapFromSabre } from '../../services/loadSeatMapFromSabre';
 import { convertSeatMapToReactSeatmapFormat } from '../../utils/convertSeatMapToReactSeatmap';
 import DeckSelector from '../seatMap/internal/DeckSelector';
 import { createSelectedSeat } from './helpers/createSelectedSeat';
+import { PassengerPanel } from './panels/PassengerPanel';
+import { FlightData } from '../../utils/generateFlightData'; // если нужно для flight
+import { mapCabinToCode } from '../../utils/mapCabinToCode'; // если используется
 
 const ReactSeatMapModal: React.FC = () => {
     const [selectedSeatId, setSelectedSeatId] = React.useState<string | null>(null);
@@ -19,6 +22,8 @@ const ReactSeatMapModal: React.FC = () => {
     const [selectedSeats, setSelectedSeats] = React.useState<any[]>([]);
 
     const filteredRows = rows.filter((row: any) => row.deckId === selectedDeck);
+
+    const useFallback = true;
 
     React.useEffect(() => {
         const fetchData = async () => {
@@ -58,18 +63,21 @@ const ReactSeatMapModal: React.FC = () => {
     const decks = Array.from(new Set(rows.map(row => row.deckId || 'Maindeck')));
 
     const handleSeatClick = (seatId: string) => {
+        console.log('🟢 Clicked seat:', seatId);
+      
         const pax = passengers.find(p => p.id === selectedPassengerId);
         if (!pax) return;
-
+      
         const updated = selectedSeats.filter(s => s.passengerId !== pax.id);
-
-        setSelectedSeats([
-            ...updated,
-            createSelectedSeat(pax, seatId, false, [])
-        ]);
-
+        const seat = createSelectedSeat(pax, seatId, false, []);
+      
+        console.log('🧩 Created seat object:', seat);
+      
+        setSelectedSeats([...updated, seat]);
+      
+        // Этот вызов влияет на "🪑 Вы выбрали место" — можно оставить, если нужно
         setSelectedSeatId(seatId);
-    };
+      };
 
     const assignedMap = React.useMemo(() => {
         const map: Record<string, any> = {};
@@ -80,40 +88,64 @@ const ReactSeatMapModal: React.FC = () => {
     }, [selectedSeats]);
 
     return (
-        <div style={{ padding: '1rem', textAlign: 'center' }}>
+        <div style={{ padding: '1rem', height: '100%', display: 'flex' }}>
+          {/* 🧭 Левая часть — карта */}
+          <div style={{ flex: '1', paddingRight: '1rem', textAlign: 'center' }}>
             <h3 style={{ marginBottom: '1.5rem' }}> Fallback Seatmap </h3>
-
+      
             {decks.length > 1 && (
-                <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'center' }}>
-                    <DeckSelector
-                        decks={decks}
-                        selectedDeck={selectedDeck}
-                        onChange={setSelectedDeck}
-                    />
-                </div>
-            )}
-
-            {selectedSeatId && (
-                <p style={{ marginBottom: '1rem' }}>
-                    🪑 Вы выбрали место: <strong>{selectedSeatId}</strong>
-                </p>
-            )}
-
-            <div style={{ display: 'inline-block' }}>
-                <Seatmap
-                    rows={filteredRows}
-                    selectedSeatId={selectedSeatId}
-                    selectedSeatsMap={assignedMap}
-                    onSeatClick={handleSeatClick}
-                    layoutLength={layoutLength}
+              <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'center' }}>
+                <DeckSelector
+                  decks={decks}
+                  selectedDeck={selectedDeck}
+                  onChange={setSelectedDeck}
                 />
+              </div>
+            )}
+      
+            {selectedSeatId && (
+              <p style={{ marginBottom: '1rem' }}>
+                🪑 Вы выбрали место: <strong>{selectedSeatId}</strong>
+              </p>
+            )}
+      
+            <div style={{ display: 'inline-block' }}>
+              <Seatmap
+                rows={filteredRows}
+                selectedSeatId={selectedSeatId}
+                selectedSeatsMap={assignedMap}
+                onSeatClick={handleSeatClick}
+                layoutLength={layoutLength}
+              />
             </div>
-
+      
             <p style={{ marginTop: '1rem', textAlign: 'center', fontStyle: 'italic', color: '#666' }}>
-                Deck: <strong>{selectedDeck}</strong>, rows: <strong>{filteredRows.length}</strong>
+              Deck: <strong>{selectedDeck}</strong>, rows: <strong>{filteredRows.length}</strong>
             </p>
+          </div>
+      
+          {/* 🧍 Правая часть — пассажиры */}
+          <div style={{ width: '320px', borderLeft: '1px solid #ccc', paddingLeft: '1rem' }}>
+            <PassengerPanel
+              passengers={passengers}
+              selectedSeats={selectedSeats}
+              selectedPassengerId={selectedPassengerId}
+              setSelectedPassengerId={setSelectedPassengerId}
+              setSelectedSeats={setSelectedSeats}
+              assignedSeats={[]} // можно заменить, если хочешь показывать уже назначенные
+              config={{}} // пока можно передавать пустой объект
+              flight={{} as FlightData} // можно заглушку, или вычислить на основе сегмента
+              availability={[]} // если есть, можно прокинуть реальные данные
+              iframeRef={{ current: null }} // в fallback iframe не используется
+              handleResetSeat={() => setSelectedSeats([])}
+              handleSave={() => console.log('💾 Save clicked')}
+              handleAutomateSeating={() => console.log('🤖 Auto assign clicked')}
+              saveDisabled={false}
+            />
+          </div>
         </div>
-    );
+      );
+
 };
 
 export default ReactSeatMapModal;

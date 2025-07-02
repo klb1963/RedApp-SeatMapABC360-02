@@ -32,7 +32,7 @@ interface SeatmapProps {
   selectedSeatId?: string;
   onSeatClick: (seatId: string) => void;
   layoutLength: number;
-  selectedSeatsMap?: Record<string, { initials: string }>;
+  selectedSeatsMap?: Record<string, { initials: string; passengerColor?: string }>;
 }
 
 const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, layoutLength, selectedSeatsMap = {} }) => {
@@ -203,25 +203,29 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                           />
                         ) : isAisle ? null : (
                           <>
-                            <div
-                              onMouseEnter={() => setHoveredSeatId(seat.id)}
-                              onMouseLeave={() => setHoveredSeatId(null)}
-                            >
-                              <SeatIcon
-                                color={backgroundColor}
-                                onClick={() => !seat.isReserved && onSeatClick(seat.id)}
-                                label={`${row.rowNumber}${seat.number || ''}`}
-                              />
-                              {passenger && (
+                              <div
+                                onMouseEnter={() => setHoveredSeatId(seat.id)}
+                                onMouseLeave={() => setHoveredSeatId(null)}
+                              >
+                                <SeatIcon
+                                  color={backgroundColor}
+                                  label={`${row.rowNumber}${seat.number || ''}`}
+                                  onClick={() => {
+                                    if (seat.isReserved || !seat.id) return;
+                                    onSeatClick(seat.id);
+                                  }}
+                                />
+                                {passenger && (
                                 <div
                                   style={{
                                     position: 'absolute',
                                     top: '4px',
                                     right: '4px',
-                                    backgroundColor: 'white',
+                                    backgroundColor: passenger.passengerColor || 'white',
+                                    color: 'white',
                                     borderRadius: '50%',
-                                    width: '1.8rem',
-                                    height: '1.8rem',
+                                    width: '2rem',
+                                    height: '2rem',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',

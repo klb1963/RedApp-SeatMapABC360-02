@@ -12,6 +12,7 @@
 
 import * as React from 'react';
 import { SeatLegend } from '../panels/SeatLegend';
+import { isFallbackMode } from '../utils/isFallbackMode';
 
 interface SeatMapModalLayoutProps {
   flightInfo: React.ReactNode;
@@ -28,6 +29,9 @@ const SeatMapModalLayout: React.FC<SeatMapModalLayoutProps> = ({
   legendPanel,
   children
 }) => {
+
+  const fallback = isFallbackMode();
+
   return (
     <div style={{
       display: 'flex',
@@ -66,29 +70,31 @@ const SeatMapModalLayout: React.FC<SeatMapModalLayoutProps> = ({
       </div>
 
       {/* Right side — passengers panel */}
-      <div style={{
-        flexBasis: '25%',
-        flexShrink: 0,
-        background: '#f8f8f8',
-        padding: '1rem',
-        borderLeft: '1px solid #ddd',
-        overflowY: 'auto'
-      }}>
-        {passengerPanel}
+      {!fallback && (
+        <div style={{
+          flexBasis: '25%',
+          flexShrink: 0,
+          background: '#f8f8f8',
+          padding: '1rem',
+          borderLeft: '1px solid #ddd',
+          overflowY: 'auto'
+        }}>
+          {passengerPanel}
 
-        {legendPanel && (
-          <div style={{ marginTop: '2rem' }}>
-            <hr style={{
-              marginBottom: '1rem',
-              border: 0,
-              borderTop: '1px solid #ccc',
-              width: '100%',
-            }} />
-            <div>{legendPanel}</div>
-          </div>
-        )}
+          {legendPanel && (
+            <div style={{ marginTop: '2rem' }}>
+              <hr style={{
+                marginBottom: '1rem',
+                border: 0,
+                borderTop: '1px solid #ccc',
+                width: '100%',
+              }} />
+              <div>{legendPanel}</div>
+            </div>
+          )}
+        </div>
+      )}
 
-      </div>
     </div>
   );
 };

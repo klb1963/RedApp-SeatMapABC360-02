@@ -22,6 +22,7 @@ import { handleAutomateSeating } from './handleAutomateSeating';
 import { mapCabinToCode } from '../../utils/mapCabinToCode';
 import { useSeatMapInitErrorLogger } from './hooks/useSeatMapInitErrorLogger';
 import ReactSeatMapModal from './ReactSeatMapModal';
+import { isFallbackMode } from './utils/isFallbackMode';
 
 declare global {
   interface Window {
@@ -97,10 +98,8 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   const [segmentIndex, setSegmentIndex] = React.useState(initialSegmentIndex);
   const segment = flightSegments[segmentIndex];
 
-  // const [mappedCabinClass] = useState(() => mapCabinToCode(cabinClass));
-
   // turn On/Off fallBack seatMap React
-  const [useFallback, setUseFallback] = useState(true);
+  const useFallback = isFallbackMode();
 
   const mappedCabinClass = useMemo(() => {
     return mapCabinToCode(cabinClass);
@@ -347,7 +346,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     });
   };
 
-  const passengerPanel = (
+  const passengerPanel = useFallback ? null : (
     <PassengerPanel
       passengers={cleanPassengers}
       selectedSeats={selectedSeats}
