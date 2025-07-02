@@ -43,22 +43,22 @@ const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, d
 
   // 🛫 Панель информации о рейсе
   const flightInfo = (
-    <>
-      <FlightInfoPanel
-        airlineCode={segment.marketingAirline}
-        airlineName={segment.marketingAirlineName}
-        flightNumber={segment.flightNumber}
-        fromCode={segment.origin}
-        fromCity={segment.originCityName || ''}
-        toCode={segment.destination}
-        toCity={segment.destinationCityName || ''}
-        date={segment.departureDateTime?.split?.('T')[0] || 'Unknown date'}
-        duration={segment.duration}
-        aircraft={segment.aircraftDescription}
-      />
-      <SeatLegend />
-    </>
+    <FlightInfoPanel
+      airlineCode={segment.marketingAirline}
+      airlineName={segment.marketingAirlineName}
+      flightNumber={segment.flightNumber}
+      fromCode={segment.origin}
+      fromCity={segment.originCityName || ''}
+      toCode={segment.destination}
+      toCity={segment.destinationCityName || ''}
+      date={segment.departureDateTime?.split?.('T')[0] || 'Unknown date'}
+      duration={segment.duration}
+      aircraft={segment.aircraftDescription}
+    />
   );
+  
+  // Панель Legeng
+  const legendPanel = <SeatLegend />;
 
   return (
     <div style={{ padding: '1rem' }}>
@@ -108,6 +108,7 @@ const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, d
         passengers={[]}
         showSegmentSelector={false}
         flightInfo={flightInfo}
+        legendPanel={legendPanel}
       />
     </div>
   );
