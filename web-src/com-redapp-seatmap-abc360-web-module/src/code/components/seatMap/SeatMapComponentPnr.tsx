@@ -100,7 +100,7 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
   console.log('💡 SeatMapComponentPnr: passengers =', passengers);
 
   // fallback-seatmap mode switching ON/OFF
-  window.name = 'fallback-seatmap'; // '' - for OFF
+  window.name = ''; // '' - for OFF 'fallback-seatmap' - for ON
 
   return (
     <div style={{ padding: '1rem' }}>

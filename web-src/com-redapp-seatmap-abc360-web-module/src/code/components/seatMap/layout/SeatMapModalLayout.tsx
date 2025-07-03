@@ -72,7 +72,8 @@ const SeatMapModalLayout: React.FC<SeatMapModalLayoutProps> = ({
       {/* Right side — passengers panel */}
       {!fallback && (
         <div style={{
-          flexBasis: '25%',
+          flexBasis: '25%',       // 👈 минимально допустимая ширина
+          marginLeft: '3rem',       // 👈 Сдвигаем вправо
           flexShrink: 0,
           background: '#f8f8f8',
           padding: '1rem',

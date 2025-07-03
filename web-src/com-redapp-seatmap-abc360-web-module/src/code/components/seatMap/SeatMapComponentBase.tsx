@@ -387,14 +387,16 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
           <div
             style={{
               display: 'flex',
-              justifyContent: 'center',
+              justifyContent: 'flex-start', // ⬅️ сдвигаем влево
               alignItems: 'flex-start', // или 'center', если нужно и по вертикали
               width: '100%',
               height: '100%',
               overflow: 'auto',
+              paddingLeft: '2rem', // ⬅️ или сколько нужно
+              paddingRight: '4rem', // 👈 добавлен отступ справа
             }}
           >
-            <div style={{ minWidth: 720 }}>
+            <div style={{ minWidth: 720}}>
               <ReactSeatMapModal />
             </div>
           </div>
