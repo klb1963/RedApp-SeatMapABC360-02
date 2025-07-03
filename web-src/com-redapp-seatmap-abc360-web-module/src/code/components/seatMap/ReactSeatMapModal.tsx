@@ -82,9 +82,22 @@ const ReactSeatMapModal: React.FC = () => {
       setSelectedPassengerId(enrichedPassengers[0]?.id || '');
       setSegments(segments);
 
-      const flightSegment = segments[0];
-      const defaultCabin = ['F', 'C', 'S', 'Y'].includes(flightSegment.bookingClass)
-        ? flightSegment.bookingClass
+        // 🪑 Инициализируем selectedSeats из PNR
+        const assignedSeatsFromPnr = enrichedPassengers
+            .filter(p => p.seatAssignment && p.seatAssignment !== 'not assigned')
+            .map(p => ({
+                passengerId: p.id,
+                seatLabel: p.seatAssignment,
+                confirmed: true,
+                price: 0,
+                passengerInitials: p.passengerInitials,
+                passengerColor: p.passengerColor,
+            }));
+        setSelectedSeats(assignedSeatsFromPnr);
+
+        const flightSegment = segments[0];
+        const defaultCabin = ['F', 'C', 'S', 'Y'].includes(flightSegment.bookingClass)
+            ? flightSegment.bookingClass
         : 'Y';
       setCabinClass(defaultCabin as any);
 

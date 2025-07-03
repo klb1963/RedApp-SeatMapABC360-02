@@ -32,7 +32,7 @@ interface SeatmapProps {
   selectedSeatId?: string;
   onSeatClick: (seatId: string) => void;
   layoutLength: number;
-  selectedSeatsMap?: Record<string, { initials: string; passengerColor?: string }>;
+  selectedSeatsMap?: Record<string, { passengerInitials: string; passengerColor?: string }>;
 }
 
 const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, layoutLength, selectedSeatsMap = {} }) => {
@@ -234,7 +234,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                                     boxShadow: '0 0 3px rgba(0,0,0,0.4)'
                                   }}
                                 >
-                                  {passenger.initials}
+                                  {passenger.passengerInitials}
                                 </div>
                               )}
                             </div>

@@ -42,7 +42,15 @@ const FallbackSeatmapCenter: React.FC<FallbackSeatmapCenterProps> = ({
         if (!pax) return;
 
         const updated = selectedSeats.filter(s => s.passengerId !== pax.id);
-        const seat = createSelectedSeat(pax, seatId, false, []);
+
+        const seat = {
+            passengerId: pax.id,
+            seatLabel: seatId,
+            confirmed: false,
+            price: 0,
+            passengerInitials: pax.passengerInitials,
+            passengerColor: pax.passengerColor,
+        };
 
         console.log('🧩 Created seat object:', seat);
 

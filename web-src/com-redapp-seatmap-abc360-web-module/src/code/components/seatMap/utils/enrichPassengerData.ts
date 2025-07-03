@@ -12,10 +12,14 @@ import { PassengerOption } from '../../../utils/parsePnrData';
 import { getPassengerColor } from '../helpers/getPassengerColor';
 
 export const enrichPassengerData = (passengers: PassengerOption[]) => {
-  const enrichedPassengers = passengers.map((p, i) => ({
-    ...p,
-    passengerColor: getPassengerColor(i),
-  }));
+  const enrichedPassengers = passengers.map((p, i) => {
+    const initials = `${p.givenName[0] || ''}${p.surname[0] || ''}`.toUpperCase();
+    return {
+      ...p,
+      passengerColor: getPassengerColor(i),
+      passengerInitials: initials,
+    }
+  });
 
   const assignedSeats = enrichedPassengers
     .filter(p => p.seatAssignment && p.seatAssignment !== 'not assigned')
