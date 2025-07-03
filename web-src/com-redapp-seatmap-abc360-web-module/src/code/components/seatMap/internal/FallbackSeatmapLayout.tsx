@@ -38,7 +38,9 @@ const FallbackSeatmapLayout: React.FC<Props> = ({
           overflowY: 'auto'
         }}
       >
+
         {flightInfo}
+
       </div>
 
       {/* Center — seatmap */}
@@ -53,7 +55,9 @@ const FallbackSeatmapLayout: React.FC<Props> = ({
           border: '1px solid #ccc'
         }}
       >
+
         {center}
+        
       </div>
 
       {/* Right — passenger panel + legend */}
@@ -67,6 +71,7 @@ const FallbackSeatmapLayout: React.FC<Props> = ({
           overflowY: 'auto'
         }}
       >
+
         {passengerPanel}
 
         <div style={{ marginTop: '2rem' }}>
@@ -78,7 +83,9 @@ const FallbackSeatmapLayout: React.FC<Props> = ({
               width: '100%'
             }}
           />
+
           {legendPanel}
+
         </div>
       </div>
     </div>

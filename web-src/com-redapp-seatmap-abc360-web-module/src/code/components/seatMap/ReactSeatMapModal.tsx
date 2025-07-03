@@ -1,7 +1,5 @@
 // file: /code/components/seatMap/ReactSeatMapModal.tsx
 
-// file: /code/components/seatMap/ReactSeatMapModal.tsx
-
 import * as React from 'react';
 import { loadPnrDetailsFromSabre } from '../../services/loadPnrDetailsFromSabre';
 import { enrichPassengerData } from './utils/enrichPassengerData';
@@ -15,6 +13,8 @@ import { SeatLegend } from './panels/SeatLegend';
 import { FlightData } from '../../utils/generateFlightData';
 import { SegmentCabinSelector } from './panels/SegmentCabinSelector';
 import { GalleryPanel } from './panels/GalleryPanel';
+import { handleSaveSeats as saveSeatsToSabre } from './handleSaveSeats';
+import { handleAutomateSeating as automateSeats } from './handleAutomateSeating';
 
 const ReactSeatMapModal: React.FC = () => {
   const [passengers, setPassengers] = React.useState<any[]>([]);
@@ -58,21 +58,21 @@ const ReactSeatMapModal: React.FC = () => {
     setRows(rows);
     setLayoutLength(layoutLength);
 
-    setFlightInfo({
-      airlineCode: flightSegment.marketingCarrier,
-      airlineName: flightSegment.airlineName || '',
-      flightNumber: flightSegment.marketingFlightNumber,
-      fromCode: flightSegment.origin,
-      toCode: flightSegment.destination,
-      date: flightSegment.departureDate,
-      duration: formatDuration(flightSegment.duration),
-      aircraft: flightSegment.equipment,
-      availability,
-    });
-  };
+        setFlightInfo({
+            airlineCode: flightSegment.marketingCarrier,
+            airlineName: flightSegment.airlineName || '',
+            flightNumber: flightSegment.marketingFlightNumber,
+            fromCode: flightSegment.origin,
+            toCode: flightSegment.destination,
+            date: flightSegment.departureDate,
+            duration: formatDuration(flightSegment.duration),
+            aircraft: flightSegment.equipment,
+            availability,
+        });
+    };
 
-  React.useEffect(() => {
-    const fetchData = async () => {
+    React.useEffect(() => {
+        const fetchData = async () => {
       const { parsedData: pnrData } = await loadPnrDetailsFromSabre();
       const segments = pnrData.segments;
       const enriched = enrichPassengerData(pnrData.passengers);
@@ -107,17 +107,47 @@ const ReactSeatMapModal: React.FC = () => {
     fetchData();
   }, []);
 
-  React.useEffect(() => {
-    if (segments.length && passengers.length) {
-      fetchSeatMap(segments, segmentIndex, cabinClass, passengers);
-    }
-  }, [segmentIndex, cabinClass]);
+    React.useEffect(() => {
+        if (segments.length && passengers.length) {
+            fetchSeatMap(segments, segmentIndex, cabinClass, passengers);
+        }
+    }, [segmentIndex, cabinClass]);
 
-  React.useEffect(() => {
-    if (rows.length > 0 && !selectedDeck) {
-      setSelectedDeck(rows[0].deckId || 'Maindeck');
-    }
-  }, [rows]);
+    React.useEffect(() => {
+        if (rows.length > 0 && !selectedDeck) {
+            setSelectedDeck(rows[0].deckId || 'Maindeck');
+        }
+    }, [rows]);
+
+    const handleSaveSeatsClick = async () => {
+        const seatsForSabre = selectedSeats.map(s => {
+            const pax = passengers.find(p => p.id === s.passengerId);
+            return {
+                passengerId: pax?.nameNumber || s.passengerId,
+                seatLabel: s.seatLabel,
+                passengerType: pax?.passengerType || '',
+                passengerLabel: pax?.label || '',
+                passengerColor: s.passengerColor || '',
+                initials: s.passengerInitials || '',
+                passengerInitials: s.passengerInitials || '',
+                segmentNumber: segments[segmentIndex]?.segmentNumber || '1',
+                seat: {
+                    seatLabel: s.seatLabel,
+                    price: String(s.price || '0'),
+                },
+            };
+        });
+    
+        try {
+            const { handleDeleteSeats } = await import('./handleDeleteSeats');
+            await handleDeleteSeats(async () => {
+                await saveSeatsToSabre(seatsForSabre);
+            });
+        } catch (error) {
+            console.error('❌ Ошибка при сохранении мест:', error);
+            alert('❌ Ошибка при сохранении. См. консоль.');
+        }
+    };
 
   return (
     <FallbackSeatmapLayout
@@ -141,14 +171,33 @@ const ReactSeatMapModal: React.FC = () => {
           selectedPassengerId={selectedPassengerId}
           setSelectedPassengerId={setSelectedPassengerId}
           setSelectedSeats={setSelectedSeats}
-          assignedSeats={[]} // заглушка
+          assignedSeats={selectedSeats.map(s => ({
+            passengerId: s.passengerId,
+            seat: s.seatLabel,
+            segmentNumber: s.segmentNumber || '1'
+          }))}
           config={{}}
           flight={{} as FlightData}
           availability={flightInfo?.availability || []}
           iframeRef={{ current: null }}
           handleResetSeat={() => setSelectedSeats([])}
-          handleSave={() => console.log('💾 Save clicked')}
-          handleAutomateSeating={() => console.log('🤖 Auto assign clicked')}
+          handleSave={handleSaveSeatsClick}
+          handleAutomateSeating={() => {
+            if (!flightInfo?.availability) {
+              console.warn('⚠️ No availability data');
+              return;
+            }
+            const newSeats = automateSeats({
+              passengers,
+              availableSeats: flightInfo.availability,
+              segmentNumber: segments[segmentIndex]?.segmentNumber || '1',
+            });
+            if (newSeats.length === 0) {
+              console.warn('⚠️ No seats assigned automatically');
+              return;
+            }
+            setSelectedSeats(newSeats);
+          }}
           saveDisabled={false}
         />
       }
@@ -158,6 +207,7 @@ const ReactSeatMapModal: React.FC = () => {
           selectedPassengerId={selectedPassengerId}
           selectedSeats={selectedSeats}
           setSelectedSeats={setSelectedSeats}
+          setSelectedPassengerId={setSelectedPassengerId} 
           rows={rows}
           layoutLength={layoutLength}
           selectedDeck={selectedDeck}

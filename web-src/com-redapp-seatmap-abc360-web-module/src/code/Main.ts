@@ -93,7 +93,7 @@ export class Main extends Module {
         ),
 
         new RedAppSidePanelButton(
-          "SeatMaps ABC 360",
+          "SeatMap ABC 360",
           "btn-secondary side-panel-button",
           () => { this.openSeatMapABC360(); },
           false
@@ -121,7 +121,7 @@ export class Main extends Module {
         ),
 
         new RedAppSidePanelButton(
-          "SeatMap React",
+          "SeatMap Fallback",
           "btn-secondary side-panel-button",
           () => { this.showSeatMapReact(); },
           false

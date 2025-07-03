@@ -50,6 +50,7 @@ export function createSelectedSeat(
     passengerLabel,
     passengerColor: passenger.passengerColor || '',
     initials,
+    passengerInitials: initials,
     abbr,
     readOnly,
     segmentNumber: segmentNumber || '1',

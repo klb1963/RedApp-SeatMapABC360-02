@@ -10,6 +10,7 @@ export interface FallbackSeatmapCenterProps {
     selectedPassengerId: string;
     selectedSeats: any[];
     setSelectedSeats: React.Dispatch<React.SetStateAction<any[]>>;
+    setSelectedPassengerId: (id: string) => void;
     rows: any[];
     layoutLength: number;
     selectedDeck: string;
@@ -21,6 +22,7 @@ const FallbackSeatmapCenter: React.FC<FallbackSeatmapCenterProps> = ({
     selectedPassengerId,
     selectedSeats,
     setSelectedSeats,
+    setSelectedPassengerId,
     rows,
     layoutLength,
     selectedDeck,
@@ -54,8 +56,22 @@ const FallbackSeatmapCenter: React.FC<FallbackSeatmapCenterProps> = ({
 
         console.log('🧩 Created seat object:', seat);
 
-        setSelectedSeats([...updated, seat]);
+        const newSelectedSeats = [...updated, seat];
+        setSelectedSeats(newSelectedSeats);
         setSelectedSeatId(seatId);
+
+        // 🔍 Найти следующего пассажира без места
+        const assignedPassengerIds = newSelectedSeats.map(s => s.passengerId);
+        const nextPax = passengers.find(
+            p => !assignedPassengerIds.includes(p.id)
+        );
+
+        if (nextPax) {
+            console.log(`➡️ Switching to next passenger: ${nextPax.id}`);
+            setSelectedPassengerId(nextPax.id);
+        } else {
+            console.log('✅ All passengers have seats assigned.');
+        }
     };
 
     const assignedMap = React.useMemo(() => {

@@ -60,6 +60,7 @@ export function handleAutomateSeating({
       passengerColor: pax.passengerColor || 'gray',
       initials: getInitials(pax.surname, pax.givenName),
       abbr: getAbbr(pax.surname, pax.givenName),
+      passengerInitials: getInitials(pax.surname, pax.givenName),
       readOnly: false,
       segmentNumber,
       seat: {
