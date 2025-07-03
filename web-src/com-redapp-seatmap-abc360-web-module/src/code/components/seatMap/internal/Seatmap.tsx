@@ -32,7 +32,7 @@ interface SeatmapProps {
   selectedSeatId?: string;
   onSeatClick: (seatId: string) => void;
   layoutLength: number;
-  selectedSeatsMap?: Record<string, { initials: string; passengerColor?: string }>;
+  selectedSeatsMap?: Record<string, { passengerInitials: string; passengerColor?: string }>;
 }
 
 const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, layoutLength, selectedSeatsMap = {} }) => {
@@ -136,7 +136,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                         display: 'flex',
                         justifyContent: 'center',
                         alignItems: 'center',
-                        left: isEconomy ? '-3rem' : '-3.5rem',
+                        left: isEconomy ? '-3.5rem' : '-3.5rem',
                         top: isEconomy ? '2rem' : '0rem',
                       }}
                     >
@@ -224,8 +224,8 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                                     backgroundColor: passenger.passengerColor || 'white',
                                     color: 'white',
                                     borderRadius: '50%',
-                                    width: '2rem',
-                                    height: '2rem',
+                                    width: '3rem',
+                                    height: '3rem',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
@@ -234,7 +234,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                                     boxShadow: '0 0 3px rgba(0,0,0,0.4)'
                                   }}
                                 >
-                                  {passenger.initials}
+                                  {passenger.passengerInitials}
                                 </div>
                               )}
                             </div>
@@ -298,7 +298,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                         display: 'flex',
                         justifyContent: 'center',
                         alignItems: 'center',
-                        left: isEconomy ? '3rem' : '3.5rem',
+                        left: isEconomy ? '3.5rem' : '3.5rem',
                         top: isEconomy ? '2rem' : '0rem',
                       }}
                     >

@@ -37,6 +37,7 @@ export interface SelectedSeat {
   passengerLabel: string;
   passengerColor: string;
   initials: string;
+  passengerInitials: string;
   readOnly?: boolean;
   abbr?: string;
   segmentNumber: string;
