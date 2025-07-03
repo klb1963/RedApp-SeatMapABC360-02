@@ -47,8 +47,8 @@ const FallbackSeatmapLayout: React.FC<Props> = ({
           flexGrow: 1,
           display: 'flex',
           justifyContent: 'center',
-          alignItems: 'center',
-          overflow: 'hidden',
+          alignItems: 'flex-start',
+          overflow: 'auto',
           minHeight: '100%',
           border: '1px solid #ccc'
         }}
