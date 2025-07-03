@@ -136,7 +136,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                         display: 'flex',
                         justifyContent: 'center',
                         alignItems: 'center',
-                        left: isEconomy ? '-3rem' : '-3.5rem',
+                        left: isEconomy ? '-3.5rem' : '-3.5rem',
                         top: isEconomy ? '2rem' : '0rem',
                       }}
                     >
@@ -298,7 +298,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                         display: 'flex',
                         justifyContent: 'center',
                         alignItems: 'center',
-                        left: isEconomy ? '3rem' : '3.5rem',
+                        left: isEconomy ? '3.5rem' : '3.5rem',
                         top: isEconomy ? '2rem' : '0rem',
                       }}
                     >

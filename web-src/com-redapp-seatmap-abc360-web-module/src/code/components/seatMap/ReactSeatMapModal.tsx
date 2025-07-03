@@ -12,6 +12,7 @@ import { FlightInfoPanel } from './panels/FlidhtInfoPanel';
 import { SeatLegend } from './panels/SeatLegend';
 import { FlightData } from '../../utils/generateFlightData';
 import { SegmentCabinSelector } from './panels/SegmentCabinSelector';
+import { GalleryPanel } from './panels/GalleryPanel';
 
 const ReactSeatMapModal: React.FC = () => {
   const [passengers, setPassengers] = React.useState<any[]>([]);
@@ -102,6 +103,7 @@ const ReactSeatMapModal: React.FC = () => {
             setCabinClass={setCabinClass}
           />
           {flightInfo && <FlightInfoPanel {...flightInfo} />}
+          <GalleryPanel />
         </>
       }
       passengerPanel={
