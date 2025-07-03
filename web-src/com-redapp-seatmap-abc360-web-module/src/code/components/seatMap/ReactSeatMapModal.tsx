@@ -1,5 +1,7 @@
 // file: /code/components/seatMap/ReactSeatMapModal.tsx
 
+// file: /code/components/seatMap/ReactSeatMapModal.tsx
+
 import * as React from 'react';
 import { loadPnrDetailsFromSabre } from '../../services/loadPnrDetailsFromSabre';
 import { enrichPassengerData } from './utils/enrichPassengerData';
@@ -31,6 +33,44 @@ const ReactSeatMapModal: React.FC = () => {
   const formatDuration = (minutes?: number) =>
     minutes ? `${Math.floor(minutes / 60)}h ${minutes % 60}m` : '';
 
+  const fetchSeatMap = async (
+    segments: any[],
+    segmentIndex: number,
+    cabinClass: 'Y' | 'S' | 'C' | 'F' | 'A',
+    passengers: any[]
+  ) => {
+    const flightSegment = segments[segmentIndex];
+
+    const seatMapSegment = {
+      bookingClass: cabinClass,
+      marketingCarrier: flightSegment.marketingCarrier || 'XX',
+      marketingFlightNumber: flightSegment.marketingFlightNumber || '000',
+      flightNumber: flightSegment.marketingFlightNumber || '000',
+      departureDate: flightSegment.departureDate,
+      origin: flightSegment.origin,
+      destination: flightSegment.destination,
+    };
+
+    const { seatInfo, layoutLetters, availability } =
+      await loadSeatMapFromSabre(seatMapSegment, passengers);
+
+    const { rows, layoutLength } = convertSeatMapToReactSeatmapFormat(seatInfo, layoutLetters);
+    setRows(rows);
+    setLayoutLength(layoutLength);
+
+    setFlightInfo({
+      airlineCode: flightSegment.marketingCarrier,
+      airlineName: flightSegment.airlineName || '',
+      flightNumber: flightSegment.marketingFlightNumber,
+      fromCode: flightSegment.origin,
+      toCode: flightSegment.destination,
+      date: flightSegment.departureDate,
+      duration: formatDuration(flightSegment.duration),
+      aircraft: flightSegment.equipment,
+      availability,
+    });
+  };
+
   React.useEffect(() => {
     const fetchData = async () => {
       const { parsedData: pnrData } = await loadPnrDetailsFromSabre();
@@ -41,49 +81,24 @@ const ReactSeatMapModal: React.FC = () => {
       setPassengers(enrichedPassengers);
       setSelectedPassengerId(enrichedPassengers[0]?.id || '');
       setSegments(segments);
+
+      const flightSegment = segments[0];
+      const defaultCabin = ['F', 'C', 'S', 'Y'].includes(flightSegment.bookingClass)
+        ? flightSegment.bookingClass
+        : 'Y';
+      setCabinClass(defaultCabin as any);
+
+      await fetchSeatMap(segments, 0, defaultCabin as any, enrichedPassengers);
     };
 
     fetchData();
   }, []);
 
   React.useEffect(() => {
-    const fetchSeatMap = async () => {
-      if (!segments.length) return;
-
-      const flightSegment = segments[segmentIndex];
-
-      const seatMapSegment = {
-        bookingClass: cabinClass || flightSegment.bookingClass || 'Y',
-        marketingCarrier: flightSegment.marketingCarrier || 'XX',
-        marketingFlightNumber: flightSegment.marketingFlightNumber || '000',
-        flightNumber: flightSegment.marketingFlightNumber || '000',
-        departureDate: flightSegment.departureDate,
-        origin: flightSegment.origin,
-        destination: flightSegment.destination,
-      };
-
-      const { seatInfo, layoutLetters, availability } =
-        await loadSeatMapFromSabre(seatMapSegment, passengers);
-
-      const { rows, layoutLength } = convertSeatMapToReactSeatmapFormat(seatInfo, layoutLetters);
-      setRows(rows);
-      setLayoutLength(layoutLength);
-
-      setFlightInfo({
-        airlineCode: flightSegment.marketingCarrier,
-        airlineName: flightSegment.airlineName || '',
-        flightNumber: flightSegment.marketingFlightNumber,
-        fromCode: flightSegment.origin,
-        toCode: flightSegment.destination,
-        date: flightSegment.departureDate,
-        duration: formatDuration(flightSegment.duration),
-        aircraft: flightSegment.equipment,
-        availability,
-      });
-    };
-
-    fetchSeatMap();
-  }, [segments, segmentIndex, cabinClass]);
+    if (segments.length && passengers.length) {
+      fetchSeatMap(segments, segmentIndex, cabinClass, passengers);
+    }
+  }, [segmentIndex, cabinClass]);
 
   React.useEffect(() => {
     if (rows.length > 0 && !selectedDeck) {
