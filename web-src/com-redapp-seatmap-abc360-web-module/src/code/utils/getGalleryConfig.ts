@@ -23,7 +23,7 @@ export function getGalleryConfig(media: IMediaData | null) {
       },
     },
     closeButton: {
-      enabled: true,
+      enabled: false
     },
     pagination: {
       enabled: true,

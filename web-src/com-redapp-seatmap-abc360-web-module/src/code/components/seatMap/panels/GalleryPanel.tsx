@@ -22,7 +22,7 @@ export const GalleryPanel: React.FC<GalleryPanelProps> = ({ config }) => {
           marginTop: '1rem',
           border: '1px solid #ccc',
           width: '100%',
-          height: '402px',
+          height: '502px',
         }}
       >
         <iframe
