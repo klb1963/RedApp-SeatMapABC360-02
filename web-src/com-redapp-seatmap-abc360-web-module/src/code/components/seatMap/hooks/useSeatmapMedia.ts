@@ -8,7 +8,7 @@
 
 import { useEffect, useState } from 'react';
 
-interface IMediaData {
+export interface IMediaData {
   title?: string;
   photoData?: any[];
   panoData?: any[];

@@ -24,6 +24,7 @@ import { useSeatMapInitErrorLogger } from './hooks/useSeatMapInitErrorLogger';
 import ReactSeatMapModal from './ReactSeatMapModal';
 import { isFallbackMode } from './utils/isFallbackMode';
 import { useSeatmapMedia } from './hooks/useSeatmapMedia';
+import { getGalleryConfig } from '../../utils/getGalleryConfig';
 
 declare global {
   interface Window {
@@ -109,43 +110,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
 
   const { media, error: mediaError } = useSeatmapMedia();
 
-  const galleryConfig = useMemo(() => {
-    if (!media) return null;
-
-    return {
-      title: media.title || 'Aircraft gallery',
-      styles: {
-        modal: {
-          width: 600,
-          height: 500,
-          borderRadius: 2,
-          padding: '15px 25px',
-          backgroundColor: 'rgba(255, 255, 255, 1)',
-        },
-        slides: {
-          width: 550,
-          height: 300,
-        },
-        thumbnails: {
-          width: 130,
-          height: 100,
-        },
-      },
-      closeButton: {
-        enabled: true,
-      },
-      pagination: {
-        enabled: true,
-        activeBulletColor: '#39c0ec',
-      },
-      navigation: {
-        enabled: true,
-        color: '#39c0ec',
-      },
-      photoData: media.photoData || [],
-      panoData: media.panoData || [],
-    };
-  }, [media]);
+  const galleryConfig = useMemo(() => getGalleryConfig(media), [media]);
 
   useEffect(() => {
     function debugAllMessages(event: MessageEvent) {
