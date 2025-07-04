@@ -29,17 +29,31 @@ export function useSeatmapMedia(): UseSeatmapMediaResult {
       if (event.origin !== 'https://quicket.io') return;
       const data = event.data;
 
-      if (data?.type === 'onSeatMapInited') {
-        if (data.error) {
-          console.error('❌ SeatMap init error:', data.error);
-          setError(data.error);
+      if (data?.type === 'seatMaps' && data?.onSeatMapInited) {
+        console.log('📸 onSeatMapInited message received:', data);
+
+        let parsed = data.onSeatMapInited;
+        if (typeof parsed === 'string') {
+          try {
+            parsed = JSON.parse(parsed);
+          } catch (e) {
+            console.error('❌ Failed to parse onSeatMapInited JSON:', e);
+            return;
+          }
+        }
+
+        if (parsed.error) {
+          console.error('❌ SeatMap init error:', parsed.error);
+          setError(parsed.error);
         } else {
           setError(null);
         }
 
-        if (data.media) {
-          setMedia(data.media);
+        if (parsed.media) {
+          console.log('📸 media data received:', parsed.media);
+          setMedia(parsed.media);
         } else {
+          console.log('ℹ️ No media data in message');
           setMedia(null);
         }
       }

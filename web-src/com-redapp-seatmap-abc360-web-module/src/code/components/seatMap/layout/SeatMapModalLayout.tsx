@@ -52,7 +52,9 @@ const SeatMapModalLayout: React.FC<SeatMapModalLayoutProps> = ({
         overflowY: 'auto'
       }}>
         {flightInfo}  {/* 📋 flight info */}
+
         {galleryPanel} {/* 🖼️ aircraft galery */}
+        
       </div>
       {/* Center — iframe with seat map */}
       <div
