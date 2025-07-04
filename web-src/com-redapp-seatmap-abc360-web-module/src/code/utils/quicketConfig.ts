@@ -81,7 +81,7 @@ export const quicketConfig = {
     fuselageWingsColor: 'rgba(55, 55, 55, 0.5)',
 
     // 🚪 Emergency exit icons
-    exitIconUrlLeft: 'https://panorama.quicket.io/icons/exit-left.svg',
-    exitIconUrlRight: 'https://panorama.quicket.io/icons/exit-right.svg',
+    // exitIconUrlLeft: 'https://panorama.quicket.io/icons/exit-left.svg',
+    // exitIconUrlRight: 'https://panorama.quicket.io/icons/exit-right.svg',
   }
 };

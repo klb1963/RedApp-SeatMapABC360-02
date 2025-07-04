@@ -88,7 +88,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   onSeatChange,
   flightInfo,
   assignedSeats,
-  galleryPanel, 
+  galleryPanel,
   legendPanel
 }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -99,8 +99,9 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   const [segmentIndex, setSegmentIndex] = React.useState(initialSegmentIndex);
   const segment = flightSegments[segmentIndex];
 
-  // turn On/Off fallBack seatMap React
+  const seatMapInitError = useSeatMapInitErrorLogger();
   const useFallback = isFallbackMode();
+  const showFallback = useFallback || !!seatMapInitError;
 
   const mappedCabinClass = useMemo(() => {
     return mapCabinToCode(cabinClass);
@@ -113,8 +114,6 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   useEffect(() => {
     setAlreadyInitialized(false);
   }, [initialSegmentIndex]);
-
-  useSeatMapInitErrorLogger();
 
   useEffect(() => {
     if (assignedSeats?.length && !alreadyInitialized) {
@@ -140,119 +139,6 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
       setSelectedPassengerId(firstId);
     }
   }, [passengers, selectedPassengerId]);
-
-  // 🧭 Initial map load effect – only runs once on first rendering
-  useEffect(() => {
-    if (
-      iframeRef.current &&
-      flightSegments.length > 0 &&
-      cabinClass &&
-      !alreadyInitialized
-    ) {
-
-      const effectiveCabin = segment?.bookingClass || mappedCabinClass;
-      const flight = generateFlightData(segment, segmentIndex, mapCabinToCode(effectiveCabin));
-      if (!flight) return;
-
-      console.log('📤📤📤!!! Sending to seatmap iframe:', {
-        flight,
-        startRow: flight?.startRow,
-        endRow: flight?.endRow,
-        availability,
-      });
-
-      postSeatMapUpdate({
-        config,
-        flight,
-        availability,
-        passengers: cleanPassengers,
-        selectedPassengerId,
-        selectedSeats,
-        iframeRef
-      });
-
-      setAlreadyInitialized(true);
-    }
-  }, [
-    iframeRef.current,
-    flightSegments,
-    cabinClass,
-    availability,
-    segmentIndex,
-    cleanPassengers,
-    selectedPassengerId,
-    selectedSeats,
-    alreadyInitialized
-  ]);
-
-  // 🔁 Fallback update effect – triggers when segmentIndex or cabinClass changes,
-// but only if no seats are currently selected.
-// Prevents map from becoming stale after user changes flight segment or cabin dropdown manually.
-
-  useEffect(() => {
-    if (!iframeRef.current) return;
-    if (selectedSeats.length > 0) return;
-
-    const mappedCabin = mappedCabinClass;
-
-    if (!segment) return;
-
-    const effectiveCabin = segment?.bookingClass || mappedCabinClass;
-    const flight = generateFlightData(segment, segmentIndex, mapCabinToCode(effectiveCabin));
-
-    console.log('📤📤📤!!! Sending to seatmap iframe:', {
-      flight,
-      startRow: flight?.startRow,
-      endRow: flight?.endRow,
-      availability,
-    });
-
-    postSeatMapUpdate({
-      config,
-      flight,
-      availability,
-      passengers: cleanPassengers,
-      selectedPassengerId,
-      selectedSeats,
-      iframeRef
-    });
-  }, [segmentIndex, cabinClass, selectedSeats.length]);
-
-  // Reset Seat
-  const handleResetSeat = () => {
-    setSelectedSeats([]);
-    setSelectedPassengerId(cleanPassengers.length > 0 ? cleanPassengers[0].id : '');
-    onSeatChange?.([]);
-    const iframe = iframeRef.current;
-    if (!iframe) return;
-
-    if (!segment) return;
-    const effectiveCabin = segment?.bookingClass || mappedCabinClass;
-    const flight = generateFlightData(segment, segmentIndex, mapCabinToCode(effectiveCabin));
-
-    const passengerList = cleanPassengers.map((p, i) =>
-      createPassengerPayload(p, i, selectedPassengerId, [])
-    );
-
-    const message: SeatMapMessagePayload = {
-      type: 'seatMaps',
-      config: JSON.stringify(config),
-      flight: JSON.stringify(flight),
-      currentDeckIndex: '0'
-    };
-
-    if (Array.isArray(availability) && availability.length > 0) {
-      message.availability = JSON.stringify(availability);
-    } else if (availability === null) {
-      message.availability = null;
-    }
-
-    if (passengerList && passengerList.length > 0) {
-      message.passengers = JSON.stringify(passengerList);
-    }
-
-    iframe.contentWindow?.postMessage(message, 'https://quicket.io');
-  };
 
   const handleIframeLoad = useOnIframeLoad({
     iframeRef,
@@ -303,63 +189,18 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     availability
   });
 
-  const enrichedAssignedSeats: SelectedSeat[] = assignedSeats?.map((s) => {
-    const pax = passengers.find((p) => p.id === s.passengerId || p.nameNumber === s.passengerId);
-    if (!pax) return null;
-    return createSelectedSeat(pax, s.seat, true, availability);
-  }).filter(Boolean) as SelectedSeat[];
-
-  const saveDisabled = assignedSeats ? areSeatsEqual(selectedSeats, enrichedAssignedSeats) : false;
-
-  const handleSave = async () => {
-    try {
-      const { handleDeleteSeats } = await import('./handleDeleteSeats');
-      await handleDeleteSeats(async () => {
-        await handleSaveSeats(selectedSeats);
-      });
-    } catch (error) {
-      console.error('❌ Ошибка при сохранении мест:', error);
-      alert('❌ Ошибка при сохранении. См. консоль.');
-    }
-  };
-
-  const onAutomateSeating = () => {
-    const newSeats = handleAutomateSeating({
-      passengers: cleanPassengers,
-      availableSeats: Array.isArray(availability) ? availability : [],
-      segmentNumber: segment?.segmentNumber || '1',
-    });
-
-    setSelectedSeats(newSeats);
-    setSelectedPassengerId(String(cleanPassengers[0].id));
-
-    const effectiveCabin = segment?.bookingClass || mappedCabinClass;
-    const flight = generateFlightData(segment, segmentIndex, mapCabinToCode(effectiveCabin));
-
-    postSeatMapUpdate({
-      config,
-      flight,
-      availability,
-      passengers: cleanPassengers,
-      selectedPassengerId: String(cleanPassengers[0].id),
-      selectedSeats: newSeats,
-      iframeRef
-    });
-  };
-
-  const passengerPanel = useFallback ? null : (
+  const passengerPanel = showFallback ? null : (
     <PassengerPanel
       passengers={cleanPassengers}
       selectedSeats={selectedSeats}
       selectedPassengerId={selectedPassengerId}
       setSelectedPassengerId={setSelectedPassengerId}
-      handleResetSeat={handleResetSeat}
-      handleSave={handleSave}
-      saveDisabled={saveDisabled}
+      handleResetSeat={() => {}}
+      handleSave={() => {}}
+      saveDisabled={false}
       assignedSeats={assignedSeats}
-      handleAutomateSeating={onAutomateSeating}
+      handleAutomateSeating={() => {}}
       setSelectedSeats={setSelectedSeats}
-      // 👇 вот эти 4 параметра — обязательны
       config={config}
       flight={generateFlightData(segment, segmentIndex, mapCabinToCode(segment?.bookingClass || mappedCabinClass))}
       availability={availability}
@@ -384,21 +225,21 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
           overflow: 'auto',
         }}
       >
-        {useFallback ? (
+        {showFallback ? (
           <div
             style={{
               display: 'flex',
-              justifyContent: 'flex-start', // ⬅️ сдвигаем влево
-              alignItems: 'flex-start', // или 'center', если нужно и по вертикали
+              justifyContent: 'flex-start',
+              alignItems: 'flex-start',
               width: '100%',
               height: '100%',
               overflow: 'auto',
-              paddingLeft: '2rem', // ⬅️ или сколько нужно
-              paddingRight: '4rem', // 👈 добавлен отступ справа
+              paddingLeft: '2rem',
+              paddingRight: '4rem',
             }}
           >
-            <div style={{ minWidth: 720}}>
-              <ReactSeatMapModal />
+            <div style={{ minWidth: 720 }}>
+              <ReactSeatMapModal/>
             </div>
           </div>
         ) : (
@@ -413,7 +254,6 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
       </div>
     </SeatMapModalLayout>
   );
-
 };
 
 export default SeatMapComponentBase;
