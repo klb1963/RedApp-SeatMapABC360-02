@@ -203,6 +203,30 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     availability
   });
 
+  const onAutomateSeating = () => {
+    const newSeats = handleAutomateSeating({
+      passengers: cleanPassengers,
+      availableSeats: Array.isArray(availability) ? availability : [],
+      segmentNumber: segment?.segmentNumber || '1',
+    });
+  
+    setSelectedSeats(newSeats);
+    setSelectedPassengerId(String(cleanPassengers[0].id));
+  
+    const effectiveCabin = segment?.bookingClass || mappedCabinClass;
+    const flight = generateFlightData(segment, segmentIndex, mapCabinToCode(effectiveCabin));
+  
+    postSeatMapUpdate({
+      config,
+      flight,
+      availability,
+      passengers: cleanPassengers,
+      selectedPassengerId: String(cleanPassengers[0].id),
+      selectedSeats: newSeats,
+      iframeRef
+    });
+  };
+
   const passengerPanel = showFallback ? null : (
     <PassengerPanel
       passengers={cleanPassengers}
@@ -213,7 +237,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
       handleSave={() => {}}
       saveDisabled={false}
       assignedSeats={assignedSeats}
-      handleAutomateSeating={() => {}}
+      handleAutomateSeating={onAutomateSeating}
       setSelectedSeats={setSelectedSeats}
       config={config}
       flight={generateFlightData(segment, segmentIndex, mapCabinToCode(segment?.bookingClass || mappedCabinClass))}
