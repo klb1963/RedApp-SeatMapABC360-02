@@ -128,7 +128,6 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
             setSelectedSeats(updatedSeats);
             onSeatChange?.(updatedSeats);
           }}
-          selectedSeats={selectedSeats}
           flightInfo={flightInfo}
           legendPanel={legendPanel} 
           assignedSeats={assignedSeats}
