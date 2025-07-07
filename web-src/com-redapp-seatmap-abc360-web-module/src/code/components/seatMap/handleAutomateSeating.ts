@@ -4,9 +4,8 @@
  * 🚀 handleAutomateSeating.ts
  *
  * This module provides a utility function for automatic seat assignment.
- * It takes a list of passengers and a list of available seats, 
- * then assigns the first free seats to the passengers in order.
- * This logic is used in the SeatMap ABC 360 RedApp.
+ * It assigns free seats to passengers in order.
+ * If no free (zero-price) seats are found, asks the user if paid seats should be assigned.
  */
 
 import { PassengerOption } from '../../utils/parsePnrData';
@@ -24,12 +23,11 @@ function getInitials(surname: string, givenName: string): string {
   return `${surname.charAt(0)}${givenName.charAt(0)}`.toUpperCase();
 }
 
-// Generate passenger initials
+// Generate passenger abbreviation
 function getAbbr(surname: string, givenName: string): string {
   return `${givenName.charAt(0)}${surname.charAt(0)}`.toUpperCase();
 }
 
-// Main function for automatic seating
 export function handleAutomateSeating({
   passengers,
   availableSeats,
@@ -37,20 +35,29 @@ export function handleAutomateSeating({
 }: AutomateSeatingParams): SelectedSeat[] {
   const assignments: SelectedSeat[] = [];
 
-  // Filter out available seats only
-  const freeSeats = availableSeats.filter(seat => seat.type === 'available');
+  // Сначала ищем только бесплатные места
+  let freeSeats = availableSeats.filter(seat => seat.type === 'available');
 
-  // If no free seats are available, show alert and return empty array
   if (freeSeats.length === 0) {
-    alert('No available seats');
-    return [];
+    const proceedWithPaid = confirm(
+      'No free seats available. Do you want to assign paid seats?'
+    );
+    if (!proceedWithPaid) {
+      return [];
+    }
+
+    // Если согласился — берем платные
+    freeSeats = availableSeats.filter(seat => seat.type === 'paid');
+    if (freeSeats.length === 0) {
+      alert('No paid seats available either.');
+      return [];
+    }
   }
 
-  // Iterate over passengers and assign a free seat to each (1-to-1 order)
   for (let i = 0; i < passengers.length; i++) {
     const pax = passengers[i];
     const seat = freeSeats[i];
-    if (!seat) break; // Exit if not enough seats
+    if (!seat) break; // если мест меньше чем пассажиров
 
     assignments.push({
       passengerId: String(pax.id),
@@ -65,7 +72,7 @@ export function handleAutomateSeating({
       segmentNumber,
       seat: {
         seatLabel: seat.label,
-        price: 'USD 0', // Placeholder price for automatic assignment
+        price: String(seat.price || 'USD 0'),
       },
     });
   }
