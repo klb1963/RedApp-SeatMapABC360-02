@@ -7,19 +7,20 @@ export function getGalleryConfig(media: IMediaData | null) {
     title: media.title || 'Aircraft gallery',
     styles: {
       modal: {
-        width: 600,
+        width: 800, // 600
         height: 500,
         borderRadius: 2,
         padding: '15px 25px',
         backgroundColor: 'rgba(255, 255, 255, 1)',
       },
       slides: {
-        width: 550,
-        height: 300,
+        width: 550, // 550 
+        height: 300, // 300
+        margin: '0 auto'
       },
       thumbnails: {
-        width: 130,
-        height: 100,
+        width: 110,
+        height: 85,
       },
     },
     closeButton: {
@@ -27,11 +28,11 @@ export function getGalleryConfig(media: IMediaData | null) {
     },
     pagination: {
       enabled: true,
-      activeBulletColor: '#39c0ec',
+      activeBulletColor: 'black', // #39c0ec
     },
     navigation: {
       enabled: true,
-      color: '#39c0ec',
+      color: 'gray', // #39c0ec
     },
     photoData: media.photoData || [],
     panoData: media.panoData || [],

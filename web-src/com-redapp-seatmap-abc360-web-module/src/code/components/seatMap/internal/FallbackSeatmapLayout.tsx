@@ -30,7 +30,7 @@ const FallbackSeatmapLayout: React.FC<Props> = ({
       {/* Left — flight info */}
       <div
         style={{
-          flexBasis: '35%',
+          flexBasis: '40%',
           flexShrink: 0,
           background: '#f8f8f8',
           padding: '1rem',

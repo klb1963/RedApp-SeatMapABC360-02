@@ -11,7 +11,6 @@
  */
 
 import * as React from 'react';
-import { SeatLegend } from '../panels/SeatLegend';
 import { isFallbackMode } from '../utils/isFallbackMode';
 
 interface SeatMapModalLayoutProps {

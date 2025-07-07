@@ -39,7 +39,7 @@ import { useSeatMapInitErrorLogger } from './hooks/useSeatMapInitErrorLogger';
 import ReactSeatMapModal from './ReactSeatMapModal';
 import { isFallbackMode } from './utils/isFallbackMode';
 import { useSeatmapMedia } from './hooks/useSeatmapMedia';
-import { getGalleryConfig } from '../../utils/getGalleryConfig';
+import { getGalleryConfig } from '../../utils/galleryConfig';
 
 // Global type for debugging support
 declare global {
