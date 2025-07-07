@@ -59,10 +59,33 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
   availability,
   iframeRef
 }) => {
+
+  console.log('[PassengerPanel] selectedSeats:', selectedSeats);
+
+  /**
+ * Try to find price in availability (fallback scenario).
+ * @param seatLabel string seat label (e.g. 66A)
+ * @returns number price or 0
+ */
+
+  function getPriceForSeat(seatLabel: string): number {
+    if (!availability) return 0;
+  
+    const found = availability.find((seat: any) => seat.label === seatLabel);
+    
+    if (found?.price != null) {
+      const amount = parseFloat(
+        (typeof found.price === 'string' ? found.price : String(found.price)).replace(/[^\d.]/g, '')
+      );
+      return isNaN(amount) ? 0 : amount;
+    }
+    return 0;
+  }
+
   const totalPrice = selectedSeats.reduce((acc, s) => {
-    const price = s.seat?.price || '0';
-    const amount = parseFloat(price.replace(/[^\d.]/g, ''));
-    return acc + (isNaN(amount) ? 0 : amount);
+    const directPrice = parseFloat(String(s.seat?.price)) || 0;
+    const fallbackPrice = getPriceForSeat(s.seatLabel);
+    return acc + (directPrice > 0 ? directPrice : fallbackPrice);
   }, 0);
 
   const onRemoveSeat = (passengerIdToRemove: string) => {
