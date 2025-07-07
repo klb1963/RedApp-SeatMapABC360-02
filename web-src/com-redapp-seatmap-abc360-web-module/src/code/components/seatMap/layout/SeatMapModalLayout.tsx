@@ -19,6 +19,7 @@ interface SeatMapModalLayoutProps {
   passengerPanel: React.ReactNode;
   legendPanel?: React.ReactNode;
   children: React.ReactNode; // iframe
+  hasPassengers?: boolean;
 }
 
 const SeatMapModalLayout: React.FC<SeatMapModalLayoutProps> = ({
@@ -26,7 +27,8 @@ const SeatMapModalLayout: React.FC<SeatMapModalLayoutProps> = ({
   galleryPanel,
   passengerPanel,
   legendPanel,
-  children
+  children, 
+  hasPassengers,
 }) => {
 
   const fallback = isFallbackMode();
@@ -81,16 +83,18 @@ const SeatMapModalLayout: React.FC<SeatMapModalLayoutProps> = ({
           borderLeft: '1px solid #ddd',
           overflowY: 'auto'
         }}>
-          {passengerPanel}
+           {hasPassengers && passengerPanel}
 
           {legendPanel && (
-            <div style={{ marginTop: '2rem' }}>
-              <hr style={{
-                marginBottom: '1rem',
-                border: 0,
-                borderTop: '1px solid #ccc',
-                width: '100%',
-              }} />
+            <div style={{ marginTop: hasPassengers ? '2rem' : '-2rem' }}>
+              {hasPassengers && (
+                <hr style={{
+                  marginBottom: '1rem',
+                  border: 0,
+                  borderTop: '1px solid #ccc',
+                  width: '100%',
+                }} />
+              )}
               <div>{legendPanel}</div>
             </div>
           )}

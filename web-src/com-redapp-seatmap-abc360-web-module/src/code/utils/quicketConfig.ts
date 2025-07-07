@@ -83,5 +83,6 @@ export const quicketConfig = {
     // 🚪 Emergency exit icons
     // exitIconUrlLeft: 'https://panorama.quicket.io/icons/exit-left.svg',
     // exitIconUrlRight: 'https://panorama.quicket.io/icons/exit-right.svg',
+    
   }
 };
