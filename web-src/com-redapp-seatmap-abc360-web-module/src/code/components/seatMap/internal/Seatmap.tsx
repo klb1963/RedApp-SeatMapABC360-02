@@ -47,19 +47,19 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
 
   const DiagonalIconLeft = () => (
     <svg width="24" height="24" viewBox="0 0 24 24">
-      <line x1="0" y1="24" x2="24" y2="0" stroke="#848484" strokeWidth="2" />
+      <line x1="0" y1="24" x2="24" y2="0" stroke="#848484" strokeWidth="4" />
     </svg>
   );
 
   const DiagonalIconRight = () => (
     <svg width="24" height="24" viewBox="0 0 24 24">
-      <line x1="0" y1="0" x2="24" y2="24" stroke="#848484" strokeWidth="2" />
+      <line x1="0" y1="0" x2="24" y2="24" stroke="#848484" strokeWidth="4" />
     </svg>
   );
 
   const Line = () => (
     <svg width="24" height="6" viewBox="0 0 24 6">
-      <line x1="0" y1="3" x2="24" y2="3" stroke="#848484" strokeWidth="3" />
+      <line x1="0" y1="3" x2="24" y2="3" stroke="#848484" strokeWidth="4" />
     </svg>
   );
 
@@ -137,7 +137,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                         justifyContent: 'center',
                         alignItems: 'center',
                         left: isEconomy ? '-3.5rem' : '-3.5rem',
-                        top: isEconomy ? '2rem' : '0rem',
+                        top: isEconomy ? '3rem' : '0rem',
                       }}
                     >
                       <DiagonalIconLeft />
@@ -219,8 +219,9 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                                 <div
                                   style={{
                                     position: 'absolute',
-                                    top: '4px',
-                                    right: '4px',
+                                    top: '50%',
+                                    left: '50%',
+                                    transform: 'translate(-50%, -50%)',
                                     backgroundColor: passenger.passengerColor || 'white',
                                     color: 'white',
                                     borderRadius: '50%',
@@ -299,7 +300,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                         justifyContent: 'center',
                         alignItems: 'center',
                         left: isEconomy ? '3.5rem' : '3.5rem',
-                        top: isEconomy ? '2rem' : '0rem',
+                        top: isEconomy ? '3rem' : '0rem',
                       }}
                     >
                       <DiagonalIconRight />
