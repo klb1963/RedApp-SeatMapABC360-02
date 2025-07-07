@@ -51,7 +51,23 @@ export function useSeatmapMedia(): UseSeatmapMediaResult {
 
         if (parsed.media) {
           console.log('📸 media data received:', parsed.media);
-          setMedia(parsed.media);
+        
+          const enrichedMedia: IMediaData = {
+            ...parsed.media,
+          };
+        
+          // Попробуем вытащить модель самолета из других данных от библиотеки
+          if (!enrichedMedia.title) {
+            if (parsed.aircraft?.model) {
+              enrichedMedia.title = parsed.aircraft.model;
+            } else if (parsed.aircraft?.name) {
+              enrichedMedia.title = parsed.aircraft.name;
+            } else {
+              enrichedMedia.title = 'Aircraft galery';
+            }
+          }
+        
+          setMedia(enrichedMedia);
         } else {
           console.log('ℹ️ No media data in message');
           setMedia(null);

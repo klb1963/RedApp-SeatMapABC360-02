@@ -57,7 +57,7 @@ export const GalleryPanel: React.FC<GalleryPanelProps> = ({ config }) => {
 
   return (
     <div style={{ marginTop: '2rem', marginLeft: '0rem' }}>
-      <strong>{config.title || 'Aircraft gallery'}:</strong>
+      <strong>{'Aircraft gallery'}:</strong>
       <div
         style={{
           marginTop: '1rem',

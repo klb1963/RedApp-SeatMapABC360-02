@@ -4,23 +4,22 @@ export function getGalleryConfig(media: IMediaData | null) {
   if (!media) return null;
 
   return {
-    title: media.title || 'Aircraft gallery',
+    title: ' ',
     styles: {
       modal: {
-        width: 800, // 600
-        height: 500,
+        width: "100vw", // 600
+        height: "100vh", // 500
         borderRadius: 2,
         padding: '15px 25px',
         backgroundColor: 'rgba(255, 255, 255, 1)',
       },
       slides: {
-        width: 550, // 550 
-        height: 300, // 300
-        margin: '0 auto'
+        width: "100%", // 550 
+        height: "60vh", // 300
       },
       thumbnails: {
-        width: 110,
-        height: 85,
+        width: "20vw", // 110
+        height: "20vh", // 85
       },
     },
     closeButton: {
