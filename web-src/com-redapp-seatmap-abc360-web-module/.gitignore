@@ -7,3 +7,4 @@ node_modules/
 *.iml
 /src/tests/test-setup.ts
 **/node_modules/
+.DS_Store
