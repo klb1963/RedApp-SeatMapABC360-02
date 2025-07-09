@@ -72,7 +72,7 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
     if (!availability) return 0;
   
     const found = availability.find((seat: any) => seat.label === seatLabel);
-    
+
     if (found?.price != null) {
       const amount = parseFloat(
         (typeof found.price === 'string' ? found.price : String(found.price)).replace(/[^\d.]/g, '')
@@ -238,7 +238,7 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
           disabled={selectedSeats.length === 0}
           className="btn btn-outline-secondary"
         >
-          RESET ALL
+          RESET
         </button>
   
         <button

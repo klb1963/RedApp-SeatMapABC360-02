@@ -4,8 +4,7 @@
  * 🔄 handleResetSeats.ts
  *
  * Sends an `AirSeatLLSRQ` request to reset (remove) all seat assignments 
- * for all passengers in the active PNR. This is a per-passenger, per-segment seat removal,
- * unlike `AirSeatCancelRQ`, which performs a blanket removal.
+ * for all passengers on the specified segment in the active PNR.
  *
  * Used in SeatMap ABC 360 when an agent clicks "Reset Seats".
  */
@@ -17,10 +16,14 @@ import { PublicModalsService } from 'sabre-ngv-modals/services/PublicModalServic
 import { loadPnrDetailsFromSabre } from '../../services/loadPnrDetailsFromSabre';
 
 /**
- * Resets all seat assignments by sending AirSeatLLSRQ requests per passenger.
+ * Resets all seat assignments on a specific segment.
  * @param onRefresh Optional callback to trigger after successful reset and PNR refresh
+ * @param passedSegmentNumber Optional segment number to reset. Defaults to first segment if not specified.
  */
-export const handleResetSeats = async (onRefresh?: () => void): Promise<void> => {
+export const handleResetSeats = async (
+  onRefresh?: () => void,
+  passedSegmentNumber?: string
+): Promise<boolean> => {
   // Retrieve RedApp services
   const soap = getService(ISoapApiService);
   const pnrService = getService(PnrPublicService);
@@ -35,7 +38,9 @@ export const handleResetSeats = async (onRefresh?: () => void): Promise<void> =>
 
   try {
     // Ask for confirmation before resetting
-    const confirmed = window.confirm('❓ Are you sure you want to reset all seat assignments?');
+    const confirmed = window.confirm(
+      '❓ Are you sure you want to reset all seat assignments on the selected segment?'
+    );
     if (!confirmed) return;
 
     // Load current PNR to get passenger and segment data
@@ -43,20 +48,27 @@ export const handleResetSeats = async (onRefresh?: () => void): Promise<void> =>
     const passengers = parsedData.passengers || [];
     const segments = parsedData.segments || [];
 
-    // Use the first segment number as target (can be extended to multiple)
-    const segmentNumber = segments?.[0]?.segmentNumber ?? '1';
+    // Use the passed segment number or default to the first segment
+    const segmentNumberToReset =
+      passedSegmentNumber || segments?.[0]?.segmentNumber || '1';
+
+    console.log(
+      `♻️ Resetting seats on segment #${segmentNumberToReset} for ${passengers.length} passenger(s).`
+    );
 
     // Generate XML for seat removal (per passenger)
-    const seatRemovalTags = passengers.map(pax => {
-      if (!pax.nameNumber) return '';
-      return `
-        <Seat>
-          <NameSelect NameNumber="${pax.nameNumber}" />
-          <SeatSelect />
-          <SegmentSelect Number="${segmentNumber}" />
-        </Seat>
-      `;
-    }).join('\n');
+    const seatRemovalTags = passengers
+      .map((pax) => {
+        if (!pax.nameNumber) return '';
+        return `
+          <Seat>
+            <NameSelect NameNumber="${pax.nameNumber}" />
+            <SeatSelect />
+            <SegmentSelect Number="${segmentNumberToReset}" />
+          </Seat>
+        `;
+      })
+      .join('\n');
 
     // Final XML request
     const xml = `
@@ -85,17 +97,14 @@ export const handleResetSeats = async (onRefresh?: () => void): Promise<void> =>
     if (response.value.includes('<Error')) {
       console.warn('⚠️ Error while resetting seats:\n', response.value);
       alert('❌ Error while resetting seats. See console.');
-      return;
+      return false;
     }
 
     // On success: refresh PNR and notify UI
-    console.log('✅ Seats reset successfully.');
+    console.log('✅ Seats reset successfully on segment', segmentNumberToReset);
     await pnrService.refreshData();
 
-    // 🔁 Instead of closing the modal, we call the external refresh handler
     onRefresh?.();
-
-    // ❌ modalService.closeReactModal(); — intentionally removed
 
   } catch (error) {
     console.error('❌ Exception while resetting seats:', error);

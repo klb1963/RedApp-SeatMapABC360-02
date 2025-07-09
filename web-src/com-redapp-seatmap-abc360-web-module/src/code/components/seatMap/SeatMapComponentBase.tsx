@@ -33,6 +33,7 @@ import { handleSaveSeats } from './handleSaveSeats';
 import { handleDeleteSeats } from './handleDeleteSeats';
 import { postSeatMapUpdate } from './helpers/postSeatMapUpdate';
 import { handleAutomateSeating } from './handleAutomateSeating';
+import { handleResetSeats } from './handleResetSeats';
 
 import { mapCabinToCode } from '../../utils/mapCabinToCode';
 import { useSeatMapInitErrorLogger } from './hooks/useSeatMapInitErrorLogger';
@@ -201,6 +202,14 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     });
   };
 
+  /**
+  * Refreshes PNR data after resetting seats.
+  */
+  const refreshPnr = async () => {
+    console.log('🔄 Refreshing PNR after reset…');
+    // no-op if not needed
+  };
+
   // Passenger panel shown in the right column
   const passengerPanel = showFallback ? null : (
     <PassengerPanel
@@ -208,7 +217,24 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
       selectedSeats={selectedSeats}
       selectedPassengerId={selectedPassengerId}
       setSelectedPassengerId={setSelectedPassengerId}
-      handleResetSeat={() => {}}
+
+      handleResetSeat={() => {
+        setSelectedSeats([]);
+        postSeatMapUpdate({
+          config,
+          flight: generateFlightData(
+            segment,
+            segmentIndex,
+            mapCabinToCode(segment?.bookingClass || mappedCabinClass)
+          ),
+          availability,
+          passengers: cleanPassengers,
+          selectedSeats: [], // сбрасываем выбранные места
+          selectedPassengerId,
+          iframeRef
+        });
+      }}
+
       handleSave={onSaveSeats}
       saveDisabled={false}
       assignedSeats={assignedSeats}
