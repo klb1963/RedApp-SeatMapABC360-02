@@ -136,17 +136,19 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   // Populate initially assigned seats
   useEffect(() => {
     if (assignedSeats?.length && !alreadyInitialized) {
+      const segment = flightSegments[segmentIndex];
+
       const enriched = assignedSeats.map(s => {
         const pax = passengers.find(p => String(p.id) === String(s.passengerId) || String(p.nameNumber) === String(s.passengerId));
         if (!pax) return null;
-        return createSelectedSeat(pax, s.seat, true, availability);
+        return createSelectedSeat(pax, s.seat, true, availability, segment?.value);
       }).filter(Boolean) as SelectedSeat[];
 
       setSelectedSeats(enriched);
       onSeatChange?.(enriched);
       setAlreadyInitialized(true);
     }
-  }, [assignedSeats, passengers, availability, alreadyInitialized]);
+  }, [assignedSeats, passengers, availability, alreadyInitialized, flightSegments, segmentIndex]);
 
   // Make seats globally debuggable
   useEffect(() => {
@@ -162,9 +164,25 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
 
   // Hooks for synchronizing seat map iframe
   const handleIframeLoad = useOnIframeLoad({ iframeRef, config, segment, initialSegmentIndex, cabinClass, availability, cleanPassengers, selectedPassengerId, selectedSeats, generateFlightData });
+  // CabinClassChange
   useSyncOnCabinClassChange({ iframeRef, config, segment, initialSegmentIndex, cabinClass, mappedCabinClass, availability, cleanPassengers, selectedPassengerId, selectedSeats });
+  // SegmentChange
   useSyncOnSegmentChange({ config, segment, initialSegmentIndex, cabinClass, mappedCabinClass, availability, passengers: cleanPassengers, selectedPassengerId, selectedSeats, iframeRef, generateFlightData });
-  useSeatSelectionHandler({ cleanPassengers, selectedPassengerId, setSelectedPassengerId, setSelectedSeats, onSeatChange, availability });
+  
+  const segmentNumber = String(segmentIndex + 1);
+
+  console.log('✅ segmentNumber passed to hook', segmentNumber);
+
+  // Seats choosing
+  useSeatSelectionHandler({ 
+    cleanPassengers, 
+    selectedPassengerId, 
+    setSelectedPassengerId, 
+    setSelectedSeats, 
+    onSeatChange, 
+    availability,  
+    segmentNumber
+  });
 
   /**
    * Automatically assigns available seats to passengers and updates iframe.
@@ -198,7 +216,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
    */
   const onSaveSeats = async () => {
     await handleDeleteSeats(async () => {
-      await handleSaveSeats(selectedSeats);
+      await handleSaveSeats(selectedSeats, segment?.segmentNumber || '1');
     });
   };
 

@@ -75,8 +75,7 @@ const ReactSeatMapModal: React.FC = () => {
         const fetchData = async () => {
       const { parsedData: pnrData } = await loadPnrDetailsFromSabre();
       const segments = pnrData.segments;
-      const enriched = enrichPassengerData(pnrData.passengers);
-      const enrichedPassengers = enriched.enrichedPassengers;
+      const enrichedPassengers = enrichPassengerData(pnrData.passengers);
 
       setPassengers(enrichedPassengers);
       setSelectedPassengerId(enrichedPassengers[0]?.id || '');
@@ -107,47 +106,88 @@ const ReactSeatMapModal: React.FC = () => {
     fetchData();
   }, []);
 
-    React.useEffect(() => {
-        if (segments.length && passengers.length) {
-            fetchSeatMap(segments, segmentIndex, cabinClass, passengers);
-        }
-    }, [segmentIndex, cabinClass]);
+  React.useEffect(() => {
+    const reloadForSegment = async () => {
+      if (!segments.length) return;
+  
+      const { parsedData } = await loadPnrDetailsFromSabre();
 
-    React.useEffect(() => {
-        if (rows.length > 0 && !selectedDeck) {
-            setSelectedDeck(rows[0].deckId || 'Maindeck');
-        }
-    }, [rows]);
-
-    const handleSaveSeatsClick = async () => {
-        const seatsForSabre = selectedSeats.map(s => {
-            const pax = passengers.find(p => p.id === s.passengerId);
-            return {
-                passengerId: pax?.nameNumber || s.passengerId,
-                seatLabel: s.seatLabel,
-                passengerType: pax?.passengerType || '',
-                passengerLabel: pax?.label || '',
-                passengerColor: s.passengerColor || '',
-                initials: s.passengerInitials || '',
-                passengerInitials: s.passengerInitials || '',
-                segmentNumber: segments[segmentIndex]?.segmentNumber || '1',
-                seat: {
-                    seatLabel: s.seatLabel,
-                    price: String(s.price || '0'),
-                },
-            };
+      const enrichedPassengers = enrichPassengerData(parsedData.passengers);
+  
+      setPassengers(enrichedPassengers);
+      setSelectedPassengerId(enrichedPassengers[0]?.id || '');
+  
+      // 🪑 Load assigned seats for chosen segment
+      const assignedSeatsForSegment = (parsedData.assignedSeats || [])
+        .filter(s => s.segmentNumber === segments[segmentIndex]?.value)
+        .map(s => {
+          const pax = enrichedPassengers.find(p => p.id === s.passengerId);
+          return {
+            passengerId: s.passengerId,
+            seatLabel: s.seat,
+            confirmed: true,
+            price: 0,
+            passengerInitials: pax?.passengerInitials || '',
+            passengerColor: pax?.passengerColor || '',
+            segmentNumber: s.segmentNumber
+          };
         });
-    
-        try {
-            const { handleDeleteSeats } = await import('./handleDeleteSeats');
-            await handleDeleteSeats(async () => {
-                await saveSeatsToSabre(seatsForSabre);
-            });
-        } catch (error) {
-            console.error('❌ Ошибка при сохранении мест:', error);
-            alert('❌ Ошибка при сохранении. См. консоль.');
-        }
+
+      console.log('🧩!!! parsedData.assignedSeats:', parsedData.assignedSeats);
+  
+      setSelectedSeats(assignedSeatsForSegment);
+  
+      await fetchSeatMap(segments, segmentIndex, cabinClass, enrichedPassengers);
     };
+  
+    reloadForSegment();
+  }, [segmentIndex, cabinClass]);
+
+  React.useEffect(() => {
+    if (rows.length > 0 && !selectedDeck) {
+      setSelectedDeck(rows[0].deckId || 'Maindeck');
+    }
+  }, [rows]);
+
+  const handleSaveSeatsClick = async () => {
+    const segmentId = segments[segmentIndex]?.value;
+
+    console.log('✅ segmentId on save', segments[segmentIndex]?.value);
+  
+    if (!segmentId) {
+      console.error('❌ Не выбран сегмент или отсутствует его ID');
+      alert('❌ Ошибка: не выбран сегмент.');
+      return;
+    }
+
+    const seatsForSabre = selectedSeats.map(s => {
+      const pax = passengers.find(p => p.id === s.passengerId);
+      return {
+        passengerId: pax?.nameNumber || s.passengerId,
+        seatLabel: s.seatLabel,
+        passengerType: pax?.passengerType || '',
+        passengerLabel: pax?.label || '',
+        passengerColor: s.passengerColor || '',
+        initials: s.passengerInitials || '',
+        passengerInitials: s.passengerInitials || '',
+        segmentNumber: segmentId,
+        seat: {
+          seatLabel: s.seatLabel,
+          price: String(s.price || '0'),
+        },
+      };
+    });
+
+    try {
+      const { handleDeleteSeats } = await import('./handleDeleteSeats');
+      await handleDeleteSeats(async () => {
+        await saveSeatsToSabre(seatsForSabre, segmentId);
+      });
+    } catch (error) {
+      console.error('❌ Ошибка при сохранении мест:', error);
+      alert('❌ Ошибка при сохранении. См. консоль.');
+    }
+  };
 
   return (
     <FallbackSeatmapLayout
@@ -174,7 +214,7 @@ const ReactSeatMapModal: React.FC = () => {
           assignedSeats={selectedSeats.map(s => ({
             passengerId: s.passengerId,
             seat: s.seatLabel,
-            segmentNumber: s.segmentNumber || '1'
+            segmentNumber: s.segmentNumber
           }))}
           config={{}}
           flight={{} as FlightData}
@@ -190,7 +230,7 @@ const ReactSeatMapModal: React.FC = () => {
             const newSeats = automateSeats({
               passengers,
               availableSeats: flightInfo.availability,
-              segmentNumber: segments[segmentIndex]?.segmentNumber || '1',
+              segmentNumber: segments[segmentIndex]?.value,
             });
             if (newSeats.length === 0) {
               console.warn('⚠️ No seats assigned automatically');

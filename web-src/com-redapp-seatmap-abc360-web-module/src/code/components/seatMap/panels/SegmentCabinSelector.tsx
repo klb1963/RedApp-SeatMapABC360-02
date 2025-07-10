@@ -1,3 +1,5 @@
+// file: code/components/seatMap/panels/SegmentCabinSelector.tsx
+
 /**
  * SegmentCabinSelector.tsx
  *

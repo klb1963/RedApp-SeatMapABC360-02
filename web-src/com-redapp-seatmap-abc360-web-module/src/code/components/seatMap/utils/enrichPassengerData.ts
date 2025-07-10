@@ -5,7 +5,7 @@
  *
  * ✨ Enriches parsed passenger data with additional UI-specific properties:
  * - Assigns passengerColor based on index
- * - Creates assignedSeats array for use in seat selection UIs
+ * - Adds passengerInitials for UI badges
  */
 
 import { PassengerOption } from '../../../utils/parsePnrData';
@@ -18,19 +18,8 @@ export const enrichPassengerData = (passengers: PassengerOption[]) => {
       ...p,
       passengerColor: getPassengerColor(i),
       passengerInitials: initials,
-    }
+    };
   });
 
-  const assignedSeats = enrichedPassengers
-    .filter(p => p.seatAssignment && p.seatAssignment !== 'not assigned')
-    .map(p => ({
-      passengerId: p.id,
-      seat: p.seatAssignment,
-      segmentNumber: '1', // FIXME: adjust for multiple segments later
-    }));
-
-  return {
-    enrichedPassengers,
-    assignedSeats,
-  };
+  return enrichedPassengers;
 };

@@ -38,6 +38,7 @@ interface Props {
   setSelectedSeats: React.Dispatch<React.SetStateAction<SelectedSeat[]>>;
   onSeatChange?: (seats: SelectedSeat[]) => void;
   availability?: RawAvailabilityItem[];
+  segmentNumber: string;
 }
 
 export const useSeatSelectionHandler = ({
@@ -46,7 +47,8 @@ export const useSeatSelectionHandler = ({
   setSelectedPassengerId,
   setSelectedSeats,
   onSeatChange,
-  availability
+  availability,
+  segmentNumber
 }: Props): void => {
   useEffect(() => {
     const handleSeatSelection = (event: MessageEvent) => {
@@ -88,7 +90,18 @@ export const useSeatSelectionHandler = ({
       const currentPassenger = cleanPassengers.find(p => String(p.id) === selectedPassengerId);
       if (!currentPassenger) return;
 
-      const updatedSeat = createSelectedSeat(currentPassenger, selectedSeatData.seat.seatLabel, false, availabilityMapped);
+      
+      console.log('✅ assigning seat with segmentNumber:', segmentNumber);
+
+      const updatedSeat = createSelectedSeat(
+        currentPassenger,
+        selectedSeatData.seat.seatLabel,
+        false,
+        availabilityMapped,
+        segmentNumber
+      );
+      
+      console.log('✅ updatedSeat:', updatedSeat);
 
       setSelectedSeats(prev => {
         const withoutOld = prev.filter(s => s.passengerId !== currentPassenger.id);

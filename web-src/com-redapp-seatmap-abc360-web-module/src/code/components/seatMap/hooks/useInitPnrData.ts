@@ -13,6 +13,7 @@ interface UseInitPnrDataProps {
   setSelectedSegmentIndex: (index: number) => void;
   setSelectedSeats: (seats: SelectedSeat[]) => void;
   setSelectedPassengerIds: (ids: string[]) => void;
+  segmentIndex: number;
 }
 
 export const useInitPnrData = ({
@@ -20,7 +21,8 @@ export const useInitPnrData = ({
   setFlightSegments,
   setSelectedSegmentIndex,
   setSelectedSeats,
-  setSelectedPassengerIds
+  setSelectedPassengerIds,
+  segmentIndex,
 }: UseInitPnrDataProps): void => {
   useEffect(() => {
     const initPnrData = async () => {
@@ -31,21 +33,31 @@ export const useInitPnrData = ({
         console.log('🧩 Segments from parsed PNR Data [RAW]:', parsedData.segments);
 
         const segments = parsedData.segments || [];
+        const currentSegment = segments[segmentIndex]; // ✅ выбрали сегмент по индексу
 
-        // ✅ Enrich passenger data: add colors and extract assigned seats
-        const { enrichedPassengers, assignedSeats } = enrichPassengerData(parsedData.passengers || []);
+        if (!currentSegment) {
+          console.error(`❌ Segment at index ${segmentIndex} not found`);
+          return;
+        }
+
+        setFlightSegments(segments);
+        setSelectedSegmentIndex(segmentIndex);
+
+        const enrichedPassengers = enrichPassengerData(parsedData.passengers || []);
+        const assignedSeats = parsedData.assignedSeats || [];
 
         setPassengers(enrichedPassengers);
-        setFlightSegments(segments);
-        setSelectedSegmentIndex(0);
 
-        // ✅ Use real assigned seats if available, otherwise assign blank seats
         const freshSeats = assignedSeats.length
-          ? assignedSeats.map(({ passengerId, seat }) => {
-            const p = enrichedPassengers.find(p => p.id === passengerId);
-            return createSelectedSeat(p, seat, false);
-          })
-          : enrichedPassengers.map((p) => createSelectedSeat(p, '', false));
+          ? assignedSeats
+              .filter(s => s.segmentNumber === currentSegment.value) // 🪑 только для выбранного сегмента
+              .map(({ passengerId, seat }) => {
+                const p = enrichedPassengers.find(p => p.id === passengerId);
+                return createSelectedSeat(p, seat, false, undefined, currentSegment?.value);
+              })
+          : enrichedPassengers.map((p) =>
+              createSelectedSeat(p, '', false, undefined, currentSegment?.value)
+            );
 
         setSelectedSeats(freshSeats);
 
@@ -57,14 +69,13 @@ export const useInitPnrData = ({
       }
     };
 
-    console.log('✅ useInitPnrData complete');
-
     initPnrData();
   }, [
     setPassengers,
     setFlightSegments,
     setSelectedSegmentIndex,
     setSelectedSeats,
-    setSelectedPassengerIds
+    setSelectedPassengerIds,
+    segmentIndex, // 👈 подписались на смену сегмента
   ]);
 };

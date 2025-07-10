@@ -17,14 +17,15 @@ interface AvailabilityEntry {
  * @param seatLabel - метка места, например "42A"
  * @param readOnly - если true, то это уже назначенное место (не редактируется)
  * @param availability - массив доступных мест с ценами
+ * @param segmentNumber - номер сегмента (обязательный)
  * @returns объект SelectedSeat
  */
 export function createSelectedSeat(
   passenger: PassengerOption,
   seatLabel: string,
-  readOnly: boolean = false,
-  availability?: AvailabilityEntry[],
-  segmentNumber?: string
+  readOnly: boolean,
+  availability: AvailabilityEntry[] | undefined,
+  segmentNumber: string
 ): SelectedSeat {
   const initials = getInitials(passenger);
   const abbr = initials;
@@ -33,11 +34,12 @@ export function createSelectedSeat(
 
   const matched = availability?.find(a => a.seatLabel === seatLabel);
 
-  const seatPrice = typeof matched?.price === 'string'
-  ? matched.price
-  : matched?.price !== undefined && matched.currency
-    ? `${matched.currency} ${matched.price.toFixed(2)}`
-    : 'USD 0';
+  const seatPrice =
+    typeof matched?.price === 'string'
+      ? matched.price
+      : matched?.price !== undefined && matched.currency
+      ? `${matched.currency} ${matched.price.toFixed(2)}`
+      : 'USD 0';
 
   console.log(`🎯 Seat assigned: ${seatLabel}, price from availability: ${seatPrice}`);
   console.log('🔍 Looking for seatLabel:', seatLabel);
@@ -53,7 +55,7 @@ export function createSelectedSeat(
     passengerInitials: initials,
     abbr,
     readOnly,
-    segmentNumber: segmentNumber || '1',
+    segmentNumber,
     seat: {
       seatLabel,
       price: seatPrice,

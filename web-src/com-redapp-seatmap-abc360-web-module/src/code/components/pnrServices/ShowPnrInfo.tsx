@@ -9,9 +9,9 @@
  * - Passenger list with seat assignments and nameNumber
  * - Flight segments (origin, destination, carrier, flight, booking class)
  * - Raw XML display using <XmlViewer />
- * 
+ *
  * 💾 Allows saving the retrieved PNR XML to a local file (via XmlViewer)
- * 
+ *
  * Used after loading PNR data from Sabre through `loadPnrDetailsFromSabre()`.
  * Useful for debugging and analyzing PNR structure.
  */
@@ -27,33 +27,37 @@ interface ShowPnrInfoProps {
 export const ShowPnrInfo: React.FC<ShowPnrInfoProps> = ({ pnrData, rawXml }) => {
     return (
         <div style={{ padding: '1rem', maxHeight: '80vh', overflowY: 'auto' }}>
-        <h3>🧳 Passenger List</h3>
+            <h3>🧳 Passenger List</h3>
             <ul>
-            {pnrData.passengers.map((passenger: any, index: number) => {
-                // 🧩 Назначенное место из assignedSeats (если найдено)
-                const seatFromAssigned = pnrData.assignedSeats?.find(
-                (s: any) => s.passengerId === passenger.id || s.passengerId === passenger.nameNumber
-                )?.seat;
+                {pnrData.passengers.map((passenger: any, index: number) => {
+                    const seatsForPassenger = (pnrData.assignedSeats || [])
+                        .filter((s: any) => s.passengerId === passenger.id || s.passengerId === passenger.nameNumber);
 
-                return (
-                <li key={index}>
-                    <strong>{passenger.surname}/{passenger.givenName}</strong>
-                    {' — '}
-                    <span style={{ color: '#555' }}>
-                    Seat:
-                    <strong>
-                        {' '}
-                        {seatFromAssigned || passenger.seatAssignment || 'not assigned'}
-                    </strong>
-                    </span>
-                    {passenger.nameNumber && (
-                    <span style={{ marginLeft: '1rem', color: '#999' }}>
-                        NameNumber: <code>{passenger.nameNumber}</code>
-                    </span>
-                    )}
-                </li>
-                );
-            })}
+                    return (
+                        <li key={index}>
+                            <strong>{passenger.surname}/{passenger.givenName}</strong>
+                            {passenger.nameNumber && (
+                                <span style={{ marginLeft: '1rem', color: '#999' }}>
+                                    NameNumber: <code>{passenger.nameNumber}</code>
+                                </span>
+                            )}
+                            <ul>
+                                {seatsForPassenger.length > 0 ? (
+                                    seatsForPassenger.map((seat: any, i: number) => {
+                                        const seg = pnrData.segments.find((s: any) => s.segmentNumber === seat.segmentNumber);
+                                        return (
+                                            <li key={i} style={{ color: '#555' }}>
+                                                Segment {seat.segmentNumber} ({seg?.origin} → {seg?.destination}): <strong>{seat.seat}</strong>
+                                            </li>
+                                        );
+                                    })
+                                ) : (
+                                    <li style={{ color: '#999' }}>No seats assigned</li>
+                                )}
+                            </ul>
+                        </li>
+                    );
+                })}
             </ul>
 
             {/* === ✈️ Segments === */}
@@ -68,6 +72,8 @@ export const ShowPnrInfo: React.FC<ShowPnrInfoProps> = ({ pnrData, rawXml }) => 
                         <th style={thStyle}>Flight</th>
                         <th style={thStyle}>Class</th>
                         <th style={thStyle}>Equipment</th>
+                        <th style={thStyle}>Segment #</th>
+                        <th style={thStyle}>Segment ID</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -80,6 +86,8 @@ export const ShowPnrInfo: React.FC<ShowPnrInfoProps> = ({ pnrData, rawXml }) => 
                             <td style={tdStyle}>{segment.marketingFlightNumber}</td>
                             <td style={tdStyle}>{segment.bookingClass}</td>
                             <td style={tdStyle}>{segment.equipment}</td>
+                            <td style={tdStyle}><strong>{segment.segmentNumber}</strong></td>
+                            <td style={tdStyle}><code>{segment.value}</code></td>
                         </tr>
                     ))}
                 </tbody>
@@ -108,3 +116,5 @@ const tdStyle: React.CSSProperties = {
     borderBottom: '1px solid #eee',
     padding: '8px',
 };
+
+export default ShowPnrInfo;

@@ -29,6 +29,9 @@ export async function openSeatMapPnr(): Promise<void> {
     // Load current PNR with passengers and segments
     const { parsedData: pnrData } = await loadPnrDetailsFromSabre();
 
+    console.log('🧳!!! parsedData.passengers:', pnrData.passengers);
+    console.log('🧩!!! Segments parsed:', pnrData.segments);
+
     if (!pnrData || !pnrData.segments?.length) {
       // Show fallback modal if no segments present
       modals.showReactModal({
@@ -54,7 +57,8 @@ export async function openSeatMapPnr(): Promise<void> {
     }));
 
     // Enrich passenger data with visuals and assignments
-    const { enrichedPassengers, assignedSeats } = enrichPassengerData(pnrData.passengers || []);
+    const enrichedPassengers = enrichPassengerData(pnrData.passengers || []);
+    const assignedSeats = pnrData.assignedSeats || [];
 
     // Focus on first segment
     const selectedSegmentIndex = 0;
