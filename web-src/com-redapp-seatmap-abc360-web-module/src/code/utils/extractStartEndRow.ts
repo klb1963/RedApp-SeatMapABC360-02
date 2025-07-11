@@ -1,3 +1,5 @@
+// file: /src/code/utils/extractStartEndRow.ts
+
 /**
  * ✈️ extractStartAndEndRowFromCabin
  *
@@ -6,17 +8,13 @@
  * Returns rows in format: `${rowNumber}:${seatLetters}` for compatibility with seatmap libraries.
  *
  * @param xmlDoc Parsed XML Document from EnhancedSeatMapRS
- * @param _targetClassCode Class code to match (e.g., 'Y', 'J', 'C') — unused
  */
-
 export function extractStartAndEndRowFromCabin(
-  xmlDoc: Document,
-  _targetClassCode: string
+  xmlDoc: Document
 ): { startRow?: string; endRow?: string } {
   const cabinEls = Array.from(xmlDoc.querySelectorAll('Cabin'));
   if (cabinEls.length === 0) return {};
 
-  // 1. Находим минимальный firstRow и максимальный lastRow по всем <Cabin>
   const firstRows = cabinEls.map(c => parseInt(c.getAttribute('firstRow') || '', 10)).filter(n => !isNaN(n));
   const lastRows = cabinEls.map(c => parseInt(c.getAttribute('lastRow') || '', 10)).filter(n => !isNaN(n));
 
@@ -25,7 +23,6 @@ export function extractStartAndEndRowFromCabin(
   const minRow = Math.min(...firstRows);
   const maxRow = Math.max(...lastRows);
 
-  // 2. Находим <Row>, у которых номер равен minRow и maxRow
   const rowEls = Array.from(xmlDoc.querySelectorAll('Row'));
   const firstRowEl = rowEls.find(r => parseInt(r.querySelector('RowNumber')?.textContent || '', 10) === minRow);
   const lastRowEl = rowEls.find(r => parseInt(r.querySelector('RowNumber')?.textContent || '', 10) === maxRow);
