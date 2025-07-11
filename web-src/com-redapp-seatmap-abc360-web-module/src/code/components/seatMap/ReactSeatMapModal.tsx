@@ -111,13 +111,11 @@ const ReactSeatMapModal: React.FC = () => {
       if (!segments.length) return;
   
       const { parsedData } = await loadPnrDetailsFromSabre();
-
       const enrichedPassengers = enrichPassengerData(parsedData.passengers);
   
       setPassengers(enrichedPassengers);
       setSelectedPassengerId(enrichedPassengers[0]?.id || '');
   
-      // 🪑 Load assigned seats for chosen segment
       const assignedSeatsForSegment = (parsedData.assignedSeats || [])
         .filter(s => s.segmentNumber === segments[segmentIndex]?.value)
         .map(s => {
@@ -132,10 +130,12 @@ const ReactSeatMapModal: React.FC = () => {
             segmentNumber: s.segmentNumber
           };
         });
-
+  
       console.log('🧩!!! parsedData.assignedSeats:', parsedData.assignedSeats);
   
-      setSelectedSeats(assignedSeatsForSegment);
+      if (assignedSeatsForSegment.length > 0) {
+        setSelectedSeats(assignedSeatsForSegment);
+      }
   
       await fetchSeatMap(segments, segmentIndex, cabinClass, enrichedPassengers);
     };

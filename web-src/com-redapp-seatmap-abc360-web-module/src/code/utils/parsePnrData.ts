@@ -119,7 +119,11 @@ export const parsePnrData = (xmlDoc: XMLDocument): PnrData => {
       : undefined;
 
     // 🪑 Assigned seats per segment
-    const preSeats = air?.getElementsByTagName('stl19:PreReservedSeat');
+    const preSeats = air
+      ?.getElementsByTagName('stl19:Seats')?.[0]
+      ?.getElementsByTagName('stl19:PreReservedSeats')?.[0]
+      ?.getElementsByTagName('stl19:PreReservedSeat');
+
     if (preSeats) {
       for (let j = 0; j < preSeats.length; j++) {
         const preSeat = preSeats[j];

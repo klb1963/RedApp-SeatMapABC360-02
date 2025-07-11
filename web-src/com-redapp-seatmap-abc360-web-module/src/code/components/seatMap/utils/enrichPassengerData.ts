@@ -16,8 +16,8 @@ export const enrichPassengerData = (passengers: PassengerOption[]) => {
     const initials = `${p.givenName[0] || ''}${p.surname[0] || ''}`.toUpperCase();
     return {
       ...p,
-      passengerColor: getPassengerColor(i),
-      passengerInitials: initials,
+      passengerColor: getPassengerColor(i), // passengerColor
+      passengerInitials: initials, // passengerInitials
     };
   });
 
