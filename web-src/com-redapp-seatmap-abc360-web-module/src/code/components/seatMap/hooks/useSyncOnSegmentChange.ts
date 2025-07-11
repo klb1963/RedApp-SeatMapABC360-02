@@ -25,7 +25,7 @@ import { mapCabinToCode } from '../../../utils/mapCabinToCode';
 interface Props {
   config: any;
   segment: any;
-  initialSegmentIndex: number;
+  segmentIndex: number;
   cabinClass: string;
   mappedCabinClass: 'E' | 'P' | 'B' | 'F' | 'A';
   availability: any[];
@@ -39,7 +39,7 @@ interface Props {
 export const useSyncOnSegmentChange = ({
   config,
   segment,
-  initialSegmentIndex,
+  segmentIndex,
   cabinClass,
   mappedCabinClass,
   availability,
@@ -54,7 +54,7 @@ export const useSyncOnSegmentChange = ({
     if (!iframe) return;
 
     const mappedCabin = mappedCabinClass;
-    const flight = generateFlightData(segment, initialSegmentIndex, mappedCabin);
+    const flight = generateFlightData(segment, segmentIndex, mappedCabin);
     const availabilityData = availability || [];
 
     const passengerList = passengers.map((p, index) =>
@@ -81,5 +81,5 @@ export const useSyncOnSegmentChange = ({
     const targetOrigin = new URL(iframe.src).origin;
     iframe.contentWindow?.postMessage(message, targetOrigin);
     console.log('📤 Обновление карты после смены сегмента');
-  }, [initialSegmentIndex]);
+  }, [segmentIndex]);
 };

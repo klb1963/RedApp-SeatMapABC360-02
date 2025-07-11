@@ -78,7 +78,7 @@ const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, d
       <SeatMapComponentBase
         config={config}
         flightSegments={normalizedSegments} // только для отображения
-        initialSegmentIndex={segmentIndex}
+        segmentIndex={segmentIndex}
         cabinClass={cabinClass}
         generateFlightData={(_, index, cabin) => {
           const rawSeg = rawSegments[index];

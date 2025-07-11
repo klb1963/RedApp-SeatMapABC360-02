@@ -71,7 +71,7 @@ export interface SelectedSeat {
 interface SeatMapComponentBaseProps {
   config: any;
   flightSegments: any[];
-  initialSegmentIndex?: number;
+  segmentIndex?: number;
   showSegmentSelector?: boolean;
   cabinClass: string;
   availability: any[];
@@ -100,7 +100,7 @@ function ensurePassengerIds(passengers: PassengerOption[]): PassengerOption[] {
 const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   config,
   flightSegments,
-  initialSegmentIndex = 0,
+  segmentIndex = 0,
   cabinClass,
   availability,
   passengers,
@@ -116,7 +116,6 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   const [selectedSeats, setSelectedSeats] = useState<SelectedSeat[]>([]);
   const [alreadyInitialized, setAlreadyInitialized] = useState(false);
   const [selectedPassengerId, setSelectedPassengerId] = useState<string>('');
-  const [segmentIndex, setSegmentIndex] = useState(initialSegmentIndex);
   const segment = flightSegments[segmentIndex];
 
   const seatMapInitError = useSeatMapInitErrorLogger();
@@ -129,9 +128,8 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
 
   // Reset state when segment index changes
   useEffect(() => {
-    setSegmentIndex(initialSegmentIndex);
     setAlreadyInitialized(false);
-  }, [initialSegmentIndex]);
+  }, [segmentIndex]);
 
   // Populate initially assigned seats
   useEffect(() => {
@@ -163,11 +161,11 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   }, [passengers, selectedPassengerId]);
 
   // Hooks for synchronizing seat map iframe
-  const handleIframeLoad = useOnIframeLoad({ iframeRef, config, segment, initialSegmentIndex, cabinClass, availability, cleanPassengers, selectedPassengerId, selectedSeats, generateFlightData });
+  const handleIframeLoad = useOnIframeLoad({ iframeRef, config, segment, segmentIndex, cabinClass, availability, cleanPassengers, selectedPassengerId, selectedSeats, generateFlightData });
   // CabinClassChange
-  useSyncOnCabinClassChange({ iframeRef, config, segment, initialSegmentIndex, cabinClass, mappedCabinClass, availability, cleanPassengers, selectedPassengerId, selectedSeats });
+  useSyncOnCabinClassChange({ iframeRef, config, segment, segmentIndex, cabinClass, mappedCabinClass, availability, cleanPassengers, selectedPassengerId, selectedSeats });
   // SegmentChange
-  useSyncOnSegmentChange({ config, segment, initialSegmentIndex, cabinClass, mappedCabinClass, availability, passengers: cleanPassengers, selectedPassengerId, selectedSeats, iframeRef, generateFlightData });
+  useSyncOnSegmentChange({ config, segment, segmentIndex, cabinClass, mappedCabinClass, availability, passengers: cleanPassengers, selectedPassengerId, selectedSeats, iframeRef, generateFlightData });
   
   const segmentNumber = String(segmentIndex + 1);
 

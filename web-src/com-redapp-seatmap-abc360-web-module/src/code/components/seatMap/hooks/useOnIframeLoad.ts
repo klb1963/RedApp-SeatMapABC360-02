@@ -27,7 +27,7 @@ interface Props {
   iframeRef: React.RefObject<HTMLIFrameElement>;
   config: any;
   segment: any;
-  initialSegmentIndex: number;
+  segmentIndex: number;
   cabinClass: string;
   availability: any[];
   cleanPassengers: PassengerOption[];
@@ -40,7 +40,7 @@ export const useOnIframeLoad = ({
   iframeRef,
   config,
   segment,
-  initialSegmentIndex,
+  segmentIndex,
   cabinClass,
   availability,
   cleanPassengers,
@@ -54,7 +54,7 @@ export const useOnIframeLoad = ({
 
     const flight = generateFlightData(
       segment,
-      initialSegmentIndex,
+      segmentIndex,
       mapCabinToCode(segment?.bookingClass || cabinClass)
     );
 
@@ -86,7 +86,7 @@ export const useOnIframeLoad = ({
     iframeRef,
     config,
     segment,
-    initialSegmentIndex,
+    segmentIndex,
     cabinClass,
     availability,
     cleanPassengers,

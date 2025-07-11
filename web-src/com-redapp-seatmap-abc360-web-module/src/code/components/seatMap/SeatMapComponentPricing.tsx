@@ -99,7 +99,7 @@ const SeatMapComponentPricing: React.FC<SeatMapComponentPricingProps> = ({
       <SeatMapComponentBase
         config={config}
         flightSegments={[normalized]}
-        initialSegmentIndex={0}
+        segmentIndex={0}
         cabinClass={cabinClass}
         generateFlightData={(seg, index, cabin) =>
           generateFlightData({ ...normalized, cabinClass, equipment: normalized.equipmentType }, index)

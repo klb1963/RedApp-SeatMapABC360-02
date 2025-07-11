@@ -26,7 +26,7 @@ interface Props {
   iframeRef: React.RefObject<HTMLIFrameElement>;
   config: any;
   segment: any;
-  initialSegmentIndex: number;
+  segmentIndex: number;
   cabinClass: string;
   mappedCabinClass: 'E' | 'P' | 'B' | 'F' | 'A';
   availability: any[];
@@ -39,7 +39,7 @@ export const useSyncOnCabinClassChange = ({
   iframeRef,
   config,
   segment,
-  initialSegmentIndex,
+  segmentIndex,
   cabinClass,
   mappedCabinClass,
   availability,
@@ -51,7 +51,7 @@ export const useSyncOnCabinClassChange = ({
     const iframe = iframeRef.current;
     if (!iframe) return;
 
-    const flight = generateFlightData(segment, initialSegmentIndex, mappedCabinClass);
+    const flight = generateFlightData(segment, segmentIndex, mappedCabinClass);
     const availabilityData = availability || [];
 
     const passengerList = cleanPassengers.map((p, index) =>
