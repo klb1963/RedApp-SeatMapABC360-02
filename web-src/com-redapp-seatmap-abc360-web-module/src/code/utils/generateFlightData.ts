@@ -114,7 +114,7 @@ export function generateFlightData(
 
 // ⬆️ Optionally enrich with startRow/endRow if valid pair exists
 if (segment.enhancedSeatMapXml) {
-  const rows = extractStartAndEndRowFromCabin(segment.enhancedSeatMapXml, 'ANY');
+  const rows = extractStartAndEndRowFromCabin(segment.enhancedSeatMapXml);
   if (rows.startRow && rows.endRow) {
     result.startRow = rows.startRow;
     result.endRow = rows.endRow;

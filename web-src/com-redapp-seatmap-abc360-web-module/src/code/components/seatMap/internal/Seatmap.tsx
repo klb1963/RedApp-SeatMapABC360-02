@@ -219,7 +219,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                                 <div
                                   style={{
                                     position: 'absolute',
-                                    top: '50%',
+                                    top: '30%',
                                     left: '50%',
                                     transform: 'translate(-50%, -50%)',
                                     backgroundColor: passenger.passengerColor || 'white',

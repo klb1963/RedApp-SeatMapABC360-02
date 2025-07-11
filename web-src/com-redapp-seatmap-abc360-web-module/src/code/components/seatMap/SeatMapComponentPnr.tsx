@@ -1,17 +1,19 @@
 // file: /code/components/seatMap/SeatMapComponentPnr.tsx
 
+// file: /code/components/seatMap/SeatMapComponentPnr.tsx
+
 /**
  * SeatMapComponentPnr.tsx
  *
- * This component is used to render the seat map interface in the PNR context.
+ * This component renders the seat map interface in the PNR context.
  * It allows the user to:
  * - Select a flight segment
  * - Choose a cabin class (Economy, Business, etc.)
  * - View flight details and equipment info
- * - Interact with the seat map to assign seats to selected passengers
+ * - Interact with the seat map to assign seats to passengers
  *
- * Internally it uses the SeatMapComponentBase to render the seat map via iframe
- * and provides all necessary props (segment, availability, passengers, etc.).
+ * Internally uses SeatMapComponentBase to render the seat map via iframe,
+ * providing all props such as segment, availability, passengers, etc.
  */
 
 import * as React from 'react';
@@ -44,7 +46,7 @@ interface SeatMapComponentPnrProps {
     xml?: string;
     startRow?: string;
     endRow?: string;
-  }[];
+  };
 }
 
 const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
@@ -57,14 +59,16 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
   showSegmentSelector = true,
   onSeatChange
 }) => {
+  // State: currently selected segment & cabin class
   const [segmentIndex, setSegmentIndex] = useState<number>(selectedSegmentIndex);
   const [cabinClass, setCabinClass] = useState<'Y' | 'S' | 'C' | 'F' | 'A'>(
     flightSegments[segmentIndex]?.cabinClass || 'Y'
   );
 
   const [selectedSeats, setSelectedSeats] = useState<SelectedSeat[]>([]);
-  const [currentAvailability, setCurrentAvailability] = useState<any[]>(availability || []);
+  const [currentAvailability, setCurrentAvailability] = useState<any[]>(Array.isArray(availability) ? availability : []);
 
+  // Extract normalized segment info for flight info panel
   const segment = flightSegments?.[segmentIndex];
   const normalizedSegment = normalizeSegment(segment, { padFlightNumber: false });
 
@@ -101,22 +105,32 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
 
   console.log('💡 SeatMapComponentPnr: passengers =', passengers);
 
-  // fallback-seatmap mode switching ON/OFF
-  window.name = ''; // '' - for OFF 'fallback-seatmap' - for ON
+  window.name = ''; // fallback-seatmap mode: '' = OFF, 'fallback-seatmap' = ON
 
+  /**
+   * 🔁 Effect: Load availability for the currently selected segment
+   *
+   * Every time the segmentIndex changes, fetch fresh availability XML
+   * from Sabre for the selected segment & passengers. This ensures that
+   * the seat map always reflects the correct rows and available seats.
+   */
   React.useEffect(() => {
     const fetchAvailability = async () => {
       if (!flightSegments[segmentIndex]) return;
   
       const segment = flightSegments[segmentIndex];
       try {
+        console.log('!!🚀!!XXX Fetching availability for segment', segmentIndex);
         const { availability } = await import('../../services/loadSeatMapFromSabre')
           .then(mod => mod.loadSeatMapFromSabre(segment, passengers));
         setCurrentAvailability(availability);
-        console.log(`✅ Loaded availability for segment ${segment.segmentNumber}`, availability);
+
+        console.log('!!📦!!XXX currentAvailability for segment', segmentIndex, availability);
+        console.log(`!!✅!!XXX Loaded availability for segment ${segment.segmentNumber}`, availability);
+
       } catch (err) {
         console.error('❌ Failed to load seat map for segment', segment.segmentNumber, err);
-        setCurrentAvailability([]);
+        setCurrentAvailability(null);
       }
     };
   
@@ -130,7 +144,7 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
         segmentIndex={segmentIndex}
         setSegmentIndex={(index) => {
           setSegmentIndex(index);
-          setCabinClass('Y');
+          setCabinClass('Y'); // Reset cabin to default when switching segment
         }}
         cabinClass={cabinClass}
         setCabinClass={setCabinClass}
@@ -152,23 +166,29 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
           flightInfo={flightInfo}
           legendPanel={legendPanel} 
           assignedSeats={assignedSeats}
+
+          /**
+           * 🧹 generateFlightData:
+           * generates base flight data + parses startRow/endRow
+           * from current availability XML for the selected segment.
+           */
           generateFlightData={(segment, index, cabin) => {
             const baseFlight = generateFlightData(segment, index, cabin);
-          
-            // 👇 parse XML from availability[0]?.xml if available
+
             let startRow, endRow;
             try {
-              const xmlString = availability?.[0]?.xml;
+              const xmlString = currentAvailability?.find(a => a.segmentNumber === segment?.segmentNumber)?.xml;
               if (typeof xmlString === 'string') {
+                console.log('!!📦!! XML passed to extractStartAndEndRowFromCabin:', xmlString);
                 const xmlDoc = new DOMParser().parseFromString(xmlString, 'application/xml');
-                const extracted = extractStartAndEndRowFromCabin(xmlDoc, segment?.cabinClass || 'Y');
+                const extracted = extractStartAndEndRowFromCabin(xmlDoc);
                 startRow = extracted.startRow;
                 endRow = extracted.endRow;
               }
             } catch (err) {
               console.warn('⚠️ Failed to extract start/end rows:', err);
             }
-          
+
             return {
               ...baseFlight,
               startRow,

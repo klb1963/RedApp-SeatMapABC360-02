@@ -38,7 +38,7 @@ export const loadSeatMapFromSabre = async (
   passengers: PassengerOption[]
 ): Promise<{
   rawXml: string;
-  availability: any[];
+  availability: any;
   seatInfo: SeatInfo[];
   layoutLetters: string[];
 }> => {
@@ -118,7 +118,7 @@ export const loadSeatMapFromSabre = async (
     // console.log('🪑 Parsed seatInfo:', JSON.stringify(seatInfo, null, 2));
 
     // 🆕 Add startRow and endRow
-    const { startRow, endRow } = extractStartAndEndRowFromCabin(xmlDoc, 'Y');
+    const { startRow, endRow } = extractStartAndEndRowFromCabin(xmlDoc);
 
     // 🧩 Обогащаем каждый availability-элемент полями xml + startRow/endRow
     const enrichedAvailability = availability.map(item => ({
@@ -127,7 +127,9 @@ export const loadSeatMapFromSabre = async (
       enhancedSeatMapXml: xmlDoc,
       startRow,
       endRow,
-    }));
+   }));
+
+    console.log('!!✅!! enrichedAvailability:', enrichedAvailability);
 
     // ✅ Return both raw XML and enriched availability[]
     return {

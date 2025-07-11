@@ -1,4 +1,4 @@
-// file: /src/code/utils/extractStartEndRow.ts
+// file: src/code/utils/extractStartEndRow.ts
 
 /**
  * ✈️ extractStartAndEndRowFromCabin
