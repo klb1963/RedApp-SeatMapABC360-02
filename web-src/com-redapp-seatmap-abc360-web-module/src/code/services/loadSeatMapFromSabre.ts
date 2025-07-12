@@ -2,14 +2,15 @@
 
 /**
  * loadSeatMapFromSabre.ts
- * 
- * 💺 Load seat map availability from Sabre using EnhancedSeatMapRQ (SOAP).
- * 
- * This service constructs and sends an EnhancedSeatMapRQ request to the Sabre SOAP API.
- * It includes flight and passenger data and receives seat availability in response.
- * The XML response is parsed to extract availability for rendering in the seat map UI.
- * 
- * Used in the SeatMap ABC360 RedApp for Availability, Shopping, and PNR scenarios.
+ *
+ * 💺 Loads seat map availability from Sabre using EnhancedSeatMapRQ (SOAP).
+ *
+ * This service builds and sends an EnhancedSeatMapRQ SOAP request to Sabre.
+ * It includes flight and passenger data and receives a seat map XML response.
+ * The XML is then parsed into structured availability data, including startRow and endRow,
+ * which are used by the seat map UI for proper rendering.
+ *
+ * This is used in the SeatMap ABC360 RedApp in Availability, Shopping, and PNR contexts.
  */
 
 import { getService } from '../Context';
@@ -18,10 +19,12 @@ import { PassengerOption } from '../utils/parsePnrData';
 import { parseSeatMapResponse } from '../utils/parseSeatMapResponse';
 import { AgentProfileService } from 'sabre-ngv-app/app/services/impl/AgentProfileService';
 import { extractStartAndEndRowFromCabin } from '../utils/extractStartEndRow';
-import { sendXmlToUploader } from './sendXmlToUploader';
 import { SeatInfo } from '../components/seatMap/types/SeatInfo';
 
-// ✈️ Interface for the flight segment passed into the seat map request
+/**
+ * Interface describing the minimum flight segment information required
+ * to request a seat map from Sabre.
+ */
 interface FlightSegment {
   bookingClass: string;
   marketingCarrier: string;
@@ -30,26 +33,33 @@ interface FlightSegment {
   departureDate: string;
   origin: string;
   destination: string;
+  segmentNumber?: string; // Optional segment sequence number
 }
 
-// 🔧 Main function to send EnhancedSeatMapRQ and parse response
+/**
+ * Sends EnhancedSeatMapRQ to Sabre and returns parsed seat map data.
+ *
+ * @param segment - flight segment info (incl. booking class, carrier, dates, etc.)
+ * @param passengers - list of passengers on this segment
+ * @returns Promise resolving to raw XML, enriched availability array, seat info array, and layout letters
+ */
 export const loadSeatMapFromSabre = async (
   segment: FlightSegment,
   passengers: PassengerOption[]
 ): Promise<{
   rawXml: string;
-  availability: any;
+  availability: any[];
   seatInfo: SeatInfo[];
   layoutLetters: string[];
 }> => {
   try {
     const soapApiService = getService(ISoapApiService);
 
-    // 📌 Retrieve PCC from agent profile (fallback hardcoded if needed)
+    // Get PCC from agent profile (or fallback hardcoded)
     const agentService = getService(AgentProfileService);
     const pcc = agentService.getPcc() || 'DI9L';
 
-    // 👥 Compose <Passenger> elements for the request (not required, but included for future use)
+    // Optional: <Passenger> elements for future use
     const passengerXml = passengers
       .map(
         (p, index) => `
@@ -64,7 +74,7 @@ export const loadSeatMapFromSabre = async (
       )
       .join('');
 
-    // 📤 Construct full EnhancedSeatMapRQ payload with flight, RBD, and FareAvailQualifiers
+    // Build SOAP payload
     const soapPayload = `
     <ns4:EnhancedSeatMapRQ xmlns:ns4="http://stl.sabre.com/Merchandising/v8">
       <ns4:SeatMapQueryEnhanced>
@@ -102,36 +112,35 @@ export const loadSeatMapFromSabre = async (
 
     console.log('🚀 Sending EnhancedSeatMapRQ:\n', soapPayload);
 
-    // 📡 Send request to Sabre SOAP API
+    // Send SOAP request to Sabre
     const response = await soapApiService.callSws({
       action: 'EnhancedSeatMapRQ',
       payload: soapPayload,
       authTokenType: 'SESSION'
     });
 
-    // 📥 Get raw XML response and parse it for availability info
+    // Parse Sabre XML response
     const rawXml = response.value;
     const xmlDoc = new DOMParser().parseFromString(rawXml, 'application/xml');
 
     const { availability, seatInfo, layoutLetters } = parseSeatMapResponse(xmlDoc);
 
-    // console.log('🪑 Parsed seatInfo:', JSON.stringify(seatInfo, null, 2));
-
-    // 🆕 Add startRow and endRow
     const { startRow, endRow } = extractStartAndEndRowFromCabin(xmlDoc);
 
-    // 🧩 Обогащаем каждый availability-элемент полями xml + startRow/endRow
+    console.log('[🔍 extractStartAndEndRowFromCabin]', { startRow, endRow });
+
+    // Enrich each availability entry with segment info and row boundaries
     const enrichedAvailability = availability.map(item => ({
       ...item,
+      segmentNumber: segment.segmentNumber || '1',
       xml: rawXml,
       enhancedSeatMapXml: xmlDoc,
       startRow,
       endRow,
    }));
 
-    console.log('!!✅!! enrichedAvailability:', enrichedAvailability);
+    console.log('✅ enrichedAvailability:', enrichedAvailability);
 
-    // ✅ Return both raw XML and enriched availability[]
     return {
       rawXml,
       availability: enrichedAvailability,

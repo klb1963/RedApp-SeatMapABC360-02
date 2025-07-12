@@ -57,8 +57,21 @@ const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, d
     />
   );
   
-  // Панель Legeng
   const legendPanel = <SeatLegend />;
+
+  // ✅ compute flightData only once
+  const flightData = getFlightFromSabreData(
+    {
+      flightSegments: [
+        {
+          ...rawSegment,
+          cabinClass: mapCabinToCode(cabinClass),
+          equipment: rawSegment?.equipmentType ?? rawSegment?.aircraftType ?? 'n/a',
+        },
+      ],
+    },
+    0 // always 0, since only one segment is passed
+  );
 
   return (
     <div style={{ padding: '1rem' }}>
@@ -80,30 +93,7 @@ const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, d
         flightSegments={normalizedSegments} // только для отображения
         segmentIndex={segmentIndex}
         cabinClass={cabinClass}
-        generateFlightData={(_, index, cabin) => {
-          const rawSeg = rawSegments[index];
-
-          if (!rawSeg) {
-            console.warn('⚠️ rawSegment is missing for index:', index);
-            return null;
-          }
-
-          // 🔍 Лог сегмента перед генерацией
-          console.log('[🔁 SWITCH]', index, rawSeg);
-
-          return getFlightFromSabreData(
-            {
-              flightSegments: [
-                {
-                  ...rawSeg,
-                  cabinClass: mapCabinToCode(cabin),
-                  equipment: rawSeg.equipmentType ?? rawSeg.aircraftType ?? 'n/a',
-                },
-              ],
-            },
-            0 // всегда индекс 0, потому что мы передаём массив из одного сегмента
-          );
-        }}
+        flightData={flightData}
         availability={null}
         passengers={[]}
         showSegmentSelector={false}

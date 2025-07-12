@@ -86,6 +86,13 @@ const SeatMapComponentPricing: React.FC<SeatMapComponentPricingProps> = ({
     </>
   );
 
+  // ✅ Precompute flightData once
+  const flightData = generateFlightData(
+    { ...normalized, cabinClass, equipment: normalized.equipmentType },
+    0,
+    cabinClass
+  );
+
   return (
     <div style={{ padding: '1rem' }}>
       <SegmentCabinSelector
@@ -101,9 +108,7 @@ const SeatMapComponentPricing: React.FC<SeatMapComponentPricingProps> = ({
         flightSegments={[normalized]}
         segmentIndex={0}
         cabinClass={cabinClass}
-        generateFlightData={(seg, index, cabin) =>
-          generateFlightData({ ...normalized, cabinClass, equipment: normalized.equipmentType }, index)
-        }
+        flightData={flightData}
         availability={null}
         passengers={[]}
         showSegmentSelector={false}

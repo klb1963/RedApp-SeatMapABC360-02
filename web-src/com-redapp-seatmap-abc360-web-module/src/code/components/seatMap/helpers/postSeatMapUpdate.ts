@@ -39,5 +39,11 @@ export function postSeatMapUpdate({
     currentDeckIndex: '0'
   };
 
+  console.log('✈️ Sending seat map update to iframe:', {
+    flight,
+    startRow: flight.startRow,
+    endRow: flight.endRow
+  });
+
   iframeRef.current?.contentWindow?.postMessage(message, 'https://quicket.io');
 } 

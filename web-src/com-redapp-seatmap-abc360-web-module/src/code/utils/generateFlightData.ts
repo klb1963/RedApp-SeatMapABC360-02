@@ -37,7 +37,7 @@ export interface FlightSegmentInput {
   };
   equipmentType?: string;
   cabinXml?: Element; // Optional full cabin XML for row extraction
-  enhancedSeatMapXml?: Document;
+  enhancedSeatMapXml?: Document; // Optional XML for seat map parsing
 }
 
 /**
@@ -54,51 +54,58 @@ export interface FlightData {
   equipment: string;
   marketingCarrier?: string;
   passengerType: string; // Always 'ADT' (Adult) for now
-  startRow?: string; // 🆕 Added for seat map library schema
-  endRow?: string;   // 🆕
+  startRow?: string;     // Optional: start row boundary for seat map schema
+  endRow?: string;       // Optional: end row boundary for seat map schema
 }
 
 /**
  * Generates a normalized FlightData object from raw segment input.
  *
+ * If startRow / endRow are provided explicitly (e.g., from enrichedAvailability),
+ * they are used directly. Otherwise, the function falls back to extracting them
+ * from enhancedSeatMapXml, if available.
+ *
  * @param segment - Raw segment object from Sabre or shared context
  * @param index - Index of the segment (used for ID)
  * @param cabinClassOverride - Optional cabin override (Y, C, F, etc.)
+ * @param startRowOverride - Optional explicit start row (e.g., from enrichedAvailability)
+ * @param endRowOverride - Optional explicit end row (e.g., from enrichedAvailability)
  * @returns A FlightData object ready for rendering in the seat map
  */
 export function generateFlightData(
   segment: FlightSegmentInput,
   index: number,
-  cabinClassOverride?: string
+  cabinClassOverride?: string,
+  startRowOverride?: string,
+  endRowOverride?: string
 ): FlightData {
-
   console.log('[📥 Incoming segment]', segment);
 
-  // ✈️ Airline code logic
+  // Airline code logic
   const airlineCode = segment.marketingAirline || segment.marketingCarrier || 'XX';
 
-  // 🔢 Flight number fallback logic
+  // Flight number fallback logic
   const flightNoRaw = segment.flightNumber || segment.marketingFlightNumber || '000';
   const flightNo = String(flightNoRaw).replace(/^0+/, '') || '0';
 
-  // 📅 Normalize departure date
+  // Normalize departure date
   const rawDate = segment.departureDateTime || segment.departureDate || '';
   const departureDate = rawDate.includes('T') ? rawDate.split('T')[0] : rawDate;
 
-  // 🌍 Departure / Arrival airport codes
+  // Departure / Arrival airport codes
   const departure = segment.origin || segment.departure || '???';
   const arrival = segment.destination || segment.arrival || '???';
 
-  // 🛫 Aircraft equipment description
+  // Aircraft equipment description
   const rawEquipment = segment.equipmentType || '';
 
-  // 💺 Cabin class logic – use override as-is, only map if missing
+  // Cabin class logic – use override if provided
   const mappedCabin =
     cabinClassOverride !== undefined
       ? cabinClassOverride
       : mapCabinToCode(segment.cabinClass || 'Y');
 
-  // 🧰 Final object construction
+  // Construct the final FlightData object
   const result: FlightData = {
     id: String(index).padStart(3, '0'),
     airlineCode,
@@ -112,16 +119,20 @@ export function generateFlightData(
     passengerType: 'ADT'
   };
 
-// ⬆️ Optionally enrich with startRow/endRow if valid pair exists
-if (segment.enhancedSeatMapXml) {
-  const rows = extractStartAndEndRowFromCabin(segment.enhancedSeatMapXml);
-  if (rows.startRow && rows.endRow) {
-    result.startRow = rows.startRow;
-    result.endRow = rows.endRow;
+  // If explicit startRow/endRow are provided, use them directly
+  if (startRowOverride && endRowOverride) {
+    result.startRow = startRowOverride;
+    result.endRow = endRowOverride;
+  } else if (segment.enhancedSeatMapXml) {
+    // Otherwise, attempt to extract from enhancedSeatMapXml
+    const rows = extractStartAndEndRowFromCabin(segment.enhancedSeatMapXml);
+    if (rows.startRow && rows.endRow) {
+      result.startRow = rows.startRow;
+      result.endRow = rows.endRow;
+    }
   }
-}
-
-  console.log('[✅ FlightData Ready]', result);
+  console.log('???💡??? startRowOverride / endRowOverride passed in', startRowOverride, endRowOverride);
+  console.log('[???✅??? FlightData Ready]', result);
 
   return result;
 }

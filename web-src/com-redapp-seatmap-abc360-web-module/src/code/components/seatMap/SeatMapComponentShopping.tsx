@@ -40,7 +40,7 @@ const SeatMapComponentShopping: React.FC<SeatMapComponentShoppingProps> = ({
 
   const rawSegment = shoppingSegments[segmentIndex] || {};
 
-  // Безопасное нормализованное значение
+  // Safe normalized value
   const normalized = React.useMemo(() => {
     if (!rawSegment || typeof rawSegment !== 'object') {
       console.warn('⚠️ rawSegment is invalid or undefined:', rawSegment);
@@ -85,6 +85,13 @@ const SeatMapComponentShopping: React.FC<SeatMapComponentShoppingProps> = ({
     </>
   );
 
+  // ✅ Precompute flightData once
+  const flightData = generateFlightData(
+    { ...normalized, cabinClass, equipment: normalized.equipmentType },
+    0,
+    cabinClass
+  );
+
   return (
     <div style={{ padding: '1rem' }}>
       <SegmentCabinSelector
@@ -100,9 +107,7 @@ const SeatMapComponentShopping: React.FC<SeatMapComponentShoppingProps> = ({
         flightSegments={[normalized]}
         segmentIndex={0}
         cabinClass={cabinClass}
-        generateFlightData={(seg, index, cabin) =>
-          generateFlightData({ ...normalized, cabinClass, equipment: normalized.equipmentType }, index)
-        }
+        flightData={flightData}
         availability={null}
         passengers={[]}
         showSegmentSelector={false}

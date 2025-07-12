@@ -6,7 +6,7 @@
  * 📤 Custom React hook to initialize the seat map iframe when it finishes loading.
  * 
  * Responsibilities:
- * - Generates flight data and passenger list using provided segment and cabin info
+ * - Sends already prepared flight data and passenger list to the iframe
  * - Builds a SeatMapMessagePayload object containing config, flight, availability, and passengers
  * - Sends the payload to the iframe via postMessage once it's ready
  * 
@@ -21,8 +21,6 @@ import { SeatMapMessagePayload } from '../types/SeatMapMessagePayload';
 import { createPassengerPayload } from '../helpers/createPassengerPayload';
 import { SelectedSeat } from '../SeatMapComponentBase';
 
-import { mapCabinToCode } from '../../../utils/mapCabinToCode';
-
 interface Props {
   iframeRef: React.RefObject<HTMLIFrameElement>;
   config: any;
@@ -32,8 +30,8 @@ interface Props {
   availability: any[];
   cleanPassengers: PassengerOption[];
   selectedPassengerId: string;
-  selectedSeats: SelectedSeat[]; 
-  generateFlightData: (segment: any, index: number, cabin: string) => FlightData;
+  selectedSeats: SelectedSeat[];
+  flightData: FlightData; // 🆕 flightData is passed in as a prop
 }
 
 export const useOnIframeLoad = ({
@@ -46,17 +44,13 @@ export const useOnIframeLoad = ({
   cleanPassengers,
   selectedPassengerId,
   selectedSeats,
-  generateFlightData
+  flightData
 }: Props): (() => void) => {
   return useCallback(() => {
     const iframe = iframeRef.current;
     if (!iframe) return;
 
-    const flight = generateFlightData(
-      segment,
-      segmentIndex,
-      mapCabinToCode(segment?.bookingClass || cabinClass)
-    );
+    // flightData is already calculated upstream and passed in
 
     const availabilityData = availability || [];
 
@@ -67,7 +61,7 @@ export const useOnIframeLoad = ({
     const message: SeatMapMessagePayload = {
       type: 'seatMaps',
       config: JSON.stringify(config),
-      flight: JSON.stringify(flight),
+      flight: JSON.stringify(flightData),
       currentDeckIndex: '0'
     };
 
@@ -92,6 +86,6 @@ export const useOnIframeLoad = ({
     cleanPassengers,
     selectedPassengerId,
     selectedSeats,
-    generateFlightData
+    flightData
   ]);
 };
