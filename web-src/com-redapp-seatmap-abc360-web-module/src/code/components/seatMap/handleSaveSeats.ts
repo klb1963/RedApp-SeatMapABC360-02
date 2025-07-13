@@ -24,37 +24,29 @@ export const handleSaveSeats = async (
   const pnrService = getService(PnrPublicService);
   const modalService = getService(PublicModalsService);
 
-  // 📋 Check if active PNR exists
   const recordLocator = pnrService.getRecordLocator();
   if (!recordLocator) {
     console.warn('⚠️ No active PNR. Please create or retrieve a PNR first.');
     throw new Error('No active PNR');
   }
 
-  if (!segmentNumber) {
-    console.error('❌ No segmentNumber provided');
-    alert('❌ Error: no segment selected.');
-    return;
-  }
-
   try {
-    // 🔄 Load current PNR details to map passenger ids → nameNumbers
     const { parsedData } = await loadPnrDetailsFromSabre();
     const passengers = parsedData.passengers || [];
 
-    // 🎯 Filter selected seats for the current segment
-    const seatsForCurrentSegment = selectedSeats.filter(
-      seat => seat.segmentNumber === segmentNumber
-    );
-
-    if (!seatsForCurrentSegment.length) {
-      console.warn(`⚠️ No selected seats for segment ${segmentNumber}`);
-      alert(`⚠️ No selected seats for segment ${segmentNumber}`);
+    if (!selectedSeats.length) {
+      console.warn(`⚠️ No selected seats to save`);
+      alert(`⚠️ No selected seats to save`);
       return;
     }
 
-    // 🪑 For each passenger, send a separate AirSeatRQ
-    for (const seat of seatsForCurrentSegment) {
+    // 🪑 For each passenger & seat
+    for (const seat of selectedSeats) {
+      if (!seat.segmentNumber) {
+        console.warn(`⚠️ Missing segmentNumber for seat:`, seat);
+        continue;
+      }
+
       const pax = passengers.find(
         p => p.id === seat.passengerId || p.nameNumber === seat.passengerId
       );
@@ -95,8 +87,8 @@ export const handleSaveSeats = async (
     }
 
     console.log('✅ All seats successfully assigned.');
-    await pnrService.refreshData(); // refresh PNR data after save
-    modalService.closeReactModal(); // close modal
+    await pnrService.refreshData(); 
+    modalService.closeReactModal();
 
   } catch (error) {
     console.error('❌ Error sending AirSeatRQ:', error);

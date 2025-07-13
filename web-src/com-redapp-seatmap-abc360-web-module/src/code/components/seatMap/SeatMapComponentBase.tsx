@@ -135,7 +135,13 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
             p => String(p.id) === String(s.passengerId) || String(p.nameNumber) === String(s.passengerId)
           );
           if (!pax) return null;
-          return createSelectedSeat(pax, s.seat, true, availability, segment?.value);
+          return createSelectedSeat(
+            pax, 
+            s.seat, 
+            true, 
+            availability, 
+            segment?.segmentNumber || String(segmentIndex + 1)
+          );
         })
         .filter(Boolean) as SelectedSeat[];
 
@@ -195,7 +201,13 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     flightData
   });
 
-  const segmentNumber = flightData?.id || String(segmentIndex + 1);
+  const segmentNumber = String(segment?.sequence ?? segmentIndex + 1);
+
+  const currentSegmentNumber = String(segmentIndex + 1);
+
+  const selectedSeatsForSegment = selectedSeats.filter(
+    s => s.segmentNumber === currentSegmentNumber
+  );
 
   // Hook to handle seat selection changes
   useSeatSelectionHandler({
@@ -212,7 +224,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     const newSeats = handleAutomateSeating({
       passengers: cleanPassengers,
       availableSeats: Array.isArray(availability) ? availability : [],
-      segmentNumber
+      segmentNumber,
     });
 
     setSelectedSeats(newSeats);
@@ -238,7 +250,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   const passengerPanel = showFallback ? null : (
     <PassengerPanel
       passengers={cleanPassengers}
-      selectedSeats={selectedSeats}
+      selectedSeats={selectedSeatsForSegment}
       selectedPassengerId={selectedPassengerId}
       setSelectedPassengerId={setSelectedPassengerId}
       handleResetSeat={() => {
