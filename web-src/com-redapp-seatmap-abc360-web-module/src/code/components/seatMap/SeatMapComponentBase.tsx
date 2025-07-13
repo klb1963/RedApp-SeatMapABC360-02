@@ -120,8 +120,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   const segment = flightSegments[segmentIndex];
 
   const seatMapInitError = useSeatMapInitErrorLogger();
-  const useFallback = isFallbackMode();
-  const showFallback = useFallback || !!seatMapInitError;
+  const showFallback = isFallbackMode() || seatMapInitError;
 
   const mappedCabinClass = useMemo(() => mapCabinToCode(cabinClass), [cabinClass]);
   const { media } = useSeatmapMedia();

@@ -1,31 +1,27 @@
+// file: /code/components/seatMap/hooks/useSeatMapInitErrorLogger.ts
+
 /**
  * 🧩 Hook to listen for seat map init errors from Quicket iframe.
- * Returns `error` string if initialization failed, otherwise null.
+ * Returns `true` if initialization failed, otherwise `false`.
  */
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 
-export function useSeatMapInitErrorLogger() {
-  const [error, setError] = useState<string | null>(null);
+export const useSeatMapInitErrorLogger = (): boolean => {
+  const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
-    function handleSeatMapMessage(event: MessageEvent) {
-      const data = event.data;
-
-      if (data?.type === 'onSeatMapInited') {
-        if (data.error) {
-          console.error('❌ SeatMap init error:', data.error);
-          setError(data.error);
-        } else {
-          console.log('✅ SeatMap инициализировалась без ошибок');
-          setError(null);
-        }
+    const handleMessage = (event: MessageEvent) => {
+      if (typeof event.data !== 'string') return;
+      if (event.data.includes('SeatMap init error')) {
+        console.error(event.data);
+        setHasError(true);
       }
-    }
+    };
 
-    window.addEventListener('message', handleSeatMapMessage);
-    return () => window.removeEventListener('message', handleSeatMapMessage);
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
   }, []);
 
-  return error;
-}
+  return hasError;
+};
