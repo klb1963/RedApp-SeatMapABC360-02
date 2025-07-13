@@ -82,6 +82,8 @@ interface SeatMapComponentBaseProps {
   flightInfo?: React.ReactNode;
   galleryPanel?: React.ReactNode;
   legendPanel?: React.ReactNode;
+  disableCabinClassChange?: boolean;
+
 }
 
 function ensurePassengerIds(passengers: PassengerOption[]): PassengerOption[] {
@@ -104,7 +106,9 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   onSeatChange,
   flightInfo,
   assignedSeats,
-  legendPanel
+  legendPanel,
+  disableCabinClassChange = false
+
 }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
@@ -207,6 +211,22 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     startRowOverride,
     endRowOverride
   });
+
+  if (!disableCabinClassChange) {
+      const { useSyncOnCabinClassChange } = require('./hooks/useSyncOnCabinClassChange');
+      useSyncOnCabinClassChange({
+        iframeRef,
+        config,
+        segment,
+        segmentIndex,
+        cabinClass,
+        mappedCabinClass,
+        availability,
+        cleanPassengers,
+        selectedPassengerId,
+        selectedSeats
+      });
+    }
 
   const currentSegmentNumber = segmentNumber || String(segmentIndex + 1);
 

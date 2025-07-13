@@ -224,8 +224,7 @@ React.useEffect(() => {
           }}
           flightInfo={flightInfo}
           legendPanel={legendPanel}
-          
-          
+          disableCabinClassChange={true}
         />
       )}
 
