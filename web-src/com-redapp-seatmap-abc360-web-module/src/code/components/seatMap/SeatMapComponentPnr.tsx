@@ -198,6 +198,7 @@ React.useEffect(() => {
         }}
         cabinClass={cabinClass}
         setCabinClass={setCabinClass}
+        disabled={true} // 🚫 disable cabin class selector
       />
 
       {segment && availabilityReady && flightData && (

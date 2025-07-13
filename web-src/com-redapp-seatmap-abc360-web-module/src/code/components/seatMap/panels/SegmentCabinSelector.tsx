@@ -23,6 +23,7 @@ interface SegmentCabinSelectorProps {
   setSegmentIndex: (index: number) => void;
   cabinClass: 'Y' | 'S' | 'C' | 'F' | 'A';
   setCabinClass: (code: 'Y' | 'S' | 'C' | 'F' | 'A') => void;
+  disabled?: boolean;
 }
 
 export const SegmentCabinSelector: React.FC<SegmentCabinSelectorProps> = ({
@@ -30,7 +31,8 @@ export const SegmentCabinSelector: React.FC<SegmentCabinSelectorProps> = ({
   segmentIndex,
   setSegmentIndex,
   cabinClass,
-  setCabinClass
+  setCabinClass,
+  disabled = false,
 }) => {
   return (
     <div
@@ -93,6 +95,7 @@ export const SegmentCabinSelector: React.FC<SegmentCabinSelectorProps> = ({
         <select
           value={cabinClass}
           onChange={(e) => setCabinClass(e.target.value as 'Y' | 'S' | 'C' | 'F' | 'A')}
+          disabled={disabled}
           style={{
             border: 'none',
             background: 'transparent',
