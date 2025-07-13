@@ -21,7 +21,6 @@ import SeatMapModalLayout from './layout/SeatMapModalLayout';
 import { PassengerOption } from '../../utils/parsePnrData';
 
 import { useSyncOnSegmentChange } from './hooks/useSyncOnSegmentChange';
-import { useSyncOnCabinClassChange } from './hooks/useSyncOnCabinClassChange';
 import { useOnIframeLoad } from './hooks/useOnIframeLoad';
 import { useSeatSelectionHandler } from './hooks/useSeatSelectionHandler';
 
@@ -128,11 +127,10 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     setAlreadyInitialized(false);
   }, [segmentIndex]);
 
-  // Initialize assigned seats once if provided
   useEffect(() => {
     if (assignedSeats?.length && !alreadyInitialized) {
       const currentSegmentNumber = String(segment?.segmentNumber || segmentIndex + 1);
-  
+
       const enriched = assignedSeats
         .filter(s => String(s.segmentNumber) === currentSegmentNumber)
         .map(s => {
@@ -140,7 +138,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
             p => String(p.id) === String(s.passengerId) || String(p.nameNumber) === String(s.passengerId)
           );
           if (!pax) return null;
-  
+
           return createSelectedSeat(
             pax,
             s.seat,
@@ -150,7 +148,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
           );
         })
         .filter(Boolean) as SelectedSeat[];
-  
+
       setSelectedSeats(enriched);
       onSeatChange?.(enriched);
       setAlreadyInitialized(true);
@@ -188,21 +186,8 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     flightData
   });
 
-  useSyncOnCabinClassChange({
-    iframeRef,
-    config,
-    segment,
-    segmentIndex,
-    cabinClass,
-    mappedCabinClass,
-    availability,
-    cleanPassengers,
-    selectedPassengerId,
-    selectedSeats
-  });
-
   const currentAvailabilityForSegment =
-  availability?.find(a => String(a.segmentNumber) === String(segment?.segmentNumber || segmentIndex + 1));
+    availability?.find(a => String(a.segmentNumber) === String(segment?.segmentNumber || segmentIndex + 1));
 
   const startRowOverride = currentAvailabilityForSegment?.startRow;
   const endRowOverride = currentAvailabilityForSegment?.endRow;
@@ -229,7 +214,6 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     s => s.segmentNumber === currentSegmentNumber
   );
 
-  // Hook to handle seat selection changes
   useSeatSelectionHandler({
     cleanPassengers,
     selectedPassengerId,
@@ -241,14 +225,11 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   });
 
   const onAutomateSeating = () => {
-    console.log('[AUTO] availableSeats in Base before call:', availability);
     const newSeats = handleAutomateSeating({
       passengers: cleanPassengers,
       availableSeats: Array.isArray(availability) ? availability : [],
       segmentNumber: currentSegmentNumber,
     });
-
-    console.log('[AUTO] newSeats:', newSeats);
 
     setSelectedSeats(newSeats);
     setSelectedPassengerId(String(cleanPassengers[0].id));
@@ -265,7 +246,6 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   };
 
   const onSaveSeats = async () => {
-    console.log('[SAVE] selectedSeats:', selectedSeats);
     await handleDeleteSeats(async () => {
       await handleSaveSeats(selectedSeats, currentSegmentNumber);
     });
@@ -320,18 +300,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
         }}
       >
         {showFallback ? (
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'flex-start',
-              alignItems: 'flex-start',
-              width: '100%',
-              height: '100%',
-              overflow: 'auto',
-              paddingLeft: '2rem',
-              paddingRight: '4rem'
-            }}
-          >
+          <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'flex-start', width: '100%', height: '100%', overflow: 'auto', paddingLeft: '2rem', paddingRight: '4rem' }}>
             <div style={{ minWidth: 720 }}>
               <ReactSeatMapModal />
             </div>
