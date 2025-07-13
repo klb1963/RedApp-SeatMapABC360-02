@@ -38,6 +38,7 @@ export interface NormalizedSegment {
   duration: string;
   equipmentType: string;
   aircraftDescription: string;
+  segmentNumber: string;
 }
 
 export interface NormalizeSegmentOptions {
@@ -132,6 +133,7 @@ export function normalizeSegment(
     duration,
     equipmentType,
     aircraftDescription,
+    segmentNumber: String(seg.sequence ?? '')
   };
 
   console.log('✅ normalized:', result);

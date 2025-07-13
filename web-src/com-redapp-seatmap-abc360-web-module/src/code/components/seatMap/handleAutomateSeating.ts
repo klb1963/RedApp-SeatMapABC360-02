@@ -32,16 +32,30 @@ export function handleAutomateSeating({
   availableSeats,
   segmentNumber,
 }: AutomateSeatingParams): SelectedSeat[] {
+  
+  console.log('[AUTO] passengers:', passengers);
+  console.log('[AUTO] availableSeats (raw):', availableSeats);
+  console.log('[AUTO] segmentNumber:', segmentNumber);
+
   const assignments: SelectedSeat[] = [];
 
-  // Filter all available seats
+  // Filter available seats
   const freeSeats = availableSeats.filter(seat => {
-    if (seat.type !== 'available') return false;
+    if (!['available'].includes(seat.type)) return false;
     const price = parseFloat(String(seat.price).replace(/[^\d.]/g, '')) || 0;
     return price === 0;
   });
+  
+  const paidSeats = availableSeats.filter(seat => {
+    return seat.type === 'paid'; // только paid, исключая preferred
+  });
 
-  const paidSeats = availableSeats.filter(seat => seat.type === 'available');
+  availableSeats.forEach(seat => {
+    console.log(`label=${seat.label}, type=${seat.type}, price=${seat.price}`);
+  });
+
+  console.log('[AUTO] freeSeats:', freeSeats);
+  console.log('[AUTO] paidSeats:', paidSeats);
 
   if (freeSeats.length > 0) {
     assignSeats(freeSeats);

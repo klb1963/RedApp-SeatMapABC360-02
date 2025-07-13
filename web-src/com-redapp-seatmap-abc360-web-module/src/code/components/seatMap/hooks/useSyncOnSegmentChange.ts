@@ -33,6 +33,8 @@ interface Props {
   selectedSeats: SelectedSeat[];
   iframeRef: React.RefObject<HTMLIFrameElement>;
   flightData: FlightData; // 🆕 precomputed flightData
+  startRowOverride?: string;
+  endRowOverride?: string;
 }
 
 export const useSyncOnSegmentChange = ({
@@ -46,11 +48,18 @@ export const useSyncOnSegmentChange = ({
   selectedPassengerId,
   selectedSeats,
   iframeRef,
-  flightData
+  flightData,
+  startRowOverride,
+  endRowOverride
 }: Props) => {
   useEffect(() => {
     const iframe = iframeRef.current;
     if (!iframe) return;
+
+    if (!flightData || !availability?.length) {
+      console.log('⏳ Flight data or availability not ready yet');
+      return;
+    }
 
     const availabilityData = availability || [];
 
@@ -58,25 +67,25 @@ export const useSyncOnSegmentChange = ({
       createPassengerPayload(p, index, selectedPassengerId, selectedSeats)
     );
 
+    const finalFlightData = {
+      ...flightData,
+      startRow: startRowOverride ?? flightData.startRow,
+      endRow: endRowOverride ?? flightData.endRow,
+    };
+
     const message: SeatMapMessagePayload = {
       type: 'seatMaps',
       config: JSON.stringify(config),
-      flight: JSON.stringify(flightData),
-      currentDeckIndex: '0'
+      flight: JSON.stringify(finalFlightData),
+      currentDeckIndex: '0',
+      availability: JSON.stringify(availabilityData),
+      passengers: JSON.stringify(passengerList)
     };
-    
-    if (availabilityData?.length > 0) {
-      message.availability = JSON.stringify(availabilityData);
-    }
-    
-    if (passengerList?.length > 0) {
-      message.passengers = JSON.stringify(passengerList);
-    }
 
     console.log('[🚀 passengerList sent to iframe - segment change]', passengerList);
 
     const targetOrigin = new URL(iframe.src).origin;
     iframe.contentWindow?.postMessage(message, targetOrigin);
     console.log('📤 Seat map updated after segment change');
-  }, [segmentIndex, flightData]);
+  }, [segmentIndex]);
 };

@@ -21,10 +21,6 @@ import { AgentProfileService } from 'sabre-ngv-app/app/services/impl/AgentProfil
 import { extractStartAndEndRowFromCabin } from '../utils/extractStartEndRow';
 import { SeatInfo } from '../components/seatMap/types/SeatInfo';
 
-/**
- * Interface describing the minimum flight segment information required
- * to request a seat map from Sabre.
- */
 interface FlightSegment {
   bookingClass: string;
   marketingCarrier: string;
@@ -33,16 +29,10 @@ interface FlightSegment {
   departureDate: string;
   origin: string;
   destination: string;
-  segmentNumber?: string; // Optional segment sequence number
+  sequence?: number;          // 👈 добавляем для совместимости
+  segmentNumber?: string;     // 👈 оставляем для fallback
 }
 
-/**
- * Sends EnhancedSeatMapRQ to Sabre and returns parsed seat map data.
- *
- * @param segment - flight segment info (incl. booking class, carrier, dates, etc.)
- * @param passengers - list of passengers on this segment
- * @returns Promise resolving to raw XML, enriched availability array, seat info array, and layout letters
- */
 export const loadSeatMapFromSabre = async (
   segment: FlightSegment,
   passengers: PassengerOption[]
@@ -54,53 +44,31 @@ export const loadSeatMapFromSabre = async (
 }> => {
   try {
     const soapApiService = getService(ISoapApiService);
-
-    // Get PCC from agent profile (or fallback hardcoded)
     const agentService = getService(AgentProfileService);
     const pcc = agentService.getPcc() || 'DI9L';
 
-    // Optional: <Passenger> elements for future use
-    const passengerXml = passengers
-      .map(
-        (p, index) => `
-        <Passenger id="${p.value}">
-          <Name>
-            <Given>${p.givenName.split(' ')[0]}</Given>
-            <Surname>${p.surname}</Surname>
-          </Name>
-          <PTC>ADT</PTC>
-        </Passenger>
-      `
-      )
-      .join('');
+    const segmentNumber = String(segment.sequence || segment.segmentNumber || '1');
 
-    // Build SOAP payload
+    console.log('🚀 [loadSeatMapFromSabre] Segment input:', segment);
+
     const soapPayload = `
     <ns4:EnhancedSeatMapRQ xmlns:ns4="http://stl.sabre.com/Merchandising/v8">
       <ns4:SeatMapQueryEnhanced>
         <ns4:RequestType>Payload</ns4:RequestType>
-
         <ns4:Flight origin="${segment.origin}" destination="${segment.destination}">
           <ns4:DepartureDate>${segment.departureDate}</ns4:DepartureDate>
           <ns4:Marketing carrier="${segment.marketingCarrier}">${parseInt(segment.marketingFlightNumber, 10)}</ns4:Marketing>
         </ns4:Flight>
-
         <ns4:CabinDefinition>
           <ns4:RBD>${segment.bookingClass}</ns4:RBD>
         </ns4:CabinDefinition>
-
-        ${passengers
-          .map(
-            (p, index) => `
+        ${passengers.map((p, index) => `
           <ns4:FareAvailQualifiers fareBasisCode="TESTFARE" passengerType="ADT">
             <ns4:TravellerID>${index + 1}</ns4:TravellerID>
             <ns4:GivenName>${p.givenName.split(' ')[0]}</ns4:GivenName>
             <ns4:Surname>${p.surname}</ns4:Surname>
           </ns4:FareAvailQualifiers>
-        `
-          )
-          .join('')}
-
+        `).join('')}
         <ns4:POS multiHost="${segment.marketingCarrier}" company="${segment.marketingCarrier}">
           <ns4:Actual city="${segment.origin}"/>
           <ns4:PCC>${pcc}</ns4:PCC>
@@ -110,36 +78,32 @@ export const loadSeatMapFromSabre = async (
     </ns4:EnhancedSeatMapRQ>
     `;
 
-    console.log('🚀 Sending EnhancedSeatMapRQ:\n', soapPayload);
+    console.log('📨 [loadSeatMapFromSabre] Sending SOAP for segmentNumber:', segmentNumber, '\n', soapPayload);
 
-    // Send SOAP request to Sabre
     const response = await soapApiService.callSws({
       action: 'EnhancedSeatMapRQ',
       payload: soapPayload,
       authTokenType: 'SESSION'
     });
 
-    // Parse Sabre XML response
     const rawXml = response.value;
     const xmlDoc = new DOMParser().parseFromString(rawXml, 'application/xml');
 
     const { availability, seatInfo, layoutLetters } = parseSeatMapResponse(xmlDoc);
-
     const { startRow, endRow } = extractStartAndEndRowFromCabin(xmlDoc);
 
     console.log('[🔍 extractStartAndEndRowFromCabin]', { startRow, endRow });
 
-    // Enrich each availability entry with segment info and row boundaries
     const enrichedAvailability = availability.map(item => ({
       ...item,
-      segmentNumber: segment.segmentNumber || '1',
+      segmentNumber,
       xml: rawXml,
       enhancedSeatMapXml: xmlDoc,
       startRow,
       endRow,
-   }));
+    }));
 
-    console.log('✅ enrichedAvailability:', enrichedAvailability);
+    console.log('✅ [loadSeatMapFromSabre] enrichedAvailability:', enrichedAvailability);
 
     return {
       rawXml,
@@ -149,7 +113,7 @@ export const loadSeatMapFromSabre = async (
     };
 
   } catch (error) {
-    console.error('❌ Error in loadSeatMapFromSabre:', error);
+    console.error('❌ [loadSeatMapFromSabre] Error:', error);
     return Promise.reject(error);
   }
 };

@@ -68,6 +68,7 @@ interface SeatMapComponentBaseProps {
   config: any;
   flightSegments: any[];
   segmentIndex?: number;
+  segmentNumber?: string;
   showSegmentSelector?: boolean;
   cabinClass: string;
   availability: any[];
@@ -96,6 +97,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   config,
   flightSegments,
   segmentIndex = 0,
+  segmentNumber,
   cabinClass,
   availability,
   passengers,
@@ -129,27 +131,39 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   // Initialize assigned seats once if provided
   useEffect(() => {
     if (assignedSeats?.length && !alreadyInitialized) {
+      const currentSegmentNumber = String(segment?.segmentNumber || segmentIndex + 1);
+  
       const enriched = assignedSeats
+        .filter(s => String(s.segmentNumber) === currentSegmentNumber)
         .map(s => {
           const pax = passengers.find(
             p => String(p.id) === String(s.passengerId) || String(p.nameNumber) === String(s.passengerId)
           );
           if (!pax) return null;
+  
           return createSelectedSeat(
-            pax, 
-            s.seat, 
-            true, 
-            availability, 
-            segment?.segmentNumber || String(segmentIndex + 1)
+            pax,
+            s.seat,
+            true,
+            availability,
+            currentSegmentNumber
           );
         })
         .filter(Boolean) as SelectedSeat[];
-
+  
       setSelectedSeats(enriched);
       onSeatChange?.(enriched);
       setAlreadyInitialized(true);
     }
-  }, [assignedSeats, passengers, availability, alreadyInitialized, flightSegments, segmentIndex]);
+  }, [
+    assignedSeats,
+    passengers,
+    availability,
+    alreadyInitialized,
+    flightSegments,
+    segmentIndex,
+    segment?.segmentNumber,
+  ]);
 
   useEffect(() => {
     window.selectedSeats = selectedSeats;
@@ -187,6 +201,12 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     selectedSeats
   });
 
+  const currentAvailabilityForSegment =
+  availability?.find(a => String(a.segmentNumber) === String(segment?.segmentNumber || segmentIndex + 1));
+
+  const startRowOverride = currentAvailabilityForSegment?.startRow;
+  const endRowOverride = currentAvailabilityForSegment?.endRow;
+
   useSyncOnSegmentChange({
     config,
     segment,
@@ -198,12 +218,12 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     selectedPassengerId,
     selectedSeats,
     iframeRef,
-    flightData
+    flightData,
+    startRowOverride,
+    endRowOverride
   });
 
-  const segmentNumber = String(segment?.sequence ?? segmentIndex + 1);
-
-  const currentSegmentNumber = String(segmentIndex + 1);
+  const currentSegmentNumber = segmentNumber || String(segmentIndex + 1);
 
   const selectedSeatsForSegment = selectedSeats.filter(
     s => s.segmentNumber === currentSegmentNumber
@@ -221,11 +241,14 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   });
 
   const onAutomateSeating = () => {
+    console.log('[AUTO] availableSeats in Base before call:', availability);
     const newSeats = handleAutomateSeating({
       passengers: cleanPassengers,
       availableSeats: Array.isArray(availability) ? availability : [],
-      segmentNumber,
+      segmentNumber: currentSegmentNumber,
     });
+
+    console.log('[AUTO] newSeats:', newSeats);
 
     setSelectedSeats(newSeats);
     setSelectedPassengerId(String(cleanPassengers[0].id));
@@ -242,8 +265,9 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   };
 
   const onSaveSeats = async () => {
+    console.log('[SAVE] selectedSeats:', selectedSeats);
     await handleDeleteSeats(async () => {
-      await handleSaveSeats(selectedSeats, segmentNumber);
+      await handleSaveSeats(selectedSeats, currentSegmentNumber);
     });
   };
 
