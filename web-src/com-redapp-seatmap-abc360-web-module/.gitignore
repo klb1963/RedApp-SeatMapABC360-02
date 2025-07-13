@@ -9,3 +9,4 @@ node_modules/
 **/node_modules/
 .DS_Store
 *.env
+seatmap-s3-uploader/.env
