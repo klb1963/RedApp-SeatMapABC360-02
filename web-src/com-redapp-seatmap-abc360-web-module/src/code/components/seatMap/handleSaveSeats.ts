@@ -6,19 +6,18 @@ import { PnrPublicService } from 'sabre-ngv-app/app/services/impl/PnrPublicServi
 import { PublicModalsService } from 'sabre-ngv-modals/services/PublicModalService';
 import { loadPnrDetailsFromSabre } from '../../services/loadPnrDetailsFromSabre';
 import { SelectedSeat } from './SeatMapComponentBase';
+import { SeatAssignment } from './types/SeatAssigment';
 
 /**
  * 🔄 handleSaveSeats
  *
- * Saves selected seat assignments for the given segment.
+ * Saves selected seat assignments for all segments.
  * Sends one AirSeatRQ per passenger per seat (Sabre requires separate requests).
  *
- * @param selectedSeats array of SelectedSeat objects for all passengers
- * @param segmentNumber sequence number of the segment to save seats for
+ *  @param selectedSeats array of SeatAssignment objects for all passengers & all segments
  */
 export const handleSaveSeats = async (
-    selectedSeats: SelectedSeat[],
-    segmentNumber: string
+    selectedSeats: SeatAssignment[],
 ): Promise<void> => {
   const soap = getService(ISoapApiService);
   const pnrService = getService(PnrPublicService);
@@ -40,7 +39,9 @@ export const handleSaveSeats = async (
       return;
     }
 
-    // 🪑 For each passenger & seat
+    console.log(`📋 Preparing to save ${selectedSeats.length} seat assignments across all segments…`);
+
+    // 🪑 For each passenger & seat (all segments)
     for (const seat of selectedSeats) {
       if (!seat.segmentNumber) {
         console.warn(`⚠️ Missing segmentNumber for seat:`, seat);
@@ -64,13 +65,13 @@ export const handleSaveSeats = async (
                  <Seat>
                    <NameSelect NameNumber="${pax.nameNumber}"/>
                    <SeatSelect Number="${seat.seatLabel}"/>
-                   <SegmentSelect Number="${segmentNumber}"/>
+                   <SegmentSelect Number="${seat.segmentNumber}"/>
                  </Seat>
                </Seats>
              </AirSeatRQ>
            `.trim();
 
-      console.log('📤 Sending AirSeatRQ to Sabre:\n', xml);
+      console.log(`📤 Sending AirSeatRQ for passenger ${pax.nameNumber} seat ${seat.seatLabel} segment ${seat.segmentNumber}:\n`, xml);
 
       const response = await soap.callSws({
         action: 'AirSeatLLSRQ',
@@ -82,11 +83,11 @@ export const handleSaveSeats = async (
 
       if (response.value.includes('<Error')) {
         console.warn('⚠️ Error in Sabre response:\n', response.value);
-        alert(`❌ Error assigning seat ${seat.seatLabel} for passenger ${pax.surname}/${pax.givenName}`);
+        alert(`❌ Error assigning seat ${seat.seatLabel} for passenger ${pax.surname}/${pax.givenName} on segment ${seat.segmentNumber}`);
       }
     }
 
-    console.log('✅ All seats successfully assigned.');
+    console.log('✅ All seats successfully assigned on all segments.');
     await pnrService.refreshData(); 
     modalService.closeReactModal();
 
