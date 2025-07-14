@@ -5,14 +5,12 @@ import { ISoapApiService } from 'sabre-ngv-communication/interfaces/ISoapApiServ
 import { PnrPublicService } from 'sabre-ngv-app/app/services/impl/PnrPublicService';
 import { PublicModalsService } from 'sabre-ngv-modals/services/PublicModalService';
 import { loadPnrDetailsFromSabre } from '../../services/loadPnrDetailsFromSabre';
-import { SelectedSeat } from './SeatMapComponentBase';
 import { SeatAssignment } from './types/SeatAssigment';
 
 /**
  * 🔄 handleSaveSeats
  *
- * Saves selected seat assignments for all segments.
- * Sends one AirSeatRQ per passenger per seat (Sabre requires separate requests).
+ * Saves selected seat assignments for all segments in one AirSeatRQ.
  *
  *  @param selectedSeats array of SeatAssignment objects for all passengers & all segments
  */
@@ -39,56 +37,71 @@ export const handleSaveSeats = async (
       return;
     }
 
-    console.log(`📋 Preparing to save ${selectedSeats.length} seat assignments across all segments…`);
+    console.log(`📋 Preparing to save ${selectedSeats.length} seat assignments in one AirSeatRQ…`);
 
-    // 🪑 For each passenger & seat (all segments)
+    // 🪑 Собираем данные
+    const nameNumbers = new Set<string>();
+    const seatNumbers = new Set<string>();
+    const segmentNumbers = new Set<string>();
+
     for (const seat of selectedSeats) {
-      if (!seat.segmentNumber) {
-        console.warn(`⚠️ Missing segmentNumber for seat:`, seat);
+      if (!seat.segmentNumber || !seat.seatLabel) {
+        console.warn(`⚠️ Invalid seat assignment:`, seat);
         continue;
       }
 
       const pax = passengers.find(
         p => p.id === seat.passengerId || p.nameNumber === seat.passengerId
       );
-      if (!pax || !pax.nameNumber || !seat.seatLabel) {
-        console.warn(`⚠️ Skipping invalid seat assignment: passenger=${seat.passengerId}, seat=${seat.seatLabel}`);
+
+      if (!pax || !pax.nameNumber) {
+        console.warn(`⚠️ Passenger not found for:`, seat.passengerId);
         continue;
       }
 
-      const xml = `
-             <AirSeatRQ Version="2.1.1"
-               xmlns="http://webservices.sabre.com/sabreXML/2011/10"
-               xmlns:xs="http://www.w3.org/2001/XMLSchema"
-               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-               <Seats>
-                 <Seat>
-                   <NameSelect NameNumber="${pax.nameNumber}"/>
-                   <SeatSelect Number="${seat.seatLabel}"/>
-                   <SegmentSelect Number="${seat.segmentNumber}"/>
-                 </Seat>
-               </Seats>
-             </AirSeatRQ>
-           `.trim();
-
-      console.log(`📤 Sending AirSeatRQ for passenger ${pax.nameNumber} seat ${seat.seatLabel} segment ${seat.segmentNumber}:\n`, xml);
-
-      const response = await soap.callSws({
-        action: 'AirSeatLLSRQ',
-        payload: xml,
-        authTokenType: 'SESSION',
-      });
-
-      console.log('📩 Response from Sabre:\n', response.value);
-
-      if (response.value.includes('<Error')) {
-        console.warn('⚠️ Error in Sabre response:\n', response.value);
-        alert(`❌ Error assigning seat ${seat.seatLabel} for passenger ${pax.surname}/${pax.givenName} on segment ${seat.segmentNumber}`);
-      }
+      nameNumbers.add(pax.nameNumber);
+      seatNumbers.add(seat.seatLabel);
+      segmentNumbers.add(seat.segmentNumber);
     }
 
-    console.log('✅ All seats successfully assigned on all segments.');
-    await pnrService.refreshData(); 
+    if (nameNumbers.size === 0 || seatNumbers.size === 0 || segmentNumbers.size === 0) {
+      alert('⚠️ Could not construct AirSeatRQ: missing names, seats or segments');
+      return;
+    }
+
+    // 📝 Формируем XML
+    const xml = `
+      <AirSeatRQ Version="2.1.2"
+        xmlns="http://webservices.sabre.com/sabreXML/2011/10"
+        xmlns:xs="http://www.w3.org/2001/XMLSchema"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <Seats>
+          <Seat>
+            ${Array.from(nameNumbers).map(n => `<NameSelect NameNumber="${n}"/>`).join('\n')}
+            ${Array.from(seatNumbers).map(s => `<SeatSelect Number="${s}"/>`).join('\n')}
+            ${Array.from(segmentNumbers).map(s => `<SegmentSelect Number="${s}"/>`).join('\n')}
+          </Seat>
+        </Seats>
+      </AirSeatRQ>
+    `.trim();
+
+    console.log('📤 Sending multi-segment AirSeatRQ XML:\n', xml);
+
+    const response = await soap.callSws({
+      action: 'AirSeatLLSRQ',
+      payload: xml,
+      authTokenType: 'SESSION',
+    });
+
+    console.log('📩 Response from Sabre:\n', response.value);
+
+    if (response.value.includes('<Error')) {
+      console.warn('⚠️ Error in Sabre response:\n', response.value);
+      alert(`❌ Error assigning seats. See console.`);
+    }
+
+    console.log('✅ All seats successfully assigned.');
+    await pnrService.refreshData();
     modalService.closeReactModal();
 
   } catch (error) {

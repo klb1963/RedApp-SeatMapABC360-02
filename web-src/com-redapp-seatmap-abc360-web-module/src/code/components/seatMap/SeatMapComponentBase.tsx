@@ -278,7 +278,18 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
       return;
     }
   
-    await handleSaveSeats(seatAssignments);
+    try {
+      console.log('♻️ Clearing all seats in PNR before saving new assignments…');
+      await handleDeleteSeats();
+  
+      console.log('💾 Saving all selected seats on all segments…', seatAssignments);
+      await handleSaveSeats(seatAssignments);
+  
+      console.log('✅ Seats successfully reassigned on all segments.');
+    } catch (error) {
+      console.error('❌ Error during save seats flow:', error);
+      alert('❌ Error saving seats. See console for details.');
+    }
   };
 
   const passengerPanel = showFallback ? null : (
