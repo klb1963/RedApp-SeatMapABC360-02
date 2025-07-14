@@ -40,6 +40,8 @@ import { isFallbackMode } from './utils/isFallbackMode';
 import { useSeatmapMedia } from './hooks/useSeatmapMedia';
 import { getGalleryConfig } from '../../utils/galleryConfig';
 
+import { buildSelectedSeats } from './buildSelectedSeats';
+
 declare global {
   interface Window {
     selectedSeats?: SelectedSeat[];
@@ -265,9 +267,18 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   };
 
   const onSaveSeats = async () => {
-    await handleDeleteSeats(async () => {
-      await handleSaveSeats(selectedSeats);
-    });
+    const seatAssignments = selectedSeats.map(s => ({
+      passengerId: s.passengerId,
+      seatLabel: s.seatLabel,
+      segmentNumber: s.segmentNumber
+    }));
+  
+    if (!seatAssignments.length) {
+      alert('⚠️ No seats selected.');
+      return;
+    }
+  
+    await handleSaveSeats(seatAssignments);
   };
 
   const passengerPanel = showFallback ? null : (
