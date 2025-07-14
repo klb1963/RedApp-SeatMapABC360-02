@@ -266,7 +266,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
 
   const onSaveSeats = async () => {
     await handleDeleteSeats(async () => {
-      await handleSaveSeats(selectedSeats, currentSegmentNumber);
+      await handleSaveSeats(selectedSeats);
     });
   };
 

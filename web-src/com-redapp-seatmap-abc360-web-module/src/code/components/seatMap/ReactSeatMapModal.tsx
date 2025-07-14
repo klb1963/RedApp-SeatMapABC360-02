@@ -181,7 +181,7 @@ const ReactSeatMapModal: React.FC = () => {
     try {
       const { handleDeleteSeats } = await import('./handleDeleteSeats');
       await handleDeleteSeats(async () => {
-        await saveSeatsToSabre(seatsForSabre, segmentId);
+        await saveSeatsToSabre(seatsForSabre);
       });
     } catch (error) {
       console.error('❌ Ошибка при сохранении мест:', error);
