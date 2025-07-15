@@ -13,8 +13,10 @@
  * Uses SeatMapComponentBase to render the actual seat map inside an iframe.
  */
 
+// file: /code/components/seatMap/SeatMapComponentPnr.tsx
+
 import * as React from 'react';
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import SeatMapComponentBase, { SelectedSeat } from './SeatMapComponentBase';
 import { generateFlightData } from '../../utils/generateFlightData';
 import SeatLegend from './panels/SeatLegend';
@@ -39,7 +41,6 @@ interface SeatMapComponentPnrProps {
   showSegmentSelector?: boolean;
   onSeatChange?: (updatedSeats: SelectedSeat[]) => void;
   availability?: any[];
-  allSelectedSeats?: SelectedSeat[];
 }
 
 const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
@@ -51,7 +52,6 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
   assignedSeats = [],
   showSegmentSelector = true,
   onSeatChange,
-
 }) => {
   const [segmentIndex, setSegmentIndex] = useState<number>(selectedSegmentIndex);
   const [cabinClass, setCabinClass] = useState<'Y' | 'S' | 'C' | 'F' | 'A'>(
@@ -109,29 +109,56 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
 
   window.name = ''; // disable fallback-seatmap mode
 
+  useEffect(() => {
+    if (assignedSeats?.length) {
+      const enrichedInitialSeats = assignedSeats
+        .map(s => {
+          const pax = passengers.find(
+            p => String(p.id) === String(s.passengerId) || String(p.nameNumber) === String(s.passengerId)
+          );
+          if (!pax) return null;
+  
+          return createSelectedSeat(
+            pax,
+            s.seat,
+            true,
+            currentAvailability,
+            String(s.segmentNumber)
+          );
+        })
+        .filter(Boolean) as SelectedSeat[];
+  
+      setAllSelectedSeats(enrichedInitialSeats);
+    }
+  }, [assignedSeats, passengers, currentAvailability]);
+
+  const memoPassengers = useMemo(() => passengers, []); // 👈 мемоизация на монтировании
+
+  // =======================
+
   React.useEffect(() => {
     const fetchAvailability = async () => {
       if (!segmentsWithSequence[segmentIndex]) return;
-
+  
       setAvailabilityReady(false);
       setSelectedSeats([]);
       setFlightData(null);
-
+  
       const segmentWithSequence = segmentsWithSequence[segmentIndex];
-
+  
       try {
         const { availability } = await import('../../services/loadSeatMapFromSabre')
-          .then(mod => mod.loadSeatMapFromSabre(segmentWithSequence, passengers));
-
+          .then(mod => mod.loadSeatMapFromSabre(segmentWithSequence, memoPassengers));
+  
         setCurrentAvailability(availability);
         setAvailabilityReady(true);
-
+  
         const currentAvailabilityForSegment =
           availability?.find(a => String(a.segmentNumber) === String(segmentWithSequence.sequence));
-
+  
         const startRow = currentAvailabilityForSegment?.startRow;
         const endRow = currentAvailabilityForSegment?.endRow;
-
+  
         const generatedFlightData = generateFlightData(
           segmentWithSequence,
           segmentIndex,
@@ -139,18 +166,18 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
           startRow,
           endRow
         );
-
+  
         setFlightData(generatedFlightData);
-
+  
         if (assignedSeats?.length) {
           const enrichedAssignedSeats = assignedSeats
             .filter(s => String(s.segmentNumber) === String(segmentWithSequence.sequence))
             .map(s => {
-              const pax = passengers.find(
+              const pax = memoPassengers.find(
                 p => String(p.id) === String(s.passengerId) || String(p.nameNumber) === String(s.passengerId)
               );
               if (!pax) return null;
-
+  
               return createSelectedSeat(
                 pax,
                 s.seat,
@@ -160,14 +187,14 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
               );
             })
             .filter(Boolean);
-
+  
           setSelectedSeats(enrichedAssignedSeats);
           setAllSelectedSeats(prev => {
             const others = prev.filter(seat => seat.segmentNumber !== String(segmentWithSequence.sequence));
             return [...others, ...enrichedAssignedSeats];
           });
         }
-
+  
       } catch (err) {
         console.error(
           'Failed to load seat map for segment',
@@ -178,10 +205,12 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
         setAvailabilityReady(false);
       }
     };
-
+  
     fetchAvailability();
+  
+  }, [segmentIndex, cabinClass]); // ❌ passengers убраны
 
-  }, [segmentIndex, passengers, cabinClass]);
+  //========================
 
   return (
     <div style={{ padding: '1rem' }}>
@@ -210,14 +239,13 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
           passengers={passengers}
           assignedSeats={allSelectedSeats.map(s => ({
             passengerId: s.passengerId,
-            seat: s.seat.seatLabel,
+            seat: s.seatLabel,
             segmentNumber: s.segmentNumber
           }))}
           flightData={flightData}
           onSeatChange={(updatedSeats) => {
             setSelectedSeats(updatedSeats);
 
-            // ✅ обновляем allSelectedSeats, убирая старые для этого сегмента
             setAllSelectedSeats(prev => {
               const others = prev.filter(seat => seat.segmentNumber !== normalizedSegment.segmentNumber);
               return [...others, ...updatedSeats];
@@ -225,7 +253,7 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
 
             onSeatChange?.(updatedSeats);
           }}
-          allSelectedSeats={allSelectedSeats} // 👈 добавлено
+          allSelectedSeats={allSelectedSeats}
           flightInfo={flightInfo}
           legendPanel={legendPanel}
           disableCabinClassChange={true}
