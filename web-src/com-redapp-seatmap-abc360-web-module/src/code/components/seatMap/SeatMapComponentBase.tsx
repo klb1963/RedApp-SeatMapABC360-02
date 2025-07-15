@@ -81,10 +81,12 @@ interface SeatMapComponentBaseProps {
   }[];
   flightData: FlightData;
   onSeatChange?: (seats: SelectedSeat[]) => void;
+  onAssignedSeatsChange?: (assignments: { passengerId: string; seat: string; segmentNumber: string }[]) => void;
   flightInfo?: React.ReactNode;
   galleryPanel?: React.ReactNode;
   legendPanel?: React.ReactNode;
   disableCabinClassChange?: boolean;
+  allSelectedSeats: SelectedSeat[];
 
 }
 
@@ -106,10 +108,12 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   passengers,
   flightData,
   onSeatChange,
+  onAssignedSeatsChange,
   flightInfo,
   assignedSeats,
   legendPanel,
-  disableCabinClassChange = false
+  disableCabinClassChange = false,
+  allSelectedSeats,
 
 }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -267,23 +271,35 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   };
 
   const onSaveSeats = async () => {
-    const seatAssignments = selectedSeats.map(s => ({
-      passengerId: s.passengerId,
-      seatLabel: s.seatLabel,
-      segmentNumber: s.segmentNumber
-    }));
-  
-    if (!seatAssignments.length) {
+    if (!allSelectedSeats.length) {
       alert('⚠️ No seats selected.');
       return;
     }
   
+    const seatAssignmentsForPNR = allSelectedSeats.map(s => ({
+      passengerId: s.passengerId,
+      seatLabel: s.seatLabel, // 👈 для handleSaveSeats
+      segmentNumber: s.segmentNumber
+    }));
+  
+    const seatAssignmentsForParent = allSelectedSeats.map(s => ({
+      passengerId: s.passengerId,
+      seat: s.seatLabel, // 👈 для родителя
+      segmentNumber: s.segmentNumber
+    }));
+  
     try {
       console.log('♻️ Clearing all seats in PNR before saving new assignments…');
-      await handleDeleteSeats();
+      await handleDeleteSeats(); // clean seats before saving
   
-      console.log('💾 Saving all selected seats on all segments…', seatAssignments);
-      await handleSaveSeats(seatAssignments);
+      console.log('💾 Saving all selected seats on all segments:\n', seatAssignmentsForPNR);
+      console.log('???!!!📋???!!! allSelectedSeats before save:', allSelectedSeats);
+      await handleSaveSeats(seatAssignmentsForPNR);
+  
+      if (onAssignedSeatsChange) {
+        console.log('📬 Notifying parent with assignments:\n', seatAssignmentsForParent);
+        onAssignedSeatsChange(seatAssignmentsForParent);
+      }
   
       console.log('✅ Seats successfully reassigned on all segments.');
     } catch (error) {

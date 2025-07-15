@@ -113,6 +113,7 @@ const SeatMapComponentPricing: React.FC<SeatMapComponentPricingProps> = ({
         passengers={[]}
         showSegmentSelector={false}
         flightInfo={flightInfo}
+        allSelectedSeats={[]}
       />
     </div>
   );

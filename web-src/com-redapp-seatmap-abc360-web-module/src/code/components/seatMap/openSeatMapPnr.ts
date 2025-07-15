@@ -78,6 +78,7 @@ export async function openSeatMapPnr(): Promise<void> {
         availability,
         passengers: enrichedPassengers,
         assignedSeats,
+        allSelectedSeats: [],
         onSeatChange: (updatedSeats) => {
           selectedSeatsRef.current = updatedSeats;
         }

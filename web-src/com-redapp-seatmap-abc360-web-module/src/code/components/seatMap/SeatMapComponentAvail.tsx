@@ -99,6 +99,7 @@ const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, d
         showSegmentSelector={false}
         flightInfo={flightInfo}
         legendPanel={legendPanel}
+        allSelectedSeats={[]}
       />
     </div>
   );
