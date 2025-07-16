@@ -1,10 +1,23 @@
 // file: /code/components/seatMap/ReactSeatMapModal.tsx
 
+/**
+ * ReactSeatMapModal.tsx
+ *
+ * Fallback Seat Map modal implementation, rendered if iframe-based Quicket map fails.
+ * Loads passengers, segments, assigned seats from PNR, and renders React-based seatmap.
+ *
+ * Supports:
+ * - Segment switching and cabin class switching
+ * - Auto-seating and manual seat selection
+ * - Synchronization of assigned seats with Sabre on save
+ */
+
 import * as React from 'react';
 import { loadPnrDetailsFromSabre } from '../../services/loadPnrDetailsFromSabre';
 import { enrichPassengerData } from './utils/enrichPassengerData';
 import { loadSeatMapFromSabre } from '../../services/loadSeatMapFromSabre';
 import { convertSeatMapToReactSeatmapFormat } from '../../utils/convertSeatMapToReactSeatmap';
+
 import { PassengerPanel } from './panels/PassengerPanel';
 import FallbackSeatmapCenter from './internal/FallbackSeatmapCenter';
 import FallbackSeatmapLayout from './internal/FallbackSeatmapLayout';
@@ -17,22 +30,29 @@ import { handleSaveSeats as saveSeatsToSabre } from './handleSaveSeats';
 import { handleAutomateSeating as automateSeats } from './handleAutomateSeating';
 
 const ReactSeatMapModal: React.FC = () => {
+  // 🔷 State for passengers, seats and segment
   const [passengers, setPassengers] = React.useState<any[]>([]);
   const [selectedPassengerId, setSelectedPassengerId] = React.useState<string>('');
   const [selectedSeats, setSelectedSeats] = React.useState<any[]>([]);
 
+  // 🔷 Seatmap layout
   const [rows, setRows] = React.useState<any[]>([]);
   const [layoutLength, setLayoutLength] = React.useState(0);
   const [selectedDeck, setSelectedDeck] = React.useState('');
 
+  // 🔷 Flight info & segments
   const [flightInfo, setFlightInfo] = React.useState<any>(null);
   const [segments, setSegments] = React.useState<any[]>([]);
   const [segmentIndex, setSegmentIndex] = React.useState(0);
   const [cabinClass, setCabinClass] = React.useState<'Y' | 'S' | 'C' | 'F' | 'A'>('Y');
 
+  // Utility to display duration in `xh ym` format
   const formatDuration = (minutes?: number) =>
     minutes ? `${Math.floor(minutes / 60)}h ${minutes % 60}m` : '';
 
+  /**
+   * 🔷 Fetch seat map data for a specific segment and cabin
+   */
   const fetchSeatMap = async (
     segments: any[],
     segmentIndex: number,
@@ -58,66 +78,38 @@ const ReactSeatMapModal: React.FC = () => {
     setRows(rows);
     setLayoutLength(layoutLength);
 
-        setFlightInfo({
-            airlineCode: flightSegment.marketingCarrier,
-            airlineName: flightSegment.airlineName || '',
-            flightNumber: flightSegment.marketingFlightNumber,
-            fromCode: flightSegment.origin,
-            toCode: flightSegment.destination,
-            date: flightSegment.departureDate,
-            duration: formatDuration(flightSegment.duration),
-            aircraft: flightSegment.equipment,
-            availability,
-        });
-    };
+    setFlightInfo({
+      airlineCode: flightSegment.marketingCarrier,
+      airlineName: flightSegment.airlineName || '',
+      flightNumber: flightSegment.marketingFlightNumber,
+      fromCode: flightSegment.origin,
+      toCode: flightSegment.destination,
+      date: flightSegment.departureDate,
+      duration: formatDuration(flightSegment.duration),
+      aircraft: flightSegment.equipment,
+      availability,
+    });
+  };
 
-    React.useEffect(() => {
-        const fetchData = async () => {
-      const { parsedData: pnrData } = await loadPnrDetailsFromSabre();
-      const segments = pnrData.segments;
-      const enrichedPassengers = enrichPassengerData(pnrData.passengers);
-
-      setPassengers(enrichedPassengers);
-      setSelectedPassengerId(enrichedPassengers[0]?.id || '');
-      setSegments(segments);
-
-        // 🪑 Инициализируем selectedSeats из PNR
-        const assignedSeatsFromPnr = enrichedPassengers
-            .filter(p => p.seatAssignment && p.seatAssignment !== 'not assigned')
-            .map(p => ({
-                passengerId: p.id,
-                seatLabel: p.seatAssignment,
-                confirmed: true,
-                price: 0,
-                passengerInitials: p.passengerInitials,
-                passengerColor: p.passengerColor,
-            }));
-        setSelectedSeats(assignedSeatsFromPnr);
-
-        const flightSegment = segments[0];
-        const defaultCabin = ['F', 'C', 'S', 'Y'].includes(flightSegment.bookingClass)
-            ? flightSegment.bookingClass
-        : 'Y';
-      setCabinClass(defaultCabin as any);
-
-      await fetchSeatMap(segments, 0, defaultCabin as any, enrichedPassengers);
-    };
-
-    fetchData();
-  }, []);
-
+  /**
+   * 🔷 Initial data load from Sabre PNR
+   */
   React.useEffect(() => {
-    const reloadForSegment = async () => {
-      if (!segments.length) return;
-  
-      const { parsedData } = await loadPnrDetailsFromSabre();
-      const enrichedPassengers = enrichPassengerData(parsedData.passengers);
-  
+    const fetchData = async () => {
+      const { parsedData: pnrData } = await loadPnrDetailsFromSabre();
+
+      const enrichedPassengers = enrichPassengerData(pnrData.passengers);
+      const normalizedSegments = pnrData.segments;
+
+      console.log('✅ Entire parsedData', pnrData);
+
       setPassengers(enrichedPassengers);
       setSelectedPassengerId(enrichedPassengers[0]?.id || '');
-  
-      const assignedSeatsForSegment = (parsedData.assignedSeats || [])
-        .filter(s => s.segmentNumber === segments[segmentIndex]?.value)
+      setSegments(normalizedSegments);
+
+      // 🪑 Assigned seats for initial segment
+      const assignedSeatsForSegment = (pnrData.assignedSeats || [])
+        .filter(s => s.segmentNumber === normalizedSegments[segmentIndex]?.segmentNumber)
         .map(s => {
           const pax = enrichedPassengers.find(p => p.id === s.passengerId);
           return {
@@ -127,36 +119,87 @@ const ReactSeatMapModal: React.FC = () => {
             price: 0,
             passengerInitials: pax?.passengerInitials || '',
             passengerColor: pax?.passengerColor || '',
-            segmentNumber: s.segmentNumber
+            segmentNumber: s.segmentNumber,
           };
         });
-  
-      console.log('🧩!!! parsedData.assignedSeats:', parsedData.assignedSeats);
-  
-      if (assignedSeatsForSegment.length > 0) {
-        setSelectedSeats(assignedSeatsForSegment);
-      }
-  
+
+      setSelectedSeats(assignedSeatsForSegment);
+
+      const flightSegment = normalizedSegments[0];
+      const defaultCabin = ['F', 'C', 'S', 'Y'].includes(flightSegment.bookingClass)
+        ? flightSegment.bookingClass
+        : 'Y';
+      setCabinClass(defaultCabin as 'Y' | 'S' | 'C' | 'F' | 'A');
+
+      await fetchSeatMap(normalizedSegments, 0, defaultCabin as 'Y' | 'S' | 'C' | 'F' | 'A', enrichedPassengers);
+    };
+
+    fetchData();
+  }, []);
+
+  /**
+   * 🔷 React to segmentIndex / cabinClass changes: reload passengers + seatmap
+   */
+  React.useEffect(() => {
+    const reloadForSegment = async () => {
+      const currentSegment = segments[segmentIndex];
+      if (!currentSegment) return;
+
+      const { parsedData } = await loadPnrDetailsFromSabre();
+      const enrichedPassengers = enrichPassengerData(parsedData.passengers);
+
+      setPassengers(enrichedPassengers);
+      setSelectedPassengerId(enrichedPassengers[0]?.id || '');
+
+      const currentSegmentNumber = currentSegment.segmentNumber;
+
+      const assignedSeatsForSegment = (parsedData.assignedSeats || [])
+        .filter(s => String(s.segmentNumber) === String(currentSegmentNumber))
+        .map(s => {
+          const pax = enrichedPassengers.find(p => p.id === s.passengerId);
+          return {
+            passengerId: s.passengerId,
+            seatLabel: s.seat,
+            confirmed: true,
+            price: 0,
+            passengerInitials: pax?.passengerInitials || '',
+            passengerColor: pax?.passengerColor || '',
+            segmentNumber: s.segmentNumber,
+          };
+        });
+
+      console.log(
+        `🧩 Assigned seats for segment ${currentSegmentNumber}:`,
+        assignedSeatsForSegment
+      );
+
+      setSelectedSeats(assignedSeatsForSegment);
+
       await fetchSeatMap(segments, segmentIndex, cabinClass, enrichedPassengers);
     };
-  
-    reloadForSegment();
-  }, [segmentIndex, cabinClass]);
 
+    reloadForSegment();
+  }, [segmentIndex, cabinClass, segments]);
+
+  /**
+   * 🔷 Auto-set deck if available
+   */
   React.useEffect(() => {
     if (rows.length > 0 && !selectedDeck) {
       setSelectedDeck(rows[0].deckId || 'Maindeck');
     }
   }, [rows]);
 
+  /**
+   * 🔷 Save selected seats to Sabre PNR
+   */
   const handleSaveSeatsClick = async () => {
     const segmentId = segments[segmentIndex]?.value;
 
-    console.log('✅ segmentId on save', segments[segmentIndex]?.value);
-  
+    console.log('✅ segmentId on save', segmentId);
+
     if (!segmentId) {
-      console.error('❌ Не выбран сегмент или отсутствует его ID');
-      alert('❌ Ошибка: не выбран сегмент.');
+      alert('❌ No segment selected');
       return;
     }
 
@@ -184,8 +227,8 @@ const ReactSeatMapModal: React.FC = () => {
         await saveSeatsToSabre(seatsForSabre);
       });
     } catch (error) {
-      console.error('❌ Ошибка при сохранении мест:', error);
-      alert('❌ Ошибка при сохранении. См. консоль.');
+      console.error('❌ Error saving seats:', error);
+      alert('❌ Error saving. See console.');
     }
   };
 
@@ -214,7 +257,7 @@ const ReactSeatMapModal: React.FC = () => {
           assignedSeats={selectedSeats.map(s => ({
             passengerId: s.passengerId,
             seat: s.seatLabel,
-            segmentNumber: s.segmentNumber
+            segmentNumber: s.segmentNumber,
           }))}
           config={{}}
           flight={{} as FlightData}
@@ -247,7 +290,7 @@ const ReactSeatMapModal: React.FC = () => {
           selectedPassengerId={selectedPassengerId}
           selectedSeats={selectedSeats}
           setSelectedSeats={setSelectedSeats}
-          setSelectedPassengerId={setSelectedPassengerId} 
+          setSelectedPassengerId={setSelectedPassengerId}
           rows={rows}
           layoutLength={layoutLength}
           selectedDeck={selectedDeck}

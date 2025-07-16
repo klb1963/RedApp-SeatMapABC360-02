@@ -147,9 +147,6 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   // Currently selected seats for this segment
   const [selectedSeats, setSelectedSeats] = useState<SelectedSeat[]>([]);
 
-  // Flag to prevent re-initializing seats multiple times
-  const [alreadyInitialized, setAlreadyInitialized] = useState(false);
-
   // Currently selected passenger ID
   const [selectedPassengerId, setSelectedPassengerId] = useState<string>('');
 
@@ -163,16 +160,11 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   const { media } = useSeatmapMedia();
   const galleryConfig = useMemo(() => getGalleryConfig(media), [media]);
 
-  // Reset initialization flag when segment changes
-  useEffect(() => {
-    setAlreadyInitialized(false);
-  }, [segmentIndex]);
-
   // Initialize assigned seats for current segment if provided
   useEffect(() => {
-    if (assignedSeats?.length && !alreadyInitialized) {
+    if (assignedSeats?.length) {
       const currentSegmentNumber = String(segment?.segmentNumber || segmentIndex + 1);
-
+  
       const enriched = assignedSeats
         .filter(s => String(s.segmentNumber) === currentSegmentNumber)
         .map(s => {
@@ -180,7 +172,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
             p => String(p.id) === String(s.passengerId) || String(p.nameNumber) === String(s.passengerId)
           );
           if (!pax) return null;
-
+  
           return createSelectedSeat(
             pax,
             s.seat,
@@ -190,12 +182,25 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
           );
         })
         .filter(Boolean) as SelectedSeat[];
-
-      setSelectedSeats(enriched);
-      onSeatChange?.(enriched);
-      setAlreadyInitialized(true);
+  
+      // ✅ Compare the current and new values to avoid triggering setState unnecessarily
+      const same =
+        selectedSeats.length === enriched.length &&
+        selectedSeats.every((s, i) => s.passengerId === enriched[i].passengerId && s.seatLabel === enriched[i].seatLabel);
+  
+      if (!same) {
+        setSelectedSeats(enriched);
+        onSeatChange?.(enriched);
+      }
     }
-  }, [assignedSeats, passengers, availability, alreadyInitialized, flightSegments, segmentIndex, segment?.segmentNumber]);
+  }, [
+    assignedSeats,
+    passengers,
+    availability,
+    flightSegments,
+    segmentIndex,
+    segment?.segmentNumber,
+  ]);
 
   // Expose selected seats globally for debugging
   useEffect(() => {
