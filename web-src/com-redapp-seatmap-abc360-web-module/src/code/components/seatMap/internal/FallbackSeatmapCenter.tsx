@@ -3,7 +3,6 @@
 import * as React from 'react';
 import Seatmap from './Seatmap';
 import DeckSelector from './DeckSelector';
-import { createSelectedSeat } from '../helpers/createSelectedSeat';
 
 export interface FallbackSeatmapCenterProps {
     passengers: any[];
@@ -15,6 +14,8 @@ export interface FallbackSeatmapCenterProps {
     layoutLength: number;
     selectedDeck: string;
     setSelectedDeck: React.Dispatch<React.SetStateAction<string>>;
+    segmentIndex: number;  // 👈 добавляем сегмент
+    segments: any[];
 }
 
 const FallbackSeatmapCenter: React.FC<FallbackSeatmapCenterProps> = ({
@@ -27,6 +28,8 @@ const FallbackSeatmapCenter: React.FC<FallbackSeatmapCenterProps> = ({
     layoutLength,
     selectedDeck,
     setSelectedDeck,
+    segmentIndex,
+    segments,
 }) => {
     const [selectedSeatId, setSelectedSeatId] = React.useState<string | null>(null);
 
@@ -37,13 +40,19 @@ const FallbackSeatmapCenter: React.FC<FallbackSeatmapCenterProps> = ({
         [rows]
     );
 
+    const currentSegment = segments[segmentIndex];
+    const currentSegmentNumber = currentSegment?.segmentNumber;
+
     const handleSeatClick = (seatId: string) => {
         console.log('🟢 Clicked seat:', seatId);
 
         const pax = passengers.find(p => p.id === selectedPassengerId);
         if (!pax) return;
 
-        const updated = selectedSeats.filter(s => s.passengerId !== pax.id);
+        // удаляем только место этого пассажира на текущем сегменте
+        const updated = selectedSeats.filter(
+            s => !(s.passengerId === pax.id && s.segmentNumber === currentSegmentNumber)
+        );
 
         const seat = {
             passengerId: pax.id,
@@ -52,6 +61,7 @@ const FallbackSeatmapCenter: React.FC<FallbackSeatmapCenterProps> = ({
             price: 0,
             passengerInitials: pax.passengerInitials,
             passengerColor: pax.passengerColor,
+            segmentNumber: currentSegmentNumber,  // 👈
         };
 
         console.log('🧩 Created seat object:', seat);
@@ -60,30 +70,34 @@ const FallbackSeatmapCenter: React.FC<FallbackSeatmapCenterProps> = ({
         setSelectedSeats(newSelectedSeats);
         setSelectedSeatId(seatId);
 
-        // 🔍 Найти следующего пассажира без места
-        const assignedPassengerIds = newSelectedSeats.map(s => s.passengerId);
+        // 🔍 Найти следующего пассажира без места на текущем сегменте
+        const assignedPassengerIdsForCurrent = newSelectedSeats
+            .filter(s => s.segmentNumber === currentSegmentNumber)
+            .map(s => s.passengerId);
+
         const nextPax = passengers.find(
-            p => !assignedPassengerIds.includes(p.id)
+            p => !assignedPassengerIdsForCurrent.includes(p.id)
         );
 
         if (nextPax) {
             console.log(`➡️ Switching to next passenger: ${nextPax.id}`);
             setSelectedPassengerId(nextPax.id);
         } else {
-            console.log('✅ All passengers have seats assigned.');
+            console.log('✅ All passengers have seats assigned on current segment.');
         }
     };
 
     const assignedMap = React.useMemo(() => {
         const map: Record<string, any> = {};
         for (const s of selectedSeats) {
-            map[s.seatLabel] = s;
+            if (s.segmentNumber === currentSegmentNumber) {
+                map[s.seatLabel] = s;
+            }
         }
         return map;
-    }, [selectedSeats]);
+    }, [selectedSeats, currentSegmentNumber]);
 
     return (
-
         <div
             style={{
                 flex: '1',
@@ -116,7 +130,7 @@ const FallbackSeatmapCenter: React.FC<FallbackSeatmapCenterProps> = ({
 
             {selectedSeatId && (
                 <p style={{ marginBottom: '1rem' }}>
-                    🪑 Вы выбрали место: <strong>{selectedSeatId}</strong>
+                    🪑 Selected seat: <strong>{selectedSeatId}</strong>
                 </p>
             )}
 
@@ -142,7 +156,6 @@ const FallbackSeatmapCenter: React.FC<FallbackSeatmapCenterProps> = ({
                 <strong>{filteredRows.length}</strong>
             </p>
         </div>
-
     );
 };
 
