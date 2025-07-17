@@ -61,13 +61,19 @@ const FallbackSeatmapCenter: React.FC<FallbackSeatmapCenterProps> = ({
             price: 0,
             passengerInitials: pax.passengerInitials,
             passengerColor: pax.passengerColor,
-            segmentNumber: currentSegmentNumber,  // 👈
+            segmentNumber: currentSegmentNumber, 
         };
 
         console.log('🧩 Created seat object:', seat);
 
         const newSelectedSeats = [...updated, seat];
-        setSelectedSeats(newSelectedSeats);
+
+        setSelectedSeats(prev => {
+            console.log('💾 BEFORE setSelectedSeats, prev:', prev);
+            console.log('🧩 newSelectedSeats computed in center:', newSelectedSeats);
+            return newSelectedSeats;
+          });
+
         setSelectedSeatId(seatId);
 
         // 🔍 Найти следующего пассажира без места на текущем сегменте
