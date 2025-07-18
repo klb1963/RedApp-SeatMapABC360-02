@@ -28,129 +28,128 @@ import { SegmentCabinSelector } from './panels/SegmentCabinSelector';
 import { GalleryPanel } from './panels/GalleryPanel';
 import { handleSaveSeats as saveSeatsToSabre } from './handleSaveSeats';
 import { handleAutomateSeating as automateSeats } from './handleAutomateSeating';
-import { useFallbackSeatMapAvailability } from './internal/useFallbackSeatMapAvailability';
+
+type CabinClass = 'Y' | 'S' | 'C' | 'F' | 'A';
 
 const ReactSeatMapModal: React.FC = () => {
-  const [initialData, setInitialData] = React.useState<{
-    passengers: any[];
-    segments: any[];
-    assignedSeats: any[];
-    defaultCabin: any;
-  } | null>(null);
-
+  const [passengers, setPassengers] = React.useState<any[]>([]);
+  const [selectedPassengerId, setSelectedPassengerId] = React.useState<string>('');
+  const [selectedSeats, setSelectedSeats] = React.useState<any[]>([]);
   const [rows, setRows] = React.useState<any[]>([]);
   const [layoutLength, setLayoutLength] = React.useState(0);
-  const [flightInfo, setFlightInfo] = React.useState<any>(null);
   const [selectedDeck, setSelectedDeck] = React.useState('');
+  const [flightInfo, setFlightInfo] = React.useState<any>(null);
+  const [segments, setSegments] = React.useState<any[]>([]);
+  const [segmentIndex, setSegmentIndex] = React.useState(0);
+  const [cabinClass, setCabinClass] = React.useState<CabinClass>('Y');
 
-  React.useEffect(() => {
-    const fetchInitialData = async () => {
-      const { parsedData } = await loadPnrDetailsFromSabre();
-      const passengers = enrichPassengerData(parsedData.passengers);
-      const segments = parsedData.segments;
-
-      const defaultCabin =
-        ['F', 'C', 'S', 'Y'].includes(segments[0].bookingClass) ? segments[0].bookingClass : 'Y';
-
-      const assignedSeats = (parsedData.assignedSeats || []).map(s => {
-        const pax = passengers.find(p => p.id === s.passengerId);
-        return {
-          passengerId: s.passengerId,
-          seatLabel: s.seat,
-          segmentNumber: s.segmentNumber,
-          passengerInitials: pax?.passengerInitials || '', // чтобы удовлетворить тип
-          passengerLabel: pax?.label || '',
-          passengerColor: pax?.passengerColor || '',
-          seat: { seatLabel: s.seat, price: '0' },
-        };
-      });
-
-      setInitialData({ passengers, segments, assignedSeats, defaultCabin });
-    };
-
-    fetchInitialData();
-  }, []);
-
-  const {
-    selectedSeats,
-    selectedSeatsForCurrent,
-    setSelectedSeats,
-    selectedPassengerId,
-    setSelectedPassengerId,
-    selectedSegmentIndex,
-    setSelectedSegmentIndex,
-    cabinClass,
-    setCabinClass,
-    passengers,
-    segments,
-    currentSegment,
-    currentSegmentNumber,
-    resetCurrentSegmentSeats,
-  } = useFallbackSeatMapAvailability(
-    initialData
-      ? {
-          passengers: initialData.passengers,
-          segments: initialData.segments,
-          initialAssignedSeats: initialData.assignedSeats,
-          initialSegmentIndex: 0,
-          initialCabinClass: initialData.defaultCabin,
-        }
-      : {
-          passengers: [],
-          segments: [],
-        }
-  );
-
-  const fetchSeatMap = async () => {
-    if (!currentSegment) return;
+  const fetchSeatMap = async (
+    segments: any[],
+    segmentIndex: number,
+    cabin: CabinClass,
+    passengers: any[]
+  ) => {
+    const flightSegment = segments[segmentIndex];
+    if (!flightSegment) return;
 
     const seatMapSegment = {
-      bookingClass: cabinClass,
-      marketingCarrier: currentSegment.marketingCarrier || 'XX',
-      marketingFlightNumber: currentSegment.marketingFlightNumber || '000',
-      flightNumber: currentSegment.marketingFlightNumber || '000',
-      departureDate: currentSegment.departureDate,
-      origin: currentSegment.origin,
-      destination: currentSegment.destination,
+      bookingClass: cabin,
+      marketingCarrier: flightSegment.marketingCarrier || 'XX',
+      marketingFlightNumber: flightSegment.marketingFlightNumber || '000',
+      flightNumber: flightSegment.marketingFlightNumber || '000',
+      departureDate: flightSegment.departureDate,
+      origin: flightSegment.origin,
+      destination: flightSegment.destination,
     };
 
-    const { seatInfo, layoutLetters, availability } = await loadSeatMapFromSabre(seatMapSegment, passengers);
+    const { seatInfo, layoutLetters, availability } =
+      await loadSeatMapFromSabre(seatMapSegment, passengers);
     const { rows, layoutLength } = convertSeatMapToReactSeatmapFormat(seatInfo, layoutLetters);
 
     setRows(rows);
     setLayoutLength(layoutLength);
 
     setFlightInfo({
-      airlineCode: currentSegment.marketingCarrier,
-      airlineName: currentSegment.airlineName || '',
-      flightNumber: currentSegment.marketingFlightNumber,
-      fromCode: currentSegment.origin,
-      toCode: currentSegment.destination,
-      date: currentSegment.departureDate,
-      aircraft: currentSegment.equipment,
-      duration: currentSegment.duration,
+      airlineCode: flightSegment.marketingCarrier,
+      airlineName: flightSegment.airlineName || '',
+      flightNumber: flightSegment.marketingFlightNumber,
+      fromCode: flightSegment.origin,
+      toCode: flightSegment.destination,
+      date: flightSegment.departureDate,
+      aircraft: flightSegment.equipment,
+      duration: flightSegment.duration,
       availability,
     });
   };
 
   React.useEffect(() => {
-    if (segments.length > 0 && passengers.length > 0) fetchSeatMap();
-  }, [segments, passengers, currentSegmentNumber, cabinClass]);
+    const fetchData = async () => {
+      const { parsedData } = await loadPnrDetailsFromSabre();
+      const enrichedPassengers = enrichPassengerData(parsedData.passengers);
+      const normalizedSegments = parsedData.segments;
+
+      setPassengers(enrichedPassengers);
+      setSelectedPassengerId(enrichedPassengers[0]?.id || '');
+      setSegments(normalizedSegments);
+
+      const allAssignedSeats = (parsedData.assignedSeats || []).map(s => {
+        const pax = enrichedPassengers.find(p => p.id === s.passengerId);
+        return {
+          passengerId: s.passengerId,
+          seatLabel: s.seat,
+          confirmed: true,
+          price: 0,
+          passengerInitials: pax?.passengerInitials || '',
+          passengerColor: pax?.passengerColor || '',
+          segmentNumber: s.segmentNumber,
+        };
+      });
+      setSelectedSeats(allAssignedSeats);
+
+      const flightSegment = normalizedSegments[0];
+      const defaultCabin = ['F', 'C', 'S', 'Y'].includes(flightSegment.bookingClass)
+        ? (flightSegment.bookingClass as CabinClass)
+        : 'Y';
+      setCabinClass(defaultCabin);
+
+      await fetchSeatMap(normalizedSegments, 0, defaultCabin, enrichedPassengers);
+    };
+
+    fetchData();
+  }, []);
 
   React.useEffect(() => {
-    if (rows.length > 0 && !selectedDeck) setSelectedDeck(rows[0].deckId || 'Maindeck');
+    if (!segments[segmentIndex]) return;
+    fetchSeatMap(segments, segmentIndex, cabinClass, passengers);
+  }, [segmentIndex, cabinClass]);
+
+  React.useEffect(() => {
+    if (rows.length > 0 && !selectedDeck) {
+      setSelectedDeck(rows[0].deckId || 'Maindeck');
+    }
   }, [rows]);
 
   const handleSaveSeatsClick = async () => {
-    const seatsForSabre = selectedSeats.map(s => ({
-      passengerId: s.passengerId,
-      seatLabel: s.seatLabel,
-      passengerLabel: s.passengerLabel,
-      passengerInitials: s.passengerInitials,
-      passengerColor: s.passengerColor,
-      segmentNumber: s.segmentNumber,
-      seat: s.seat,
-    }));
+    console.log('✅ Saving seats for all segments', selectedSeats);
+    console.log('+++🔥+++ selectedSeats before SAVE:', selectedSeats);
+
+    const seatsForSabre = selectedSeats.map(s => {
+      const pax = passengers.find(p => p.id === s.passengerId);
+      return {
+        passengerId: pax?.nameNumber || s.passengerId,
+        seatLabel: s.seatLabel,
+        passengerType: pax?.passengerType || '',
+        passengerLabel: pax?.label || '',
+        passengerColor: s.passengerColor || '',
+        initials: s.passengerInitials || '',
+        passengerInitials: s.passengerInitials || '',
+        segmentNumber: s.segmentNumber,
+        seat: {
+          seatLabel: s.seatLabel,
+          price: String(s.price || '0'),
+        },
+      };
+    });
 
     try {
       const { handleDeleteSeats } = await import('./handleDeleteSeats');
@@ -163,18 +162,23 @@ const ReactSeatMapModal: React.FC = () => {
     }
   };
 
+  const currentSegmentNumber = segments[segmentIndex]?.segmentNumber;
+  const selectedSeatsForCurrentSegment = selectedSeats.filter(
+    s => s.segmentNumber === currentSegmentNumber
+  );
+
+  React.useEffect(() => {
+    console.log('+++🪑🪑🪑+++ ACCUMULATED selectedSeats (all segments):', selectedSeats);
+  }, [selectedSeats]);
+
   return (
     <FallbackSeatmapLayout
       flightInfo={
         <>
           <SegmentCabinSelector
-            flightSegments={segments.map(seg => ({
-              origin: seg.origin,
-              destination: seg.destination,
-              flightNumber: seg.marketingFlightNumber,
-            }))}
-            segmentIndex={selectedSegmentIndex}
-            setSegmentIndex={setSelectedSegmentIndex}
+            flightSegments={segments}
+            segmentIndex={segmentIndex}
+            setSegmentIndex={setSegmentIndex}
             cabinClass={cabinClass}
             setCabinClass={setCabinClass}
           />
@@ -182,14 +186,36 @@ const ReactSeatMapModal: React.FC = () => {
           <GalleryPanel />
         </>
       }
+
       passengerPanel={
         <PassengerPanel
           passengers={passengers}
-          selectedSeats={selectedSeatsForCurrent}
+          selectedSeats={selectedSeatsForCurrentSegment}
           selectedPassengerId={selectedPassengerId}
           setSelectedPassengerId={setSelectedPassengerId}
-          setSelectedSeats={setSelectedSeats}
-          assignedSeats={selectedSeatsForCurrent.map(s => ({
+
+          setSelectedSeats={(seat: any) => {
+            setSelectedSeats(prev => {
+              console.log('💾 BEFORE setSelectedSeats, prev:', prev);
+              const next = [
+                ...prev.filter(
+                  (s: any) =>
+                    !(
+                      s.passengerId === seat.passengerId &&
+                      s.segmentNumber === currentSegmentNumber
+                    )
+                ),
+                {
+                  ...seat,
+                  segmentNumber: currentSegmentNumber
+                }
+              ];
+              console.log('💾 AFTER setSelectedSeats, next:', next);
+              return next;
+            });
+          }}
+
+          assignedSeats={selectedSeatsForCurrentSegment.map(s => ({
             passengerId: s.passengerId,
             seat: s.seatLabel,
             segmentNumber: s.segmentNumber,
@@ -198,14 +224,22 @@ const ReactSeatMapModal: React.FC = () => {
           flight={{} as FlightData}
           availability={flightInfo?.availability || []}
           iframeRef={{ current: null }}
-          handleResetSeat={resetCurrentSegmentSeats}
+          handleResetSeat={() =>
+            setSelectedSeats(prev =>
+              prev.filter(s => s.segmentNumber !== currentSegmentNumber)
+            )
+          }
+
           handleSave={handleSaveSeatsClick}
+
           handleAutomateSeating={() => {
+            if (!flightInfo?.availability) return;
             const newSeats = automateSeats({
               passengers,
-              availableSeats: flightInfo?.availability || [],
+              availableSeats: flightInfo.availability,
               segmentNumber: currentSegmentNumber,
             });
+
             setSelectedSeats(prev => [
               ...prev.filter(s => s.segmentNumber !== currentSegmentNumber),
               ...newSeats,
@@ -214,18 +248,19 @@ const ReactSeatMapModal: React.FC = () => {
           saveDisabled={false}
         />
       }
+
       center={
         <FallbackSeatmapCenter
           passengers={passengers}
           selectedPassengerId={selectedPassengerId}
-          selectedSeats={selectedSeatsForCurrent}
+          selectedSeats={selectedSeats}
           setSelectedSeats={setSelectedSeats}
           setSelectedPassengerId={setSelectedPassengerId}
           rows={rows}
           layoutLength={layoutLength}
           selectedDeck={selectedDeck}
           setSelectedDeck={setSelectedDeck}
-          segmentIndex={selectedSegmentIndex}
+          segmentIndex={segmentIndex}
           segments={segments}
         />
       }
