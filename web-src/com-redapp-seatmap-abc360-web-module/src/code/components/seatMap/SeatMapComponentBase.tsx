@@ -375,6 +375,8 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   ) : null;
 
   if (useFallback) {
+    // TODO: убрать дублирование панели сегмента и класса обслуживания
+    // В FallbackSeatmapLayout и ReactSeatMapModal панель уже включена
     return <ReactSeatMapModal />;
   }
 
