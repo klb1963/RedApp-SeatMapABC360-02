@@ -108,20 +108,6 @@ function ensurePassengerIds(passengers: PassengerOption[]): PassengerOption[] {
   }));
 }
 
-/**
- * SeatMapComponentBase.tsx
- *
- * React component for rendering the Seat Map modal.
- *
- * Responsibilities:
- * - Initializes and synchronizes seat map state with Quicket iframe.
- * - Manages passenger list, seat selection, and segment/cabin changes.
- * - Handles Save, Reset, Auto-Assign, Delete actions for seats.
- * - Displays fallback mode UI if iframe fails to initialize.
- *
- * Used as the base for the seat map modal in Sabre RedApp.
- */
-
 const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   config,
   flightSegments,
@@ -153,8 +139,21 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   const segment = flightSegments[segmentIndex];
 
   // Determine if fallback mode should be displayed
+  const [useFallback, setUseFallback] = useState(isFallbackMode());
+
+  useEffect(() => {
+    console.log('+++ [SeatMap] +++ useFallback changed to', useFallback);
+  }, [useFallback]);
+
   const seatMapInitError = useSeatMapInitErrorLogger();
-  const showFallback = isFallbackMode() || seatMapInitError;
+
+  useEffect(() => {
+    console.log('+++ [SeatMap] +++ seatMapInitError =', seatMapInitError);
+    if (seatMapInitError) {
+      console.warn('[SeatMap] Activating fallback due to seatMapInitError');
+      setUseFallback(true);
+    }
+  }, [seatMapInitError]);
 
   const mappedCabinClass = useMemo(() => mapCabinToCode(cabinClass), [cabinClass]);
   const { media } = useSeatmapMedia();
@@ -344,8 +343,8 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     }
   };
 
-  // Render passenger panel only if not fallback
-  const passengerPanel = showFallback ? null : (
+  // Render passenger panel only for PNR-scenario
+  const passengerPanel = passengers.length > 0 ? (
     <PassengerPanel
       passengers={cleanPassengers}
       selectedSeats={selectedSeatsForSegment}
@@ -373,7 +372,11 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
       availability={availability}
       iframeRef={iframeRef}
     />
-  );
+  ) : null;
+
+  if (useFallback) {
+    return <ReactSeatMapModal />;
+  }
 
   return (
     <SeatMapModalLayout
@@ -393,33 +396,17 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
           overflow: 'auto'
         }}
       >
-        {showFallback ? (
-          <div style={{
-            display: 'flex',
-            justifyContent: 'flex-start',
-            alignItems: 'flex-start',
-            width: '100%',
-            height: '100%',
-            overflow: 'auto',
-            paddingLeft: '2rem',
-            paddingRight: '4rem'
-          }}>
-            <div style={{ minWidth: 720 }}>
-              <ReactSeatMapModal />
-            </div>
-          </div>
-        ) : (
-          <iframe
-            ref={iframeRef}
-            title="Seat Map"
-            src="https://quicket.io/react-proxy-app/"
-            onLoad={handleIframeLoad}
-            style={{ width: '460px', height: '100%', border: 'none', overflow: 'hidden' }}
-          />
-        )}
+        <iframe
+          ref={iframeRef}
+          title="Seat Map"
+          src="https://quicket.io/react-proxy-app/"
+          onLoad={handleIframeLoad}
+          style={{ width: '460px', height: '100%', border: 'none', overflow: 'hidden' }}
+        />
       </div>
     </SeatMapModalLayout>
   );
+  
 };
 
 export default SeatMapComponentBase;

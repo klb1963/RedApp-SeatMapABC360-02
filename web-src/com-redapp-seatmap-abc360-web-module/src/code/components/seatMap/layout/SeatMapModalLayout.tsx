@@ -11,7 +11,6 @@
  */
 
 import * as React from 'react';
-import { isFallbackMode } from '../utils/isFallbackMode';
 
 interface SeatMapModalLayoutProps {
   flightInfo: React.ReactNode;
@@ -22,7 +21,7 @@ interface SeatMapModalLayoutProps {
   hasPassengers?: boolean;
 }
 
-const SeatMapModalLayout: React.FC<SeatMapModalLayoutProps> = ({
+export const SeatMapModalLayout: React.FC<SeatMapModalLayoutProps> = ({
   flightInfo,
   galleryPanel,
   passengerPanel,
@@ -30,8 +29,6 @@ const SeatMapModalLayout: React.FC<SeatMapModalLayoutProps> = ({
   children, 
   hasPassengers,
 }) => {
-
-  const fallback = isFallbackMode();
 
   return (
     <div style={{
@@ -73,7 +70,7 @@ const SeatMapModalLayout: React.FC<SeatMapModalLayoutProps> = ({
       </div>
 
       {/* Right side — passengers panel */}
-      {!fallback && (
+    
         <div style={{
           flexBasis: '25%',       // 👈 минимально допустимая ширина
           marginLeft: '3rem',       // 👈 Сдвигаем вправо
@@ -99,7 +96,6 @@ const SeatMapModalLayout: React.FC<SeatMapModalLayoutProps> = ({
             </div>
           )}
         </div>
-      )}
 
     </div>
   );

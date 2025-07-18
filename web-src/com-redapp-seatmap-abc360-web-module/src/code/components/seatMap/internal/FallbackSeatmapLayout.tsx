@@ -9,7 +9,7 @@ interface Props {
   legendPanel: React.ReactNode;
 }
 
-const FallbackSeatmapLayout: React.FC<Props> = ({
+export const FallbackSeatmapLayout: React.FC<Props> = ({
   flightInfo,
   center,
   passengerPanel,
