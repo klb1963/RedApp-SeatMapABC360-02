@@ -1,0 +1,10 @@
+# Node & build artifacts
+node_modules/
+build/
+dist/
+
+# System files
+.DS_Store
+
+# Secrets
+seatmap-s3-uploader/.env
