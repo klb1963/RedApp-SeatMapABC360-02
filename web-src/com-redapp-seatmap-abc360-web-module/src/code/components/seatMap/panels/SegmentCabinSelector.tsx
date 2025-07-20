@@ -125,7 +125,8 @@ export const SegmentCabinSelector: React.FC<SegmentCabinSelectorProps> = ({
             top: '50%',
             transform: 'translateY(-50%)',
             pointerEvents: 'none',
-            color: '#234E55'
+            color: disabled ? '#aaa' : '#234E55',
+            opacity: disabled ? 0.5 : 1,
           }}>
           <path d="M7 10l5 5 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
