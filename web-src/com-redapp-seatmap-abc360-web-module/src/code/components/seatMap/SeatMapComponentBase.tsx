@@ -95,6 +95,7 @@ interface SeatMapComponentBaseProps {
   legendPanel?: React.ReactNode;
   disableCabinClassChange?: boolean;
   allSelectedSeats: SelectedSeat[];
+  onFallbackDetected?: (isFallback: boolean) => void; // 👈 add fallback-mode switcher 
 }
 
 /**
@@ -124,6 +125,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   legendPanel,
   disableCabinClassChange = false,
   allSelectedSeats,
+  onFallbackDetected,
 }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
@@ -143,15 +145,21 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
 
   useEffect(() => {
     console.log('+++ [SeatMap] +++ useFallback changed to', useFallback);
+    if (onFallbackDetected) {
+         onFallbackDetected(useFallback);
+      }
   }, [useFallback]);
 
   const seatMapInitError = useSeatMapInitErrorLogger();
 
+  // Fallbac mode
   useEffect(() => {
-    console.log('+++ [SeatMap] +++ seatMapInitError =', seatMapInitError);
     if (seatMapInitError) {
       console.warn('[SeatMap] Activating fallback due to seatMapInitError');
       setUseFallback(true);
+      if (onFallbackDetected) {
+        onFallbackDetected(true);
+      }
     }
   }, [seatMapInitError]);
 

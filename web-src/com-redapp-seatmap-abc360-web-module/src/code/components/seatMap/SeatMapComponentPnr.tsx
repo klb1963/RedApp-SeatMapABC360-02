@@ -67,6 +67,8 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
     flightSegments[segmentIndex]?.cabinClass || 'Y'
   );
 
+  const [isFallback, setIsFallback] = useState(false);
+
   /**
    * Add sequence numbers to each segment (fallback if not present in PNR data).
    */
@@ -152,6 +154,7 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
   return (
     <div style={{ padding: '1rem' }}>
       {/* Segment & cabin selector panel */}
+      {!isFallback && (
       <SegmentCabinSelector
         flightSegments={flightSegments}
         segmentIndex={segmentIndex}
@@ -161,8 +164,9 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
         }}
         cabinClass={cabinClass}
         setCabinClass={setCabinClass}
-        disabled={true} // cabin change is fixed in PNR context
+        disabled={true}
       />
+    )}
 
       {/* Render seat map if data is loaded */}
       {memoSegment && availabilityReady && flightData && (
@@ -185,7 +189,6 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
           onSeatChange={(updatedSeats) => {
             // Update state for current segment seats
             setSelectedSeats(updatedSeats);
-
             // Merge into allSelectedSeats
             setAllSelectedSeats(prev => {
               const others = prev.filter(seat => seat.segmentNumber !== normalizedSegment.segmentNumber);
@@ -199,6 +202,11 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
           flightInfo={flightInfo}
           legendPanel={legendPanel}
           disableCabinClassChange={true}
+
+          onFallbackDetected={() => {
+            setIsFallback(true);
+          }}
+
         />
       )}
 

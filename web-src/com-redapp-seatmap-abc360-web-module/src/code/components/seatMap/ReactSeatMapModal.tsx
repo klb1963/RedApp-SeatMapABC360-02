@@ -181,6 +181,7 @@ const ReactSeatMapModal: React.FC = () => {
             setSegmentIndex={setSegmentIndex}
             cabinClass={cabinClass}
             setCabinClass={setCabinClass}
+            disabled={true}
           />
           {flightInfo && <FlightInfoPanel {...flightInfo} />}
           <GalleryPanel />
