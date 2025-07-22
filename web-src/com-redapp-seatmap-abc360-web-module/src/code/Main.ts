@@ -36,18 +36,18 @@ import { ShowAgentProfile } from './services/ShowAgentProfile';
 
 import { createPnrForm } from './components/seatMap/forms/CreatePnrForm';
 
+import { SeatMapABC360CommandHandler } from './services/SeatMapABC360Handler';
+
 import { t } from './Context'; // i18n
-
-import { normalizeSegment } from './utils/normalizeSegment';
-
-import ReactSeatMapModal from './components/seatMap/ReactSeatMapModal';
 
 export class Main extends Module {
     init(): void {
-        super.init();
-        registerService(CustomWorkflowService);
+      super.init();
+      registerService(CustomWorkflowService);
 
-         //делаем кнопку Command Helper Button
+      registerService(SeatMapABC360CommandHandler);
+
+      //делаем кнопку Command Helper Button
       const onClick = (isOpen: boolean) => {
         console.log('Command Helper Button onClick', isOpen);
         // insert logic here
@@ -84,7 +84,8 @@ export class Main extends Module {
       // регистрация кнопок на правой панели
       const xp = getService(ExtensionPointService);
 
-      const sidepanelMenu = new RedAppSidePanelConfig([
+      const sidepanelMenu = new RedAppSidePanelConfig(
+        [
         new RedAppSidePanelButton(
           "Create Test PNR",
           "btn-secondary side-panel-button",

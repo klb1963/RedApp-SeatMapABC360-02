@@ -4,12 +4,12 @@
   "bundleSymbolicName": "com.redapp.seatmap.abc360",
   "bundleName": "seatmapABC360",
   "contactDetails": {
-    "author": "Leonid Kleimann",
-    "email": "leonid.kleimann@outlook.com",
-    "phoneNumber": "+4915678152428",
-    "company": "SeatMaps",
-    "contactName": "Djois Franklin",
-    "website": "seatmaps.com"
+    "author": "Quicket SeatMaps",
+    "email": "info@quicket.io",
+    "phoneNumber": "+49(0)89/208039174",
+    "company": "Quicket GmbH",
+    "contactName": "Leo Kleimann",
+    "website": "https://seatmaps.com"
   },
   "authorizations": [
     {
@@ -28,5 +28,10 @@
   ],
   "assets": [
     "icons/seat-standard.svg"
+  ],
+  "customCommands": [
+    {
+      "SEATMAPABC360": "com-redapp-seatmap-abc360-web-module-SeatMapABC360Handler"
+    }
   ]
 }
