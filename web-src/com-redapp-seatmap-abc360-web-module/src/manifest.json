@@ -32,6 +32,9 @@
   "customCommands": [
     {
       "123": "com-redapp-seatmap-abc360-web-module-SeatMapABC360Handler"
+    },
+    {
+      "321": "com-redapp-seatmap-abc360-web-module-SeatMapABC360PnrHandler"
     }
   ]
 }

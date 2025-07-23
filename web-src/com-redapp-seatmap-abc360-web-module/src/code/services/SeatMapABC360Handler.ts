@@ -25,27 +25,4 @@ export class SeatMapABC360CommandHandler extends CustomCommandHandler {
     
         return new CustomCommandRs();
     }
-
-    // async onCommandSend(rq: CustomCommandRq): Promise<CustomCommandRs> {
-    //     // Simple modal showing Custom Command Request
-    //     await getService(ICustomFormsService).openForm({
-    //         title: 'TEST MY Command Handler',
-    //         fields: [
-    //             {
-    //                 id: 'command',
-    //                 type: 'PARAGRAPH',
-    //                 text: `**Command**: ${rq.command}`
-    //             },
-    //             {
-    //                 id: 'parameter',
-    //                 type: 'PARAGRAPH',
-    //                 text: `**Parameter**: ${rq.parameter}`
-    //             }
-    //         ]
-    //     });
-
-    //     // We return empty object
-    //     // Due to async Promise is being created automatically
-    //     return;
-    // }
 }

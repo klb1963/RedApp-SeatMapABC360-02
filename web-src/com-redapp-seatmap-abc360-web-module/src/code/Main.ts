@@ -37,6 +37,7 @@ import { ShowAgentProfile } from './services/ShowAgentProfile';
 import { createPnrForm } from './components/seatMap/forms/CreatePnrForm';
 
 import { SeatMapABC360CommandHandler } from './services/SeatMapABC360Handler';
+import { SeatMapABC360PnrHandler } from './services/SeatMapABC360PnrHandler';
 
 import { t } from './Context'; // i18n
 
@@ -44,8 +45,8 @@ export class Main extends Module {
     init(): void {
       super.init();
       registerService(CustomWorkflowService);
-
       registerService(SeatMapABC360CommandHandler);
+      registerService(SeatMapABC360PnrHandler);
 
       //делаем кнопку Command Helper Button
       const onClick = (isOpen: boolean) => {
@@ -115,7 +116,7 @@ export class Main extends Module {
         ),
 
         new RedAppSidePanelButton(
-          "Show Agent Profile",
+          "SeatMap ABC 360 Setup",
           "btn-secondary side-panel-button",
           () => { this.showAgentProfile(); },
           false
@@ -171,8 +172,40 @@ export class Main extends Module {
     };
   
     modals.showReactModal({
-      header: 'Agent Profile',
-      component: React.createElement(ShowAgentProfile, { agent }),
+      header: 'Seat Map ABC 360 Setup',
+      component: React.createElement(ShowAgentProfile, {
+        agent: {
+          ...agent,
+          appUrl: 'https://seatmaps.com',
+          appId: 'ABC360_APP_ID',
+          appKey: 'ABC360_APP_KEY'
+        }
+      }),
+      actions: [
+        React.createElement(
+          'button',
+          {
+            key: 'save',
+            className: 'sabre-button-primary',
+            onClick: () => {
+              console.log('✅ SAVE clicked');
+              modals.closeReactModal();
+            }
+          },
+          'Save'
+        ),
+        React.createElement(
+          'button',
+          {
+            key: 'close',
+            className: 'sabre-button-secondary',
+            onClick: () => {
+              modals.closeReactModal();
+            }
+          },
+          'Close'
+        )
+      ],
       modalClassName: 'seatmap-modal-class'
     });
   };
