@@ -203,8 +203,8 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
           legendPanel={legendPanel}
           disableCabinClassChange={true}
 
-          onFallbackDetected={() => {
-            setIsFallback(true);
+          onFallbackDetected={(isFallbackMode) => {
+            setIsFallback(isFallbackMode);
           }}
 
         />
