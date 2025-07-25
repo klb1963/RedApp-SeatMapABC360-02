@@ -32,7 +32,7 @@ import { SampleComponent } from './views/SampleComponent';
 import { loadPnrDetailsFromSabre } from './services/loadPnrDetailsFromSabre';
 import { openSeatMapPnr } from './components/seatMap/openSeatMapPnr';
 import { AgentProfileService } from 'sabre-ngv-app/app/services/impl/AgentProfileService';
-import { ShowAgentProfile } from './services/ShowAgentProfile';
+import ShowAgentProfile from './services/ShowAgentProfile';
 
 import { createPnrForm } from './components/seatMap/forms/CreatePnrForm';
 
@@ -157,6 +157,7 @@ export class Main extends Module {
   }
 
   // ========== 🪪 open showAgentProfile =====================
+  
   private showAgentProfile = (): void => {
     const modals = getService(PublicModalsService);
     const agentService = getService(AgentProfileService);
@@ -171,15 +172,15 @@ export class Main extends Module {
       customerEmployeeId: agentService.getCustomerEmployeeId() || '—'
     };
   
+    // ✅ Создаем ref
+    const ref = React.createRef<{ save: () => void }>();
+  
+    // ✅ Показываем модальное окно
     modals.showReactModal({
       header: 'Seat Map ABC 360 Setup',
       component: React.createElement(ShowAgentProfile, {
-        agent: {
-          ...agent,
-          appUrl: 'https://seatmaps.com',
-          appId: 'ABC360_APP_ID',
-          appKey: 'ABC360_APP_KEY'
-        }
+        ref, // 👈 передаём ref напрямую
+        agent
       }),
       actions: [
         React.createElement(
@@ -188,7 +189,7 @@ export class Main extends Module {
             key: 'save',
             className: 'sabre-button-primary',
             onClick: () => {
-              console.log('✅ SAVE clicked');
+              ref.current?.save(); // 👈 вызываем метод save
               modals.closeReactModal();
             }
           },

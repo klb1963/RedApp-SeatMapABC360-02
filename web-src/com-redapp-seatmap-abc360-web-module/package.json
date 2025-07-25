@@ -21,7 +21,8 @@
     "sabre-ngv-pos-cdm": "*",
     "sabre-ngv-commsg": "*",
     "sabre-ngv-xp": "*",
-    "sabre-ngv-customCommand": "*"
+    "sabre-ngv-customCommand": "*",
+    "sabre-ngv-preferences": "*"
   },
   "ngv": {
     "buildDependencies": {
@@ -37,7 +38,8 @@
       "sabre-ngv-pos-cdm": "*",
       "sabre-ngv-commsg": "*",
       "sabre-ngv-xp": "*",
-      "sabre-ngv-customCommand": "*"
+      "sabre-ngv-customCommand": "*",
+      "sabre-ngv-preferences": "*"
     },
     "concierge_version_min": "7.5.18",
     "runtimeDependencies": {},
