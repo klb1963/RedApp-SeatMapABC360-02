@@ -18,7 +18,7 @@ export class SeatMapABC360CommandHandler extends CustomCommandHandler {
         const modals = getService(PublicModalsService);
     
         modals.showReactModal({
-            header: 'Seat Map ABC 360 (Fallback)',
+            header: 'Seat Map ABC 360',
             component: React.createElement(ReactSeatMapModal, {}),
             modalClassName: 'seatmap-modal-lower'
         });

@@ -116,7 +116,7 @@ const FallbackSeatmapCenter: React.FC<FallbackSeatmapCenterProps> = ({
                 overflowY: 'auto'
             }}
         >
-            <h3 style={{ marginBottom: '1rem' }}>Seatmap ABC 360 (f)</h3>
+            {/* <h3 style={{ marginBottom: '1rem' }}>Seatmap ABC 360 (f)</h3> */}
 
             {decks.length > 1 && (
                 <div
