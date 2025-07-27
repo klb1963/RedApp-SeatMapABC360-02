@@ -1,4 +1,4 @@
-// file: /code/components/seatMap/internal/SeatItemSvg.tsx
+// file: /code/components/seatMap/fallback-seat-map/SeatItemSvg.tsx
 
 import * as React from 'react';
 

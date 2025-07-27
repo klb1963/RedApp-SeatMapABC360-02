@@ -1,4 +1,4 @@
-// file: /code/components/seatMap/internal/FallbackSeatmapCenter.tsx
+// file: /code/components/seatMap/fallback-seat-map/FallbackSeatmapCenter.tsx
 
 import * as React from 'react';
 import Seatmap from './Seatmap';
@@ -121,7 +121,7 @@ const FallbackSeatmapCenter: React.FC<FallbackSeatmapCenterProps> = ({
             {decks.length > 1 && (
                 <div
                     style={{
-                        marginBottom: '1rem',
+                        marginBottom: '0.5rem',
                         display: 'flex',
                         justifyContent: 'center'
                     }}
@@ -133,6 +133,17 @@ const FallbackSeatmapCenter: React.FC<FallbackSeatmapCenterProps> = ({
                     />
                 </div>
             )}
+
+            <p
+                style={{
+                    marginTop: '0rem',
+                    textAlign: 'center',
+                    fontStyle: 'italic',
+                    color: '#666'
+                }}
+            >
+                <strong>{selectedDeck}</strong>
+            </p>
 
             {selectedSeatId && (
                 <p style={{ marginBottom: '1rem' }}>
@@ -150,7 +161,7 @@ const FallbackSeatmapCenter: React.FC<FallbackSeatmapCenterProps> = ({
                 />
             </div>
 
-            <p
+            {/* <p
                 style={{
                     marginTop: '1rem',
                     textAlign: 'center',
@@ -160,7 +171,8 @@ const FallbackSeatmapCenter: React.FC<FallbackSeatmapCenterProps> = ({
             >
                 Deck: <strong>{selectedDeck}</strong>, rows:{' '}
                 <strong>{filteredRows.length}</strong>
-            </p>
+            </p> */}
+
         </div>
     );
 };

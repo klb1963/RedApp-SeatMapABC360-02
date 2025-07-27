@@ -1,4 +1,16 @@
-// ✅ file: /code/components/seatMap/internal/SeatTooltip.tsx
+// ✅ file: /code/components/seatMap/fallback-seat-map/SeatTooltip.tsx
+
+/**
+ * SeatTooltip component
+ *
+ * Displays a tooltip with detailed information about a seat:
+ * - Seat number and cabin class
+ * - Price (if available)
+ * - Multi-line text of seat characteristics (e.g., Bulkhead, Power Outlet, etc.)
+ *
+ * Tooltip is shown above or below the seat based on the `position` prop.
+ * The content is assumed to be pre-localized before reaching this component.
+ */
 
 import * as React from 'react';
 
@@ -8,7 +20,7 @@ interface SeatTooltipProps {
         column: string;
         cabinClass: string;
         price?: string;
-        characteristicsText?: string; // Многострочный текст с флагами, если есть
+        characteristicsText?: string; // Multiline text (already localized)
     };
     position?: 'top' | 'bottom';
 }
@@ -16,8 +28,7 @@ interface SeatTooltipProps {
 const SeatTooltip: React.FC<SeatTooltipProps> = ({ seatInfo, position = 'top' }) => {
     if (!seatInfo) return null;
 
-    // const tooltipTop = position === 'bottom' ? '6.5rem' : '2rem';
-
+    // Determine top offset for the tooltip based on seat cabin class
     const isEconomy = seatInfo.cabinClass.toLowerCase().includes('economy');
     const tooltipTop = position === 'bottom'
         ? isEconomy ? '6.5rem' : '5.5rem'
@@ -27,9 +38,9 @@ const SeatTooltip: React.FC<SeatTooltipProps> = ({ seatInfo, position = 'top' })
         <div
             style={{
                 position: 'absolute',
-                top: tooltipTop,               // ✅ снова включаем top
+                top: tooltipTop, // ⬆ Tooltip vertical offset
                 left: '-3rem',
-                transform: position === 'top' ? 'translateY(-100%)' : 'translateY(0%)', // ✅ ключевой момент
+                transform: position === 'top' ? 'translateY(-100%)' : 'translateY(0%)',
                 backgroundColor: '#fff',
                 color: '#000',
                 padding: '0.8rem 1rem',
@@ -46,17 +57,22 @@ const SeatTooltip: React.FC<SeatTooltipProps> = ({ seatInfo, position = 'top' })
                 textAlign: 'left',
             }}
         >
+            {/* Line 1: Seat number and cabin class */}
             <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>
                 {seatInfo.rowNumber}{seatInfo.column} {seatInfo.cabinClass}
             </div>
+
+            {/* Line 2: Price if provided */}
             {seatInfo.price && (
                 <div style={{ marginBottom: '0.5rem' }}>{seatInfo.price}</div>
             )}
+
+            {/* Line 3: Characteristics if provided */}
             {seatInfo.characteristicsText && (
                 <div>{seatInfo.characteristicsText}</div>
             )}
 
-            {/* Внешний серый треугольник (обводка) */}
+            {/* ▼ Outer gray triangle (border) */}
             <div
                 style={{
                     position: 'absolute',
@@ -78,7 +94,7 @@ const SeatTooltip: React.FC<SeatTooltipProps> = ({ seatInfo, position = 'top' })
                 }}
             />
 
-            {/* Внутренний белый треугольник (фон тултипа) */}
+            {/* ▼ Inner white triangle (background of the tooltip) */}
             <div
                 style={{
                     position: 'absolute',

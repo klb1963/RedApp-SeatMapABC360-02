@@ -1,13 +1,23 @@
-// file: /code/components/seatMap/internal/FallbackSeatmapLayout.tsx
+// file: /code/components/seatMap/fallback-seat-map/FallbackSeatmapLayout.tsx
 
 import * as React from 'react';
 
 interface Props {
-  flightInfo: React.ReactNode;
-  center: React.ReactNode;
-  passengerPanel: React.ReactNode;
-  legendPanel: React.ReactNode;
+  flightInfo: React.ReactNode;       // Left panel — flight information
+  center: React.ReactNode;           // Center panel — seatmap visualization
+  passengerPanel: React.ReactNode;   // Right panel — passenger list and seat selections
+  legendPanel: React.ReactNode;      // Right panel — seat legend
 }
+
+/**
+ * FallbackSeatmapLayout
+ *
+ * A responsive 3-column layout for the fallback seat map.
+ * Divides the screen into:
+ * - Left column: flight info
+ * - Center: seat map rendering
+ * - Right column: passenger panel and seat legend
+ */
 
 export const FallbackSeatmapLayout: React.FC<Props> = ({
   flightInfo,
@@ -27,7 +37,7 @@ export const FallbackSeatmapLayout: React.FC<Props> = ({
         gap: '1rem'
       }}
     >
-      {/* Left — flight info */}
+      {/* Left column — flight info */}
       <div
         style={{
           flexBasis: '37%',
@@ -38,12 +48,10 @@ export const FallbackSeatmapLayout: React.FC<Props> = ({
           overflowY: 'auto'
         }}
       >
-
         {flightInfo}
-
       </div>
 
-      {/* Center — seatmap */}
+      {/* Center column — seat map */}
       <div
         style={{
           flexGrow: 1,
@@ -55,12 +63,10 @@ export const FallbackSeatmapLayout: React.FC<Props> = ({
           border: '1px solid #ccc'
         }}
       >
-
         {center}
-        
       </div>
 
-      {/* Right — passenger panel + legend */}
+      {/* Right column — passenger panel and legend */}
       <div
         style={{
           flexBasis: '25%',
@@ -71,7 +77,6 @@ export const FallbackSeatmapLayout: React.FC<Props> = ({
           overflowY: 'auto'
         }}
       >
-
         {passengerPanel}
 
         <div style={{ marginTop: '2rem' }}>
@@ -83,9 +88,7 @@ export const FallbackSeatmapLayout: React.FC<Props> = ({
               width: '100%'
             }}
           />
-
           {legendPanel}
-
         </div>
       </div>
     </div>

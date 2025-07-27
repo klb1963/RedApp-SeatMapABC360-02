@@ -19,8 +19,8 @@ import { loadSeatMapFromSabre } from '../../services/loadSeatMapFromSabre';
 import { convertSeatMapToReactSeatmapFormat } from '../../utils/convertSeatMapToReactSeatmap';
 
 import { PassengerPanel } from './panels/PassengerPanel';
-import FallbackSeatmapCenter from './internal/FallbackSeatmapCenter';
-import FallbackSeatmapLayout from './internal/FallbackSeatmapLayout';
+import FallbackSeatmapCenter from './fallback-seat-map/FallbackSeatmapCenter';
+import FallbackSeatmapLayout from './fallback-seat-map/FallbackSeatmapLayout';
 import { FlightInfoPanel } from './panels/FlidhtInfoPanel';
 import { SeatLegend } from './panels/SeatLegend';
 import { FlightData } from '../../utils/generateFlightData';

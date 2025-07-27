@@ -1,4 +1,20 @@
-// file: /code/components/seatMap/internal/Seatmap.tsx
+// file: /code/components/seatMap/fallback-seat-map/Seatmap.tsx
+
+/**
+ * Seatmap.tsx
+ *
+ * 🎫 Main component for rendering a fallback aircraft seat map.
+ *
+ * Responsibilities:
+ * - Renders all seat rows, aisles, exits, overwing rows, decks (via deckId)
+ * - Displays seats with custom SVG icons and styles based on class/cabin
+ * - Shows passenger initials for selected seats
+ * - Handles hover tooltips with seat details (cabin, price, characteristics)
+ * - Adds overwing visual markers and exit arrows per row configuration
+ *
+ * This is a standalone visual component used when quicket.io map is unavailable,
+ * such as fallback or dev environments.
+ */
 
 import SeatTooltip from './SeatTooltip';
 import { getColorByType, SeatType } from '../../../utils/parseSeatMapResponse';
@@ -35,9 +51,16 @@ interface SeatmapProps {
   selectedSeatsMap?: Record<string, { passengerInitials: string; passengerColor?: string }>;
 }
 
-const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, layoutLength, selectedSeatsMap = {} }) => {
+const Seatmap: React.FC<SeatmapProps> = ({
+  rows,
+  selectedSeatId,
+  onSeatClick,
+  layoutLength,
+  selectedSeatsMap = {}
+}) => {
   const [hoveredSeatId, setHoveredSeatId] = React.useState<string | null>(null);
 
+  // Collect indexes of overwing rows to show markers only for first & last
   const overwingRowIndexes = rows
     .map((row, index) => (row.isOverwingRow ? index : -1))
     .filter(index => index !== -1);
@@ -45,6 +68,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
   const firstOverwingIndex = overwingRowIndexes[0];
   const lastOverwingIndex = overwingRowIndexes[overwingRowIndexes.length - 1];
 
+  // Simple SVG line icons for overwing markers
   const DiagonalIconLeft = () => (
     <svg width="24" height="24" viewBox="0 0 24 24">
       <line x1="0" y1="24" x2="24" y2="0" stroke="#848484" strokeWidth="4" />
@@ -76,6 +100,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
         }}
       >
         {rows.map((row, rowIndex) => {
+          // Use tooltip to infer cabin class
           const firstSeat = row.seats.find(s => !s.id.startsWith('AISLE') && !s.id.startsWith('EMPTY'));
           const cabinClass = firstSeat?.tooltip?.split('\n')[0]?.toLowerCase() || '';
           const isEconomy = cabinClass.includes('economy');
@@ -96,6 +121,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center' }}>
+                {/* === Left side markers === */}
                 <div
                   style={{
                     position: 'absolute',
@@ -108,6 +134,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                     width: '3rem',
                   }}
                 >
+                  {/* EXIT icon (left) */}
                   {row.isExitRow && (
                     <span
                       style={{
@@ -127,6 +154,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                     </span>
                   )}
 
+                  {/* Overwing start marker */}
                   {row.isOverwingRow && rowIndex === firstOverwingIndex && (
                     <div
                       style={{
@@ -136,7 +164,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                         display: 'flex',
                         justifyContent: 'center',
                         alignItems: 'center',
-                        left: isEconomy ? '-3.5rem' : '-3.5rem',
+                        left: '-3.5rem',
                         top: isEconomy ? '3rem' : '0rem',
                       }}
                     >
@@ -144,6 +172,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                     </div>
                   )}
 
+                  {/* Overwing end marker */}
                   {row.isOverwingRow && rowIndex === lastOverwingIndex && (
                     <div
                       style={{
@@ -153,7 +182,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                         display: 'flex',
                         justifyContent: 'center',
                         alignItems: 'center',
-                        left: isEconomy ? '-4rem' : '-4rem',
+                        left: '-4rem',
                         top: isEconomy ? '5rem' : '3rem',
                       }}
                     >
@@ -162,6 +191,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                   )}
                 </div>
 
+                {/* === Main seat content (row of seats) === */}
                 <div
                   style={{
                     display: 'flex',
@@ -171,7 +201,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                     gap: '0.5rem',
                   }}
                 >
-                  {row.seats.map((seat, seatIndex) => {
+                  {row.seats.map((seat) => {
                     const isAisle = seat.id.startsWith('AISLE');
                     const backgroundColor = getColorByType(seat.type || 'available');
 
@@ -192,6 +222,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                           alignItems: 'center',
                         }}
                       >
+                        {/* Empty seat box (ghost) */}
                         {seat.hidden ? (
                           <div
                             style={{
@@ -203,19 +234,20 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                           />
                         ) : isAisle ? null : (
                           <>
-                              <div
-                                onMouseEnter={() => setHoveredSeatId(seat.id)}
-                                onMouseLeave={() => setHoveredSeatId(null)}
-                              >
-                                <SeatIcon
-                                  color={backgroundColor}
-                                  label={`${row.rowNumber}${seat.number || ''}`}
-                                  onClick={() => {
-                                    if (seat.isReserved || !seat.id) return;
-                                    onSeatClick(seat.id);
-                                  }}
-                                />
-                                {passenger && (
+                            {/* Clickable seat with optional initials */}
+                            <div
+                              onMouseEnter={() => setHoveredSeatId(seat.id)}
+                              onMouseLeave={() => setHoveredSeatId(null)}
+                            >
+                              <SeatIcon
+                                color={backgroundColor}
+                                label={`${row.rowNumber}${seat.number || ''}`}
+                                onClick={() => {
+                                  if (seat.isReserved || !seat.id) return;
+                                  onSeatClick(seat.id);
+                                }}
+                              />
+                              {passenger && (
                                 <div
                                   style={{
                                     position: 'absolute',
@@ -240,6 +272,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                               )}
                             </div>
 
+                            {/* Tooltip on hover */}
                             {hoveredSeatId === seat.id && seat.tooltip && (
                               <SeatTooltip
                                 seatInfo={{
@@ -259,6 +292,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                   })}
                 </div>
 
+                {/* === Right side markers === */}
                 <div
                   style={{
                     position: 'absolute',
@@ -271,6 +305,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                     width: '3rem',
                   }}
                 >
+                  {/* EXIT icon (right) */}
                   {row.isExitRow && (
                     <span
                       style={{
@@ -290,6 +325,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                     </span>
                   )}
 
+                  {/* Overwing start marker */}
                   {row.isOverwingRow && rowIndex === firstOverwingIndex && (
                     <div
                       style={{
@@ -299,7 +335,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                         display: 'flex',
                         justifyContent: 'center',
                         alignItems: 'center',
-                        left: isEconomy ? '3.5rem' : '3.5rem',
+                        left: '3.5rem',
                         top: isEconomy ? '3rem' : '0rem',
                       }}
                     >
@@ -307,6 +343,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                     </div>
                   )}
 
+                  {/* Overwing end marker */}
                   {row.isOverwingRow && rowIndex === lastOverwingIndex && (
                     <div
                       style={{
@@ -316,7 +353,7 @@ const Seatmap: React.FC<SeatmapProps> = ({ rows, selectedSeatId, onSeatClick, la
                         display: 'flex',
                         justifyContent: 'center',
                         alignItems: 'center',
-                        left: isEconomy ? '4rem' : '4rem',
+                        left: '4rem',
                         top: isEconomy ? '5rem' : '3rem',
                       }}
                     >

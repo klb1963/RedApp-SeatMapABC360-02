@@ -44,5 +44,7 @@
     "seatMap.legend.baby": "Bassinet",
     "seatMap.legend.bar": "Bar/Lounge",
     "seatMap.legend.pray": "Pray",
-    "seatMap.legend.exit": "Exit"
+    "seatMap.legend.exit": "Exit",
+    "seatMap.legend.deck1": "Deck 1",
+    "seatMap.legend.deck2": "Deck 2"
 }

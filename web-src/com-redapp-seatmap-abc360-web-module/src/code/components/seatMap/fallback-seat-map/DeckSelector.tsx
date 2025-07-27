@@ -1,6 +1,7 @@
-// ✅ file: /code/components/seatMap/internal/DeckSelector.tsx
+// ✅ file: /code/components/seatMap/fallback-seat-map/DeckSelector.tsx
 
 import * as React from 'react';
+import { t } from '../../../Context'; // ✅ твой i18n механизм
 
 interface DeckSelectorProps {
   decks: string[];
@@ -32,33 +33,11 @@ const DeckSelector: React.FC<DeckSelectorProps> = ({ decks, selectedDeck, onChan
             padding: 0,
           }}
         >
-          {/* Up */}
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-          >
-            <rect
-              x="1"
-              y="1"
-              width="22"
-              height="22"
-              rx="2"
-              fill="white"
-              stroke="#234E55"
-              strokeWidth="2"
-            />
-            <path
-              d="M6 10L12 16L18 10Z"
-              stroke="#234E55"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              fill="none"
-            />
+          {/* Up arrow */}
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+            <rect x="1" y="1" width="22" height="22" rx="2" fill="white" stroke="#234E55" strokeWidth="2" />
+            <path d="M6 14L12 8L18 14" fill="none" stroke="#234E55" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-
         </button>
       )}
 
@@ -76,37 +55,16 @@ const DeckSelector: React.FC<DeckSelectorProps> = ({ decks, selectedDeck, onChan
             padding: 0,
           }}
         >
-          {/* Down */}
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-          >
-            <rect
-              x="1"
-              y="1"
-              width="22"
-              height="22"
-              rx="2"
-              fill="white"
-              stroke="#234E55"
-              strokeWidth="2"
-            />
-            <polygon
-              points="6,14 12,8 18,14"
-              fill="none"
-              stroke="#234E55"
-              strokeWidth="2"
-              strokeLinejoin="round"
-            />
+          {/* Down arrow */}
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+            <rect x="1" y="1" width="22" height="22" rx="2" fill="white" stroke="#234E55" strokeWidth="2" />
+            <polygon points="6,10 12,16 18,10" fill="none" stroke="#234E55" strokeWidth="2" strokeLinejoin="round" />
           </svg>
-
         </button>
       )}
 
-      <span style={{ fontWeight: 'bold', fontSize: '2rem', color: '#234E55' }}>
-        {selectedDeck === 'Upperdeck' ? 'Deck 1' : 'Deck 2'}
+      <span style={{ fontWeight: 'normal', fontSize: '2rem', color: '#234E55' }}>
+        {selectedDeck === 'Upperdeck' ? t('seatMap.legend.deck1') : t('seatMap.legend.deck2')}
       </span>
     </div>
   );
