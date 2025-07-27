@@ -217,7 +217,7 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
        {/* Show loading placeholder while availability is fetched */}
        {!availabilityReady && (
         <div style={{ textAlign: 'center', margin: '2rem' }}>
-          {t('seatMap.loading')}
+          Loading...
         </div>
       )}
     </div>

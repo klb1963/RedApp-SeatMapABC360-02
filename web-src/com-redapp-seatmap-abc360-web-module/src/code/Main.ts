@@ -1,11 +1,13 @@
 // file: code/Main.ts
 
+// file: code/Main.ts
+
 import * as React from 'react';
-import {Module} from 'sabre-ngv-core/modules/Module';
+import { Module } from 'sabre-ngv-core/modules/Module';
 import { getService, registerService } from './Context';
 import { ExtensionPointService } from 'sabre-ngv-xp/services/ExtensionPointService';
 
-import {NoviceButtonConfig} from 'sabre-ngv-xp/configs/NoviceButtonConfig';
+import { NoviceButtonConfig } from 'sabre-ngv-xp/configs/NoviceButtonConfig';
 import { CustomWorkflowService } from './services/CustomWorkflowService';
 
 import { RedAppSidePanelConfig } from 'sabre-ngv-xp/configs/RedAppSidePanelConfig';
@@ -39,129 +41,76 @@ import { createPnrForm } from './components/seatMap/forms/CreatePnrForm';
 import { SeatMapABC360CommandHandler } from './services/SeatMapABC360Handler';
 import { SeatMapABC360PnrHandler } from './services/SeatMapABC360PnrHandler';
 
-import { t } from './Context'; // i18n
+import { t } from './Context';
 
 export class Main extends Module {
-    init(): void {
-      super.init();
-      registerService(CustomWorkflowService);
-      registerService(SeatMapABC360CommandHandler);
-      registerService(SeatMapABC360PnrHandler);
+  init(): void {
+    super.init();
+    registerService(CustomWorkflowService);
+    registerService(SeatMapABC360CommandHandler);
+    registerService(SeatMapABC360PnrHandler);
 
-      //делаем кнопку Command Helper Button
-      const onClick = (isOpen: boolean) => {
-        console.log('Command Helper Button onClick', isOpen);
-        // insert logic here
-      };
-      const onClose = () => {
-        console.log('Command Helper Popover onClose');
-        // insert logic here
-      };
+    // Register Command Helper Button
+    const onClick = (isOpen: boolean) => {
+      console.log('Command Helper Button onClick', isOpen);
+    };
+    const onClose = () => {
+      console.log('Command Helper Popover onClose');
+    };
 
-      const config = new NoviceButtonConfig(
-        // Define label for this button.
-        'Sample button',
-        // On top of text we add an icon from Font Awesome.
-        'fa-comment',
-        // Decorator is used to apply styles to the button that will be displayed in Command Helper Bar.
-        'com-sabre-redapp-example3-web-command-helper-button-web-module',
-        // Base React class to be mounted as root in ReactDOM.render().
-        SampleComponent,
-        // Priority of the button determines button position in the Command Helper Bar.
-        0,
-        onClick,
-        onClose
-      );
+    const config = new NoviceButtonConfig(
+      'Sample button',
+      'fa-comment',
+      'com-sabre-redapp-example3-web-command-helper-button-web-module',
+      SampleComponent,
+      0,
+      onClick,
+      onClose
+    );
 
-      // Add button configuration to add a command helper button.
-      console.log('Adding Button config to ExtensionPointService...');
-      getService(ExtensionPointService).addConfig('novice-buttons', config); // novice-buttons
-      console.log('Button config added successfully.');
+    console.log('Adding Button config to ExtensionPointService...');
+    getService(ExtensionPointService).addConfig('novice-buttons', config);
+    console.log('Button config added successfully.');
 
-      // регистрация виджетов
-      this.registerSeatMapAvailTile();
-      this.registerSeatMapShoppingTile();
+    // Register widgets and sidepanel buttons
+    this.registerSeatMapAvailTile();
+    this.registerSeatMapShoppingTile();
 
-      // регистрация кнопок на правой панели
-      const xp = getService(ExtensionPointService);
+    const xp = getService(ExtensionPointService);
 
-      const sidepanelMenu = new RedAppSidePanelConfig(
-        [
-        new RedAppSidePanelButton(
-          "Create Test PNR",
-          "btn-secondary side-panel-button",
-          () => { this.showCreatePnrForm(); },
-          false
-        ),
+    const sidepanelMenu = new RedAppSidePanelConfig([
+      new RedAppSidePanelButton('Create Test PNR', 'btn-secondary side-panel-button', () => this.showCreatePnrForm(), false),
+      new RedAppSidePanelButton('SeatMap ABC 360', 'btn-secondary side-panel-button', () => this.openSeatMapABC360(), false),
+      new RedAppSidePanelButton('Get EnhancedSeatMapRQ', 'btn-secondary side-panel-button', () => this.getEnhancedSeatMapRQ(), false),
+      new RedAppSidePanelButton('Show PNR Info', 'btn-secondary side-panel-button', () => this.showPnrInfo(), false),
+      new RedAppSidePanelButton('SeatMap ABC 360 Setup', 'btn-secondary side-panel-button', () => this.showAgentProfile(), false),
+      new RedAppSidePanelButton('SeatMap Fallback', 'btn-secondary side-panel-button', () => this.showSeatMapReact(), false),
+    ]);
 
-        new RedAppSidePanelButton(
-          "SeatMap ABC 360",
-          "btn-secondary side-panel-button",
-          () => { this.openSeatMapABC360(); },
-          false
-        ),
+    xp.addConfig('redAppSidePanel', sidepanelMenu);
+  }
 
-        new RedAppSidePanelButton(
-          "Get EnhancedSeatMapRQ",
-          "btn-secondary side-panel-button",
-          () => { this.getEnhancedSeatMapRQ(); },
-          false
-        ),
-
-        new RedAppSidePanelButton(
-          "Show PNR Info",
-          "btn-secondary side-panel-button",
-          () => { this.showPnrInfo(); },
-          false
-        ),
-
-        new RedAppSidePanelButton(
-          "SeatMap ABC 360 Setup",
-          "btn-secondary side-panel-button",
-          () => { this.showAgentProfile(); },
-          false
-        ),
-
-        new RedAppSidePanelButton(
-          "SeatMap Fallback",
-          "btn-secondary side-panel-button",
-          () => { this.showSeatMapReact(); },
-          false
-        ),
-
-      ]);
-
-      xp.addConfig("redAppSidePanel", sidepanelMenu);
-
-    } // end of init
-
-  //============= create Test PNR form =======
-  showCreatePnrForm(): void {
+  private showCreatePnrForm(): void {
     createPnrForm();
   }
 
-  //============= 💺💺💺 open SeatMap ABC 360 with PNR data =====
-  openSeatMapABC360(): void {
-    getService(PublicModalsService).closeReactModal(); // ✅ Close any open modals
-    openSeatMapPnr(); // delegate 
+  private openSeatMapABC360(): void {
+    getService(PublicModalsService).closeReactModal();
+    openSeatMapPnr();
   }
-
-  //============= 💺💺💺 open SeatMap React with PNR data =====
 
   private showSeatMapReact(): void {
     getService(PublicModalsService).showReactModal({
-        header: 'React Seat Map',
-        component: React.createElement(require('./components/seatMap/ReactSeatMapModal').default),
-        modalClassName: 'seatmap-modal-lower',
-      });
+      header: 'React Seat Map',
+      component: React.createElement(require('./components/seatMap/ReactSeatMapModal').default),
+      modalClassName: 'seatmap-modal-lower'
+    });
   }
 
-  // ========== 🪪 open showAgentProfile =====================
-  
   private showAgentProfile = (): void => {
     const modals = getService(PublicModalsService);
     const agentService = getService(AgentProfileService);
-  
+
     const agent = {
       agentId: agentService.getAgentId() || '—',
       pcc: agentService.getPcc() || '—',
@@ -171,64 +120,30 @@ export class Main extends Module {
       customerBusinessUnit: agentService.getCustomerBusinessUnit() || '—',
       customerEmployeeId: agentService.getCustomerEmployeeId() || '—'
     };
-  
-    // ✅ Создаем ref
+
     const ref = React.createRef<{ save: () => void }>();
-  
-    // ✅ Показываем модальное окно
+
     modals.showReactModal({
       header: 'Seat Map ABC 360 Setup',
-      component: React.createElement(ShowAgentProfile, {
-        ref, // 👈 передаём ref напрямую
-        agent
-      }),
+      component: React.createElement(ShowAgentProfile, { ref, agent }),
       actions: [
-        React.createElement(
-          'button',
-          {
-            key: 'save',
-            className: 'sabre-button-primary',
-            onClick: () => {
-              ref.current?.save(); // 👈 вызываем метод save
-              modals.closeReactModal();
-            }
-          },
-          'Save'
-        ),
-        React.createElement(
-          'button',
-          {
-            key: 'close',
-            className: 'sabre-button-secondary',
-            onClick: () => {
-              modals.closeReactModal();
-            }
-          },
-          'Close'
-        )
+        React.createElement('button', { key: 'save', className: 'sabre-button-primary', onClick: () => { ref.current?.save(); modals.closeReactModal(); } }, 'Save'),
+        React.createElement('button', { key: 'close', className: 'sabre-button-secondary', onClick: () => modals.closeReactModal() }, 'Close')
       ],
       modalClassName: 'seatmap-modal-class'
     });
   };
 
-  // ===============================================
+  localStore = {
+    store: {
+      getState: () => ({ selectedSeats: (window as any).selectedSeats || [] })
+    }
+  };
 
-    // ✅ this method needed inside Main
-    localStore = {
-      store: {
-        getState: () => {
-          return {
-            selectedSeats: (window as any).selectedSeats || []
-          };
-        }
-      }
-    };
-  
-    private onClickCancel = () => {
-      getService(PublicModalsService).closeReactModal();
-    };
+  private onClickCancel = () => {
+    getService(PublicModalsService).closeReactModal();
+  };
 
-  //============= ⌨️ Button getEnhancedSeatMapRQ ==========
   private getEnhancedSeatMapRQ(): void {
     const publicModalsService = getService(PublicModalsService);
 
@@ -239,7 +154,6 @@ export class Main extends Module {
     });
   }
 
-  // =========== ⌨️ Button showPnrInfo ==================
   showPnrInfo(): void {
     const publicModalsService = getService(PublicModalsService);
 
@@ -247,8 +161,7 @@ export class Main extends Module {
       try {
         const { parsedData: pnrData, rawXml } = await loadPnrDetailsFromSabre();
 
-        const isEmpty =
-          !pnrData ||
+        const isEmpty = !pnrData ||
           (Array.isArray(pnrData.passengers) && pnrData.passengers.length === 0) &&
           (Array.isArray(pnrData.segments) && pnrData.segments.length === 0);
 
@@ -272,20 +185,13 @@ export class Main extends Module {
         console.error('❌ Failed to load PNR data:', error);
         publicModalsService.showReactModal({
           header: 'PNR Error',
-          component: React.createElement(
-            'div',
-            { style: { padding: '1rem', color: 'red' } },
-            t('seatMap.loadPnrError')
-          ),
-          modalClassName: 'seatmap-modal-class',
+          component: React.createElement('div', { style: { padding: '1rem', color: 'red' } }, t('seatMap.loadPnrError')),
+          modalClassName: 'seatmap-modal-class'
         });
       }
     })();
   }
 
-  //============== 🖥️ Widgets ====================
-
-  // ========= 🌏🌐🌌 AvailabilityTile ===============
   private registerSeatMapAvailTile(): void {
     const airAvailabilityService = getService(PublicAirAvailabilityService);
 
@@ -309,41 +215,28 @@ export class Main extends Module {
     );
   }
 
-  //========= 🛒 Shopping & 💵 Pricing Tile =============
   private registerSeatMapShoppingTile(): void {
-    // define config shoppingDrawerConfig
     console.log("registerSeatMapShoppingTile");
-    
+
     const shoppingDrawerConfig = new LargeWidgetDrawerConfig(SeatMapShoppingTile, SeatMapShoppingView, {
-      title: 'Shopping Tile Widget', // window header
-      
+      title: 'Shopping Tile Widget',
     });
-    // call service with config shoppingDrawerConfig
     getService(DrawerService).addConfig(['shopping-flight-segment'], shoppingDrawerConfig);
 
-    // Pricing Tile
     const showPricingModal = this.createShowModalAction(PricingView, 'Pricing data');
     getService(IAirPricingService).createPricingTile(PricingTile, showPricingModal, 'ABC Seat Map');
-
   }
 
-    // ============ Show Modal for Pricing===================================
-    private createShowModalAction(view: React.FunctionComponent<any>, header: string): (data: any) => void {
-        return ((data) => {
-    
-          console.log('📥 [Pricing] Received:', JSON.stringify(data, null, 2));
-    
-          const ngvModalOptions: ReactModalOptions = {
-            header,
-            component: React.createElement(
-              view,
-              data
-            ),
-            modalClassName: 'seatmap-modal-lower'
-          }
-          getService(PublicModalsService).showReactModal(ngvModalOptions);
+  private createShowModalAction(view: React.FunctionComponent<any>, header: string): (data: any) => void {
+    return (data) => {
+      console.log('📥 [Pricing] Received:', JSON.stringify(data, null, 2));
 
-        });
-      }
-
+      const ngvModalOptions: ReactModalOptions = {
+        header,
+        component: React.createElement(view, data),
+        modalClassName: 'seatmap-modal-lower'
+      };
+      getService(PublicModalsService).showReactModal(ngvModalOptions);
+    };
+  }
 }
