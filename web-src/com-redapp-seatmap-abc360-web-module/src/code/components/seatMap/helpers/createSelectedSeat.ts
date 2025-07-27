@@ -11,14 +11,14 @@ interface AvailabilityEntry {
 }
 
 /**
- * Создаёт объект SelectedSeat из пассажира и seatLabel.
+ * Creates a SelectedSeat object from passenger and seat label.
  *
- * @param passenger - объект PassengerOption
- * @param seatLabel - метка места, например "42A"
- * @param readOnly - если true, то это уже назначенное место (не редактируется)
- * @param availability - массив доступных мест с ценами
- * @param segmentNumber - номер сегмента (обязательный)
- * @returns объект SelectedSeat
+ * @param passenger - PassengerOption object
+ * @param seatLabel - seat label, e.g. "42A"
+ * @param readOnly - if true, this is a pre-assigned (non-editable) seat
+ * @param availability - optional array of available seats with pricing
+ * @param segmentNumber - flight segment number (required)
+ * @returns SelectedSeat object
  */
 export function createSelectedSeat(
   passenger: PassengerOption,
