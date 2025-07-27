@@ -1,6 +1,13 @@
-// file: components/seatMap/panels/GalleryPanel.tsx
+/**
+ * Aircraft GalleryPanel
+ *
+ * Displays an iframe with 360° aircraft gallery media.
+ * Sends configuration via postMessage to the embedded iframe once it's loaded.
+ * Listens to messages from the iframe (e.g. onClose events).
+ */
 
 import * as React from 'react';
+import { t } from '../../../Context';
 
 interface GalleryPanelProps {
   config?: {
@@ -23,6 +30,7 @@ export const GalleryPanel: React.FC<GalleryPanelProps> = ({ config }) => {
 
     const iframe = iframeRef.current;
 
+    // 📤 Send configuration to iframe after it loads
     const handleLoad = () => {
       const message = {
         type: MESSAGE_TYPES.MEDIA_VIEWER,
@@ -35,18 +43,20 @@ export const GalleryPanel: React.FC<GalleryPanelProps> = ({ config }) => {
 
     iframe.addEventListener('load', handleLoad);
 
+    // 📥 Listen to messages from iframe (e.g. onClose events)
     const messageListener = (event: MessageEvent) => {
       if (event.data?.type === MESSAGE_TYPES.MEDIA_VIEWER) {
         console.log('[GalleryPanel] message from iframe', event.data);
         if (event.data.eventType === 'onClose') {
           console.log('[GalleryPanel] onClose event received');
-          // здесь можно вызвать колбэк или обновить стейт родителя
+          // Optionally: trigger a callback or update parent state here
         }
       }
     };
 
     window.addEventListener('message', messageListener);
 
+    // 🧹 Cleanup event listeners
     return () => {
       iframe.removeEventListener('load', handleLoad);
       window.removeEventListener('message', messageListener);
@@ -57,7 +67,7 @@ export const GalleryPanel: React.FC<GalleryPanelProps> = ({ config }) => {
 
   return (
     <div style={{ marginTop: '2rem', marginLeft: '0rem' }}>
-      <strong>{'Aircraft gallery'}:</strong>
+      <strong>{t('seatMap.aircraftGallery') || 'Aircraft gallery'}:</strong>
       <div
         style={{
           marginTop: '1rem',

@@ -3,11 +3,12 @@
 /**
  * SeatMapModalLayout
  * 
- * Layout component used for the Seat Map modal.
- * Divides the modal into three columns:
- * - Left: flight info
- * - Center: seat map iframe
- * - Right: passenger panel
+ * Layout component used for the full-size Seat Map modal (for Quicket iframe view).
+ * 
+ * Divides the modal into three vertical sections:
+ * - Left: flight information panel + optional aircraft gallery
+ * - Center: embedded seat map (iframe)
+ * - Right: passenger panel and seat legend
  */
 
 import * as React from 'react';
@@ -17,8 +18,8 @@ interface SeatMapModalLayoutProps {
   galleryPanel?: React.ReactNode;
   passengerPanel: React.ReactNode;
   legendPanel?: React.ReactNode;
-  children: React.ReactNode; // iframe
-  hasPassengers?: boolean;
+  children: React.ReactNode; // Seat map iframe
+  hasPassengers?: boolean;   // If false, hides passengerPanel and adjusts layout
 }
 
 export const SeatMapModalLayout: React.FC<SeatMapModalLayoutProps> = ({
@@ -29,7 +30,6 @@ export const SeatMapModalLayout: React.FC<SeatMapModalLayoutProps> = ({
   children, 
   hasPassengers,
 }) => {
-
   return (
     <div style={{
       display: 'flex',
@@ -40,7 +40,7 @@ export const SeatMapModalLayout: React.FC<SeatMapModalLayoutProps> = ({
       padding: '1rem',
       gap: '1rem'
     }}>
-      {/* Left side — flight info */}
+      {/* 🧭 Left column — flight info + aircraft gallery */}
       <div style={{
         flexBasis: '40%',
         flexShrink: 0,
@@ -49,54 +49,49 @@ export const SeatMapModalLayout: React.FC<SeatMapModalLayoutProps> = ({
         borderRight: '1px solid #ddd',
         overflowY: 'auto'
       }}>
-        {flightInfo}  {/* 📋 flight info */}
-
-        {galleryPanel} {/* 🖼️ aircraft galery */}
-        
+        {flightInfo}
+        {galleryPanel}
       </div>
-      {/* Center — iframe with seat map */}
-      <div
-        style={{
-          flexGrow: 1,
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          overflow: 'hidden',
-          minHeight: '100%',
-          border: '1px solid #ccc'    
-        }}
-      >
+
+      {/* 🗺️ Center column — Quicket iframe seat map */}
+      <div style={{
+        flexGrow: 1,
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        overflow: 'hidden',
+        minHeight: '100%',
+        border: '1px solid #ccc'    
+      }}>
         {children}
       </div>
 
-      {/* Right side — passengers panel */}
-    
-        <div style={{
-          flexBasis: '25%',       // 👈 минимально допустимая ширина
-          marginLeft: '3rem',       // 👈 Сдвигаем вправо
-          flexShrink: 0,
-          background: '#f8f8f8',
-          padding: '1rem',
-          borderLeft: '1px solid #ddd',
-          overflowY: 'auto'
-        }}>
-           {hasPassengers && passengerPanel}
+      {/* 👤 Right column — passenger panel + legend (only if hasPassengers=true) */}
+      <div style={{
+        flexBasis: '25%',
+        marginLeft: '3rem',
+        flexShrink: 0,
+        background: '#f8f8f8',
+        padding: '1rem',
+        borderLeft: '1px solid #ddd',
+        overflowY: 'auto'
+      }}>
+        {hasPassengers && passengerPanel}
 
-          {legendPanel && (
-            <div style={{ marginTop: hasPassengers ? '2rem' : '-2rem' }}>
-              {hasPassengers && (
-                <hr style={{
-                  marginBottom: '1rem',
-                  border: 0,
-                  borderTop: '1px solid #ccc',
-                  width: '100%',
-                }} />
-              )}
-              <div>{legendPanel}</div>
-            </div>
-          )}
-        </div>
-
+        {legendPanel && (
+          <div style={{ marginTop: hasPassengers ? '2rem' : '-2rem' }}>
+            {hasPassengers && (
+              <hr style={{
+                marginBottom: '1rem',
+                border: 0,
+                borderTop: '1px solid #ccc',
+                width: '100%',
+              }} />
+            )}
+            <div>{legendPanel}</div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

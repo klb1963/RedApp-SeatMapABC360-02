@@ -46,5 +46,12 @@
     "seatMap.legend.pray": "Pray",
     "seatMap.legend.exit": "Exit",
     "seatMap.legend.deck1": "Deck 1",
-    "seatMap.legend.deck2": "Deck 2"
+    "seatMap.legend.deck2": "Deck 2",
+    "seatMap.duration": "Duration",
+    "seatMap.priceRange": "Price per Seat",
+    "seatMap.aircraftGallery": "Aircraft gallery",
+    "seatMap.button.reassign": "Reassign seat",
+    "seatMap.button.autoAssign": "Auto-Assign Seats",
+    "seatMap.total": "Total",
+    "seatMap.button.cancelSeat": "Cancel seat"
 }

@@ -1,9 +1,18 @@
 // file: components/seatMap/panels/FlightInfoPanel.tsx
 
+/**
+ * FlightInfoPanel
+ * 
+ * Displays flight summary information:
+ * - Airline, flight number, aircraft
+ * - Departure/arrival airports and cities
+ * - Flight date and duration
+ * - Optional seat price range
+ */
+
 import * as React from 'react';
 import { t } from '../../../Context';
 import cityByIata from '../../../assets/iata-city-mapping';
-
 
 interface FlightInfoPanelProps {
   airlineCode: string; 
@@ -40,7 +49,7 @@ export const FlightInfoPanel: React.FC<FlightInfoPanelProps> = ({
   const cityFrom = fromCity || cityByIata[fromCode] || '';
   const cityTo = toCity || cityByIata[toCode] || '';
 
-  // Локализованная дата
+  // 🗓️ Format the flight date using user's locale or fallback to "not specified"
   let localizedDate = t('seatMap.dateUnknown');
   try {
     const d = new Date(date);
@@ -56,7 +65,6 @@ export const FlightInfoPanel: React.FC<FlightInfoPanelProps> = ({
   }
 
   const validPrices = availability?.map(a => a.price).filter(p => p > 0) || [];
-
   const minPrice = validPrices.length ? Math.min(...validPrices) : null;
   const maxPrice = validPrices.length ? Math.max(...validPrices) : null;
   const currency = availability?.[0]?.currency || '';
@@ -78,24 +86,26 @@ export const FlightInfoPanel: React.FC<FlightInfoPanelProps> = ({
         fontSize: '1.5rem',
         color: '#333'
       }}>
-        {/* Левая колонка */}
+        {/* ✈️ Airline info (left column) */}
         <div style={{ flex: '1 1 45%' }}>
           <div style={{ fontSize: '1.5rem' }}> {airlineName} {airlineCode} {flightNumber}</div>
-          <div><strong>Date:</strong> {localizedDate}</div>
-          <div><strong>Aircraft:</strong> {aircraft}</div>
+          <div><strong>{t('seatMap.date')}:</strong> {localizedDate}</div>
+          <div><strong>{t('seatMap.aircraft')}:</strong> {aircraft}</div>
         </div>
 
-        {/* Правая колонка */}
+        {/* 🌍 Route info (right column) */}
         <div style={{ flex: '1 1 45%' }}>
           <div style={{ fontSize: '1.5rem' }}>{fromCode} - {cityFrom} → {toCode} - {cityTo}</div>
           {cleanDuration !== '' && (
-            <div><strong>Duration:</strong> {cleanDuration}</div>
+            <div><strong>{t('seatMap.duration') || 'Duration'}:</strong> {cleanDuration}</div>
           )}
         </div>
       </div>
+
+      {/* 💺 Seat price range */}
       {minPrice !== null && maxPrice !== null && (
         <div style={{ marginTop: '0.5rem', fontWeight: 500 }}>
-          Price per Seat: {currency} {minPrice.toFixed(2)}–{maxPrice.toFixed(2)}
+          {t('seatMap.priceRange') || 'Price per Seat'}: {currency} {minPrice.toFixed(2)}–{maxPrice.toFixed(2)}
         </div>
       )}
     </div>

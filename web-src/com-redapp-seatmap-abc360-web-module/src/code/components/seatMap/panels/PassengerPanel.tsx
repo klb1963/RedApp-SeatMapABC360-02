@@ -16,6 +16,7 @@
  */
 
 import * as React from 'react';
+import { t } from '../../../Context';
 import { SelectedSeat } from '../SeatMapComponentBase';
 import { PassengerOption } from '../../../utils/parsePnrData';
 import { postSeatMapUpdate } from '../helpers/postSeatMapUpdate';
@@ -59,20 +60,9 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
   availability,
   iframeRef
 }) => {
-
-  console.log('[PassengerPanel] selectedSeats:', selectedSeats);
-
-  /**
- * Try to find price in availability (fallback scenario).
- * @param seatLabel string seat label (e.g. 66A)
- * @returns number price or 0
- */
-
   function getPriceForSeat(seatLabel: string): number {
     if (!availability) return 0;
-  
     const found = availability.find((seat: any) => seat.label === seatLabel);
-
     if (found?.price != null) {
       const amount = parseFloat(
         (typeof found.price === 'string' ? found.price : String(found.price)).replace(/[^\d.]/g, '')
@@ -95,7 +85,7 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
       setSelectedSeats,
       setSelectedPassengerId
     });
-  
+
     if (iframeRef?.current && config && flight) {
       postSeatMapUpdate({
         config,
@@ -112,7 +102,6 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
   const allSeated = passengers.every(p => selectedSeats.some(s => s.passengerId === p.id));
 
   const [reassignMode, setReassignMode] = React.useState(false);
-  console.log('🧪 assignedSeats.length:', assignedSeats.length);
 
   React.useEffect(() => {
     const allReassigned = passengers.every(p =>
@@ -126,10 +115,10 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
   return (
     <div style={{ padding: '1rem', minWidth: '320px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold' }}>
-        <span>Passengers: {passengers.length}</span>
-        <span>Assigned seats: {selectedSeats.length}</span>
+        <span>{t('seatMap.passengers')}: {passengers.length}</span>
+        <span>{t('seatMap.assignedSeats')}: {selectedSeats.length}</span>
       </div>
-  
+
       <div style={{ marginTop: '0.5rem', borderTop: '1px solid #ccc' }}>
         {passengers.map((pax) => {
           const paxId = String(pax.id);
@@ -161,10 +150,9 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
                     <span style={{ color: pax.passengerColor || 'gray', fontWeight: 600 }}>
                       {assigned.seatLabel}
                     </span>
-
                     {reassignMode && pax.nameNumber && paxId === selectedPassengerId && (
                       <button
-                        title="Cancel seat"
+                        title={t('seatMap.button.cancelSeat')}
                         onClick={(e) => {
                           e.stopPropagation();
                           onRemoveSeat(paxId);
@@ -180,26 +168,24 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
                         ❌
                       </button>
                     )}
-
                   </>
                 ) : (
-                  <span style={{ color: 'gray' }}>—</span>
+                  <span style={{ color: 'gray' }}>{t('seatMap.seatNotAssigned')}</span>
                 )}
               </div>
             </div>
           );
         })}
       </div>
-  
+
       <div style={{ textAlign: 'right', marginTop: '1rem', fontWeight: 'bold' }}>
-        Total: USD {totalPrice.toFixed(2)}
+        {t('seatMap.total')}: USD {totalPrice.toFixed(2)}
       </div>
-  
+
       <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
         {selectedSeats.length > 0 && (
           <button
             onClick={() => {
-              console.log('🌀 REASSIGN mode activated');
               setReassignMode(true);
             }}
             style={{
@@ -212,10 +198,10 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
               cursor: 'pointer',
             }}
           >
-            REASSIGN SEAT
+            {t('seatMap.button.reassign')}
           </button>
         )}
-  
+
         {selectedSeats.length === 0 && (
           <button
             onClick={handleAutomateSeating}
@@ -229,18 +215,18 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
               cursor: 'pointer',
             }}
           >
-            Auto-Assign Seats
+            {t('seatMap.button.autoAssign')}
           </button>
         )}
-  
+
         <button
           onClick={handleResetSeat}
           disabled={selectedSeats.length === 0}
           className="btn btn-outline-secondary"
         >
-          RESET
+          {t('seatMap.resetAll')}
         </button>
-  
+
         <button
           onClick={handleSave}
           disabled={!allSeated}
@@ -255,10 +241,9 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
             opacity: !allSeated ? 0.5 : 1,
           }}
         >
-          SAVE
+          {t('seatMap.button.save')}
         </button>
       </div>
     </div>
   );
-
 };
