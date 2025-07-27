@@ -29,7 +29,7 @@ import { GalleryPanel } from './panels/GalleryPanel';
 import { handleSaveSeats as saveSeatsToSabre } from './handleSaveSeats';
 import { handleAutomateSeating as automateSeats } from './handleAutomateSeating';
 
-type CabinClass = 'Y' | 'S' | 'C' | 'F' | 'A';
+import type { CabinClass } from './types/types';
 
 const ReactSeatMapModal: React.FC = () => {
   const [passengers, setPassengers] = React.useState<any[]>([]);

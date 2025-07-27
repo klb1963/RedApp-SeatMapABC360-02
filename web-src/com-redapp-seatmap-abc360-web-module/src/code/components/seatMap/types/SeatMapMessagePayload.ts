@@ -6,42 +6,45 @@
  * 📦 Interface defining the message structure used to communicate with the embedded SeatMap iframe
  * via the `postMessage()` API.
  * 
- * This payload is serialized (stringified) and sent from the RedApp frontend to the seat map rendering
- * library (e.g., quicket.io) to initialize or update the visual seat map.
+ * The payload is sent from the RedApp frontend to the seat map rendering library (e.g., quicket.io)
+ * to initialize or update the seat map display.
+ * 
+ * All payload fields (except `type` and `currentDeckIndex`) are stringified JSON objects.
  */
 
 export interface SeatMapMessagePayload {
   /**
-   * Message type identifier (expected: 'seatMaps')
-   * Used by the iframe to distinguish message purpose.
+   * Message type identifier.
+   * Expected value: 'seatMaps'.
+   * Used by the iframe to recognize incoming messages.
    */
   type: string;
 
   /**
-   * JSON string containing SeatMap configuration (e.g., seatMapId, layout preferences, styles).
+   * JSON string representing seat map configuration (e.g., seatMapId, layout settings).
    */
   config: string;
 
   /**
-   * JSON string representing flight data (segment origin, destination, date, flight number, etc.)
+   * JSON string describing the flight (origin, destination, airline, flight number, etc.)
    */
   flight: string;
 
   /**
-   * JSON string of seat availability information.
-   * Includes seat status (available, occupied, chargeable, etc.)
+   * JSON string of seat availability (status, price, etc.).
+   * Optional.
    */
   availability?: string;
 
   /**
-   * JSON string of the passenger list for visual rendering.
-   * Each passenger includes name, seat assignment, label, initials, and interaction flags.
+   * JSON string of passengers with labels, initials, colors, and assigned seats.
+   * Optional.
    */
   passengers?: string;
 
   /**
-   * Active deck index (as string).
-   * Required for multi-deck aircraft support; default is usually "0".
+   * Index of the currently active deck (multi-deck aircraft support).
+   * Format: stringified integer, e.g. "0"
    */
   currentDeckIndex: string;
 }

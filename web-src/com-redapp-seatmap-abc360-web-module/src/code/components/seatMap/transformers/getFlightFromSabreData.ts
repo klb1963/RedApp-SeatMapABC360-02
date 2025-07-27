@@ -89,7 +89,7 @@ export const getFlightFromSabreData = (
     equipment
   };
 
-  console.log('✅ [getFlightFromSabreData] Finl object flight:', result);
+  console.log('✅ [getFlightFromSabreData] Final object flight:', result);
 
   return result;
 };
