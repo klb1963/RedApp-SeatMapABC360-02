@@ -106,6 +106,7 @@ const ReactSeatMapModal: React.FC = () => {
       });
       setSelectedSeats(allAssignedSeats);
 
+      // Default to booking class if valid, otherwise fallback to Economy
       const flightSegment = normalizedSegments[0];
       const defaultCabin = ['F', 'C', 'S', 'Y'].includes(flightSegment.bookingClass)
         ? (flightSegment.bookingClass as CabinClass)
@@ -125,14 +126,13 @@ const ReactSeatMapModal: React.FC = () => {
 
   React.useEffect(() => {
     if (rows.length > 0 && !selectedDeck) {
+      console.log('🪑 rows[0]:', rows[0]);
+      console.log('🧭 rows[0].deckId:', rows[0].deckId);
       setSelectedDeck(rows[0].deckId || 'Maindeck');
     }
   }, [rows]);
 
   const handleSaveSeatsClick = async () => {
-    console.log('✅ Saving seats for all segments', selectedSeats);
-    console.log('+++🔥+++ selectedSeats before SAVE:', selectedSeats);
-
     const seatsForSabre = selectedSeats.map(s => {
       const pax = passengers.find(p => p.id === s.passengerId);
       return {
@@ -146,7 +146,7 @@ const ReactSeatMapModal: React.FC = () => {
         segmentNumber: s.segmentNumber,
         seat: {
           seatLabel: s.seatLabel,
-          price: String(s.price || '0'),
+          price: String(s.price || '0'), // Format as string for Sabre
         },
       };
     });
@@ -166,10 +166,6 @@ const ReactSeatMapModal: React.FC = () => {
   const selectedSeatsForCurrentSegment = selectedSeats.filter(
     s => s.segmentNumber === currentSegmentNumber
   );
-
-  React.useEffect(() => {
-    console.log('+++🪑🪑🪑+++ ACCUMULATED selectedSeats (all segments):', selectedSeats);
-  }, [selectedSeats]);
 
   return (
     <FallbackSeatmapLayout
@@ -197,7 +193,6 @@ const ReactSeatMapModal: React.FC = () => {
 
           setSelectedSeats={(seat: any) => {
             setSelectedSeats(prev => {
-              console.log('💾 BEFORE setSelectedSeats, prev:', prev);
               const next = [
                 ...prev.filter(
                   (s: any) =>
@@ -211,7 +206,6 @@ const ReactSeatMapModal: React.FC = () => {
                   segmentNumber: currentSegmentNumber
                 }
               ];
-              console.log('💾 AFTER setSelectedSeats, next:', next);
               return next;
             });
           }}

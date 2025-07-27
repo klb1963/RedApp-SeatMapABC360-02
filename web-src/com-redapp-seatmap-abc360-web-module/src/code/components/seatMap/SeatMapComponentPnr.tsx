@@ -147,7 +147,8 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
 
   /**
    * Ensure fallback-seatmap mode is disabled for this component.
-   * (By convention, `window.name` triggers fallback if set.)
+   * Prevents iframe fallback mode by clearing global `window.name`
+   * which is sometimes set when opened via modal iframe.
    */
   window.name = '';
 
@@ -171,7 +172,10 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
       {/* Render seat map if data is loaded */}
       {memoSegment && availabilityReady && flightData && (
         <SeatMapComponentBase
-          key={`${segmentIndex}-${cabinClass}`} // force re-render when segment or cabin changes
+          key={`seatmap-${segmentIndex}-${cabinClass}`}
+          // 🧠 Force remount of SeatMapComponentBase when segment or cabin class changes,
+          // to reset internal state and trigger fresh effects (e.g., rows, deck selection).
+          // This avoids stale data being retained across different segment/class views.
           config={config}
           flightSegments={flightSegments}
           segmentIndex={segmentIndex}
@@ -210,11 +214,10 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
         />
       )}
 
-      {/* Show loading placeholder while availability is fetched */}
-      {!availabilityReady && (
+       {/* Show loading placeholder while availability is fetched */}
+       {!availabilityReady && (
         <div style={{ textAlign: 'center', margin: '2rem' }}>
-          {/* TODO: Localize this string */}
-          Loading seat map…
+          {t('seatMap.loading')}
         </div>
       )}
     </div>

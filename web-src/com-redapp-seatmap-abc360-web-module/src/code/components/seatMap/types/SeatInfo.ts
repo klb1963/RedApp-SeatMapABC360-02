@@ -27,4 +27,5 @@ export interface SeatInfo {
   isReserved?: boolean;
   rowTypeCode?: string;
   cabinClass?: string;
+  deckId?: string;
 }

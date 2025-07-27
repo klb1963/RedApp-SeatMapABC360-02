@@ -86,9 +86,14 @@ const DeckSelector: React.FC<DeckSelectorProps> = ({ decks, selectedDeck, onChan
         </button>
       )}
 
-      <span style={{ fontWeight: 'normal', fontSize: '1.8rem', color: '#234E55' }}>
+      {/* <span style={{ fontWeight: 'normal', fontSize: '1.8rem', color: '#234E55' }}>
         {selectedDeck === 'Upperdeck' ? t('seatMap.legend.deck1') : t('seatMap.legend.deck2')}
+      </span> */}
+
+      <span style={{ fontWeight: 'normal', fontSize: '1.8rem', color: '#234E55' }}>
+        {selectedDeck}
       </span>
+
     </div>
   );
 };

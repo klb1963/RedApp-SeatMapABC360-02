@@ -10,5 +10,5 @@ export const airlineNames: Record<string, string> = {
     DL: 'Delta Air Lines',
     AA: 'American Airlines',
     UA: 'United Airlines',
-    // добавить остальные по мере необходимости
+    // add others when need
   };

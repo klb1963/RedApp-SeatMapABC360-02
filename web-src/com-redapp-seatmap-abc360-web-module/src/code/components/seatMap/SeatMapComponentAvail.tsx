@@ -18,6 +18,7 @@ import { FlightInfoPanel } from './panels/FlidhtInfoPanel';
 import { normalizeSegment } from '../../utils/normalizeSegment';
 import { SegmentCabinSelector } from './panels/SegmentCabinSelector';
 import { mapCabinToCode } from '../../utils/mapCabinToCode';
+import type { CabinClass } from './types/types';
 
 interface SeatMapComponentAvailProps {
   config: any;
@@ -26,11 +27,10 @@ interface SeatMapComponentAvailProps {
 
 const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, data }) => {
   const rawSegments = data.flightSegments || [];
-
   const [segmentIndex, setSegmentIndex] = React.useState(0);
-  const [cabinClass, setCabinClass] = React.useState<'Y' | 'S' | 'C' | 'F' | 'A'>('Y');
+  const [cabinClass, setCabinClass] = React.useState<CabinClass>('Y');
 
-  // 👁 Только для отображения в UI
+  // 👁 For showing in UI
   const normalizedSegments = React.useMemo(() => {
     console.log('🔁 normalizeSegment called for rawSegments');
     return rawSegments.map((seg) =>
@@ -41,7 +41,7 @@ const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, d
   const segment = normalizedSegments[segmentIndex];
   const rawSegment = rawSegments[segmentIndex];
 
-  // 🛫 Панель информации о рейсе
+  // 🛫 Flight Info Panel
   const flightInfo = (
     <FlightInfoPanel
       airlineCode={segment.marketingAirline}
@@ -87,10 +87,10 @@ const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, d
         setCabinClass={setCabinClass}
       />
 
-      {/* 💺 Отображение карты мест */}
+      {/* 💺 Seat Map */}
       <SeatMapComponentBase
         config={config}
-        flightSegments={normalizedSegments} // только для отображения
+        flightSegments={normalizedSegments}
         segmentIndex={segmentIndex}
         cabinClass={cabinClass}
         flightData={flightData}
