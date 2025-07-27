@@ -10,7 +10,7 @@
 
 import { PassengerOption } from '../../utils/parsePnrData';
 import { AvailabilityItem } from '../../utils/parseSeatMapResponse';
-import { SelectedSeat } from './SeatMapComponentBase';
+import { SelectedSeat } from './types/types';
 
 interface AutomateSeatingParams {
   passengers: PassengerOption[];

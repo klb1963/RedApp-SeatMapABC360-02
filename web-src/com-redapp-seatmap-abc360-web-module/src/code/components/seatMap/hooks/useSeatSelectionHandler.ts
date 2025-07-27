@@ -17,7 +17,7 @@
 
 import { useEffect } from 'react';
 import { PassengerOption } from '../../../utils/parsePnrData';
-import { SelectedSeat } from '../SeatMapComponentBase';
+import { SelectedSeat } from '../types/types';
 import { createSelectedSeat } from '../helpers/createSelectedSeat';
 
 interface RawAvailabilityItem {

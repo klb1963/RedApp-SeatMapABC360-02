@@ -39,6 +39,7 @@ import ReactSeatMapModal from './ReactSeatMapModal';
 import { isFallbackMode } from './utils/isFallbackMode';
 import { useSeatmapMedia } from './hooks/useSeatmapMedia';
 import { getGalleryConfig } from '../../utils/galleryConfig';
+import { SelectedSeat } from './types/types';
 
 /**
  * Global window extension to expose selected seats for debugging.
@@ -47,26 +48,6 @@ declare global {
   interface Window {
     selectedSeats?: SelectedSeat[];
   }
-}
-
-/**
- * Type representing a selected seat for a passenger on a specific segment.
- */
-export interface SelectedSeat {
-  passengerId: string;
-  seatLabel: string;
-  passengerType: string;
-  passengerLabel: string;
-  passengerColor: string;
-  initials: string;
-  passengerInitials: string;
-  readOnly?: boolean;
-  abbr?: string;
-  segmentNumber: string;
-  seat: {
-    seatLabel: string;
-    price: string;
-  };
 }
 
 /**

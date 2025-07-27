@@ -17,7 +17,7 @@
  * - Kept in codebase as a potential optimization utility.
  */
 
-import { SelectedSeat } from '../SeatMapComponentBase';
+import { SelectedSeat } from '../types/types';
 
 /**
  * Compares two arrays of SelectedSeat objects.

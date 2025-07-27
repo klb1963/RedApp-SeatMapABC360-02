@@ -3,7 +3,7 @@
 
 import { PassengerOption } from '../../../utils/parsePnrData';
 import { SeatMapMessagePayload } from '../types/SeatMapMessagePayload';
-import { SelectedSeat } from '../SeatMapComponentBase';
+import { SelectedSeat } from '../types/types';
 import { createPassengerPayload } from './createPassengerPayload';
 import { FlightData } from '../../../utils/generateFlightData';
 

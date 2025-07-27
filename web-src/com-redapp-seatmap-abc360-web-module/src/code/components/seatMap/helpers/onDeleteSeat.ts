@@ -1,7 +1,7 @@
 // file: code/components/seatMap/helpers/onDeleteSeat.ts
 
 import { handleCancelSpecificSeat } from '../handleCancelSpecificSeat';
-import { SelectedSeat } from '../SeatMapComponentBase';
+import { SelectedSeat } from '../types/types';
 import { PassengerOption } from '../../../utils/parsePnrData';
 
 interface Params {

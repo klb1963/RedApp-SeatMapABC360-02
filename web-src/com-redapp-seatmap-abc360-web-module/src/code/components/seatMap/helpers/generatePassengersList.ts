@@ -15,7 +15,7 @@
  */
 
 import { PassengerOption } from '../../../utils/parsePnrData';
-import { SelectedSeat } from '../SeatMapComponentBase';
+import { SelectedSeat } from '../types/types';
 import { getInitials } from './getInitials';
 import { getPassengerColor } from './getPassengerColor';
 

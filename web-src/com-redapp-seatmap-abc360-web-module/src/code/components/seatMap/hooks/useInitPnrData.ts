@@ -15,7 +15,7 @@
 import { useEffect } from 'react';
 import { loadPnrDetailsFromSabre } from '../../../services/loadPnrDetailsFromSabre';
 import { PassengerOption } from '../../../utils/parsePnrData';
-import { SelectedSeat } from '../SeatMapComponentBase';
+import { SelectedSeat } from '../types/types';
 import { createSelectedSeat } from '../helpers/createSelectedSeat';
 import { enrichPassengerData } from '../utils/enrichPassengerData';
 

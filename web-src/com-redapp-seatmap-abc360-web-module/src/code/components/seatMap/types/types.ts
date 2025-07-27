@@ -42,11 +42,13 @@ export interface SelectedSeat {
   initials: string;
   passengerInitials: string;
   passengerColor: string;
-  segmentNumber: string; // parsed from segment.Conjunction/Consequence in Sabre response
+  segmentNumber: string;
   seat: {
     seatLabel: string;
-    price: string; // price as string (may include decimals)
+    price: string;
   };
+  readOnly?: boolean;
+  abbr?: string;
 }
 
 /**

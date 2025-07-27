@@ -19,7 +19,7 @@ import { PassengerOption } from '../../../utils/parsePnrData';
 import { generateFlightData } from '../../../utils/generateFlightData';
 import { createPassengerPayload } from '../helpers/createPassengerPayload';
 import { SeatMapMessagePayload } from '../types/SeatMapMessagePayload';
-import { SelectedSeat } from '../SeatMapComponentBase';
+import { SelectedSeat } from '../types/types';
 
 interface Props {
   iframeRef: React.RefObject<HTMLIFrameElement>;

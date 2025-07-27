@@ -17,7 +17,7 @@
 
 import * as React from 'react';
 import { t } from '../../../Context';
-import { SelectedSeat } from '../SeatMapComponentBase';
+import { SelectedSeat } from '../types/types';
 import { PassengerOption } from '../../../utils/parsePnrData';
 import { postSeatMapUpdate } from '../helpers/postSeatMapUpdate';
 import { createPassengerPayload } from '../helpers/createPassengerPayload';

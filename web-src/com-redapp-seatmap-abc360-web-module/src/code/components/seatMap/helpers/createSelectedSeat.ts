@@ -1,6 +1,6 @@
 // file: helpers/createSelectedSeat.ts
 
-import { SelectedSeat } from '../SeatMapComponentBase';
+import { SelectedSeat } from '../types/types';
 import { PassengerOption } from '../../../utils/parsePnrData';
 import { getInitials } from './getInitials';
 

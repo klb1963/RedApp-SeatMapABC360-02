@@ -17,7 +17,7 @@ import { useEffect, useState } from 'react';
 import { generateFlightData } from '../../../utils/generateFlightData';
 import { mapCabinToCode } from '../../../utils/mapCabinToCode';
 import { createSelectedSeat } from '../helpers/createSelectedSeat';
-import { SelectedSeat } from '../SeatMapComponentBase';
+import { SelectedSeat } from '../types/types';
 
 interface UseSeatMapAvailabilityParams {
   segment: any;                  // currently selected flight segment
