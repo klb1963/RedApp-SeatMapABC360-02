@@ -48,7 +48,7 @@ export interface SeatInfo {
   seatStatus: string;
   seatPrice?: number;
   seatCharacteristics?: string[];
-  rowTypeCode?: string; // 🆕 indicates if this row is overwing ('K'), exit, etc.
+  rowTypeCode?: string; // Row classification code (e.g. overwing: 'K', exit, etc.)
   deckId?: string;
   cabinClass?: string;
 }
@@ -84,13 +84,13 @@ function getSeatType(seatEl: Element): SeatType {
 
 export function getColorByType(type: SeatType): string {
   switch (type) {
-    case 'available': return '#00C853'; // #00C853
-    case 'paid': return '#F8CF00'; // #F8CF00
-    case 'preferred': return '#01D0CE'; // #01D0CE
-    case 'occupied': return '#D3D3D3'; // #D3D3D3
-    case 'unavailable': return '#D3D3D3'; // #D3D3D3
-    case 'blocked': return '#D3D3D3'; // #D3D3D3
-    default: return '#D3D3D3'; // #D3D3D3
+    case 'available': return '#00C853';
+    case 'paid': return '#F8CF00';
+    case 'preferred': return '#01D0CE';
+    case 'occupied':
+    case 'unavailable':
+    case 'blocked':
+    default: return '#D3D3D3';
   }
 }
 
@@ -100,15 +100,12 @@ export function parseSeatMapResponse(xml: Document): {
   seatInfo: SeatInfo[];
   layoutLetters: string[];
 } {
-  const layout: { decks: Deck[] } = {
-    decks: []
-  };
-
+  const layout: { decks: Deck[] } = { decks: [] };
   const availability: AvailabilityItem[] = [];
   const seatInfo: SeatInfo[] = [];
   const layoutLetters = extractSeatLayoutFromXml(xml);
 
-  // 🆕 Извлекаем список палуб из <Cabin>
+  // Extract deck definitions from <Cabin> elements
   const cabins = Array.from(xml.querySelectorAll('Cabin')).map(cabinEl => ({
     deckId: cabinEl.getAttribute('classLocation') || 'Maindeck',
     firstRow: parseInt(cabinEl.getAttribute('firstRow') || '0', 10),
@@ -116,7 +113,7 @@ export function parseSeatMapResponse(xml: Document): {
     cabinClass: cabinEl.querySelector('CabinClass > CabinType')?.textContent?.trim() || 'Unknown'
   }));
 
-  // 🆕 Создаем по палубе свой Deck
+  // Create decks based on cabin definitions
   cabins.forEach(cabin => {
     layout.decks.push({
       id: cabin.deckId,
@@ -132,7 +129,7 @@ export function parseSeatMapResponse(xml: Document): {
     const rowNumber = parseInt(rowNumberStr, 10);
     if (isNaN(rowNumber)) return;
 
-    // 🧠 Находим палубу, к которой относится ряд
+    // Determine which deck this row belongs to
     const cabin = cabins.find(c => rowNumber >= c.firstRow && rowNumber <= c.lastRow);
     const cabinClassText = cabin?.cabinClass || 'Unknown';
     const deckId = cabin?.deckId || 'Maindeck';
@@ -140,11 +137,10 @@ export function parseSeatMapResponse(xml: Document): {
     const row: Row = {
       label: rowNumberStr,
       seats: [],
-      deckId // ✅ добавили
+      deckId
     };
 
     const rowTypeCode = rowEl.querySelector('Type')?.getAttribute('code') || undefined;
-
     const seatElements = Array.from(rowEl.querySelectorAll('Seat'));
 
     seatElements.forEach((seatEl, seatIndex) => {
@@ -159,6 +155,7 @@ export function parseSeatMapResponse(xml: Document): {
       const color = getColorByType(type);
       const seatNumber = `${rowNumberStr}${seatLabel}`;
 
+      // Collect seats eligible for display in pricing legend
       const allowedTypes: SeatType[] = ['available', 'paid', 'preferred'];
       if (allowedTypes.includes(type)) {
         availability.push({
@@ -171,6 +168,7 @@ export function parseSeatMapResponse(xml: Document): {
         });
       }
 
+      // Extract all raw codes and location codes
       const rawCodes = Array.from(seatEl.querySelectorAll('RawSeatCharacteristics > Code'))
         .map(codeEl => codeEl.textContent?.trim())
         .filter(Boolean) as string[];
@@ -198,12 +196,12 @@ export function parseSeatMapResponse(xml: Document): {
       });
     });
 
-    // 🆕 Добавляем ряд в соответствующую палубу
+    // Add row to corresponding deck
     const deck = layout.decks.find(d => d.id === deckId);
     deck?.rows.push(row);
   });
 
-  // Сортировка рядов внутри каждой палубы
+  // Sort rows within each deck by row number
   layout.decks.forEach(deck => {
     deck.rows.sort((a, b) => parseInt(a.label) - parseInt(b.label));
   });
