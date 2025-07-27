@@ -33,11 +33,33 @@ const DeckSelector: React.FC<DeckSelectorProps> = ({ decks, selectedDeck, onChan
             padding: 0,
           }}
         >
-          {/* Up arrow */}
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+          {/* Down arrow */}
+
+          {/* <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
             <rect x="1" y="1" width="22" height="22" rx="2" fill="white" stroke="#234E55" strokeWidth="2" />
-            <path d="M6 14L12 8L18 14" fill="none" stroke="#234E55" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <polygon points="6,10 12,16 18,10" fill="none" stroke="#234E55" strokeWidth="2" strokeLinejoin="round" />
+          </svg> */}
+
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+            <rect
+              x="1"
+              y="1"
+              width="22"
+              height="22"
+              rx="2"
+              fill="white"
+              stroke="#234E55"
+              strokeWidth="2"
+            />
+            <path
+              d="M6 10 L12 16 L18 10 Z"
+              fill="none"
+              stroke="#234E55"
+              strokeWidth="2"
+              strokeLinejoin="round"
+            />
           </svg>
+
         </button>
       )}
 
@@ -55,15 +77,16 @@ const DeckSelector: React.FC<DeckSelectorProps> = ({ decks, selectedDeck, onChan
             padding: 0,
           }}
         >
-          {/* Down arrow */}
+          {/* Up arrow - checked */}
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
             <rect x="1" y="1" width="22" height="22" rx="2" fill="white" stroke="#234E55" strokeWidth="2" />
-            <polygon points="6,10 12,16 18,10" fill="none" stroke="#234E55" strokeWidth="2" strokeLinejoin="round" />
+            <path d="M6 14 L12 8 L18 14 Z" fill="none" stroke="#234E55" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
+
         </button>
       )}
 
-      <span style={{ fontWeight: 'normal', fontSize: '2rem', color: '#234E55' }}>
+      <span style={{ fontWeight: 'normal', fontSize: '1.8rem', color: '#234E55' }}>
         {selectedDeck === 'Upperdeck' ? t('seatMap.legend.deck1') : t('seatMap.legend.deck2')}
       </span>
     </div>
