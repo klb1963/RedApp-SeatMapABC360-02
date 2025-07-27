@@ -21,7 +21,6 @@ import { createPassengerPayload } from '../helpers/createPassengerPayload';
 import { SeatMapMessagePayload } from '../types/SeatMapMessagePayload';
 import { SelectedSeat } from '../SeatMapComponentBase';
 
-
 interface Props {
   iframeRef: React.RefObject<HTMLIFrameElement>;
   config: any;
@@ -51,9 +50,11 @@ export const useSyncOnCabinClassChange = ({
     const iframe = iframeRef.current;
     if (!iframe) return;
 
+    // Generate updated flight data for the selected cabin class
     const flight = generateFlightData(segment, segmentIndex, mappedCabinClass);
     const availabilityData = availability || [];
 
+    // Prepare updated passenger payload
     const passengerList = cleanPassengers.map((p, index) =>
       createPassengerPayload(p, index, selectedPassengerId, selectedSeats)
     );
@@ -64,24 +65,17 @@ export const useSyncOnCabinClassChange = ({
       flight: JSON.stringify(flight),
       currentDeckIndex: '0'
     };
-    
-    if (availabilityData?.length > 0) {
+
+    if (availabilityData.length > 0) {
       message.availability = JSON.stringify(availabilityData);
     }
-    
-    if (passengerList?.length > 0) {
+
+    if (passengerList.length > 0) {
       message.passengers = JSON.stringify(passengerList);
     }
 
-    console.log('✅ Cabin class changed to:', cabinClass);
-    console.log('📤 New availabilityData length:', availabilityData?.length);
-    console.log('📤 New passengerList length:', passengerList?.length);
-    console.log('📤 Final message to iframe:', message);
-
-    console.log('[🚀 passengerList отправлен в iframe - смена класса]', passengerList);
-
     const targetOrigin = new URL(iframe.src).origin;
     iframe.contentWindow?.postMessage(message, targetOrigin);
-    console.log('📤 Обновление карты после смены cabinClass');
+    console.log('📤 Seat map updated after cabin class change');
   }, [cabinClass]);
 };

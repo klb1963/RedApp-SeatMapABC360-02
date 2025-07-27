@@ -1,4 +1,16 @@
-// file: code/components/seatMap/hooks/useInitPnrData.ts
+/**
+ * useInitPnrData.ts
+ *
+ * Custom React hook to initialize PNR data on component mount.
+ * Loads PNR from Sabre, enriches passenger data, sets segment and seat states.
+ *
+ * Responsibilities:
+ * - Fetch parsed PNR data from Sabre
+ * - Select and apply current flight segment based on segmentIndex
+ * - Enrich passengers with additional metadata (e.g., initials)
+ * - Map assigned seats for the current segment
+ * - Initialize selected seats and selected passenger IDs
+ */
 
 import { useEffect } from 'react';
 import { loadPnrDetailsFromSabre } from '../../../services/loadPnrDetailsFromSabre';
@@ -33,7 +45,7 @@ export const useInitPnrData = ({
         console.log('🧩 Segments from parsed PNR Data [RAW]:', parsedData.segments);
 
         const segments = parsedData.segments || [];
-        const currentSegment = segments[segmentIndex]; // ✅ выбрали сегмент по индексу
+        const currentSegment = segments[segmentIndex]; // ✅ pick current segment by index
 
         if (!currentSegment) {
           console.error(`❌ Segment at index ${segmentIndex} not found`);
@@ -48,9 +60,10 @@ export const useInitPnrData = ({
 
         setPassengers(enrichedPassengers);
 
+        // If there are assigned seats for current segment — use them, else generate empty ones
         const freshSeats = assignedSeats.length
           ? assignedSeats
-              .filter(s => s.segmentNumber === currentSegment.value) // 🪑 только для выбранного сегмента
+              .filter(s => s.segmentNumber === currentSegment.value) // 🪑 filter by segment
               .map(({ passengerId, seat }) => {
                 const p = enrichedPassengers.find(p => p.id === passengerId);
                 return createSelectedSeat(p, seat, false, undefined, currentSegment?.value);
@@ -65,7 +78,7 @@ export const useInitPnrData = ({
         setSelectedPassengerIds(passengerIds);
 
       } catch (error) {
-        console.error('❌ Ошибка при инициализации данных PNR:', error);
+        console.error('❌ Failed to initialize PNR data:', error);
       }
     };
 
@@ -76,6 +89,6 @@ export const useInitPnrData = ({
     setSelectedSegmentIndex,
     setSelectedSeats,
     setSelectedPassengerIds,
-    segmentIndex, // 👈 подписались на смену сегмента
+    segmentIndex, // 👈 re-run on segment change
   ]);
 };
