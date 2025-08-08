@@ -172,7 +172,10 @@ const ReactSeatMapModal: React.FC = () => {
       flightInfo={
         <>
           <SegmentCabinSelector
-            flightSegments={segments}
+           flightSegments={segments.map(s => ({
+            ...s,
+           flightNumber: s.flightNumber || s.marketingFlightNumber
+           }))}
             segmentIndex={segmentIndex}
             setSegmentIndex={setSegmentIndex}
             cabinClass={cabinClass}
