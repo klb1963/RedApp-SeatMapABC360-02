@@ -101,7 +101,7 @@ const ReactSeatMapModal: React.FC = () => {
           price: 0,
           passengerInitials: pax?.passengerInitials || '',
           passengerColor: pax?.passengerColor || '',
-          segmentNumber: s.segmentNumber,
+          segmentNumber: String(s.segmentNumber),
         };
       });
       setSelectedSeats(allAssignedSeats);
@@ -162,9 +162,9 @@ const ReactSeatMapModal: React.FC = () => {
     }
   };
 
-  const currentSegmentNumber = segments[segmentIndex]?.segmentNumber;
+  const currentSegmentNumber = String(segments[segmentIndex]?.segmentNumber);
   const selectedSeatsForCurrentSegment = selectedSeats.filter(
-    s => s.segmentNumber === currentSegmentNumber
+    s => String(s.segmentNumber) === String(currentSegmentNumber)
   );
 
   return (
@@ -172,10 +172,10 @@ const ReactSeatMapModal: React.FC = () => {
       flightInfo={
         <>
           <SegmentCabinSelector
-           flightSegments={segments.map(s => ({
-            ...s,
-           flightNumber: s.flightNumber || s.marketingFlightNumber
-           }))}
+            flightSegments={segments.map(s => ({
+              ...s,
+              flightNumber: s.flightNumber || s.marketingFlightNumber
+            }))}
             segmentIndex={segmentIndex}
             setSegmentIndex={setSegmentIndex}
             cabinClass={cabinClass}
@@ -193,27 +193,53 @@ const ReactSeatMapModal: React.FC = () => {
           selectedSeats={selectedSeatsForCurrentSegment}
           selectedPassengerId={selectedPassengerId}
           setSelectedPassengerId={setSelectedPassengerId}
+          currentSegmentNumber={String(currentSegmentNumber)}
 
+          handleRemoveSeat={(passengerId: string) => {
+            setSelectedSeats(prev =>
+              prev.filter(
+                s =>
+                  !(
+                    s.passengerId === passengerId &&
+                    String(s.segmentNumber) === String(currentSegmentNumber)
+                  )
+              )
+            );
+          }}
+          
           setSelectedSeats={(seat: any) => {
-            setSelectedSeats(prev => {
+            // 🚨 Пропускаем, если нет passengerId или seatLabel
+            if (!seat || !seat.seatLabel || !seat.passengerId) {
+              console.warn('⚠️ Skipping invalid seat:', JSON.stringify(seat));
+              return null;
+            }
+      
+            const normalizedSeat = {
+              passengerId: seat.passengerId,
+              seatLabel: seat.seatLabel,
+              confirmed: seat.confirmed ?? false,
+              price: seat.price ?? 0,
+              passengerInitials: seat.passengerInitials ?? '',
+              passengerColor: seat.passengerColor ?? '',
+              segmentNumber: currentSegmentNumber,
+            };
+      
+            setSelectedSeats((prev) => {
               const next = [
                 ...prev.filter(
                   (s: any) =>
                     !(
-                      s.passengerId === seat.passengerId &&
-                      s.segmentNumber === currentSegmentNumber
+                      s.passengerId === normalizedSeat.passengerId &&
+                      String(s.segmentNumber) === currentSegmentNumber
                     )
                 ),
-                {
-                  ...seat,
-                  segmentNumber: currentSegmentNumber
-                }
+                normalizedSeat,
               ];
               return next;
             });
           }}
-
-          assignedSeats={selectedSeatsForCurrentSegment.map(s => ({
+      
+          assignedSeats={selectedSeatsForCurrentSegment.map((s) => ({
             passengerId: s.passengerId,
             seat: s.seatLabel,
             segmentNumber: s.segmentNumber,
@@ -223,13 +249,13 @@ const ReactSeatMapModal: React.FC = () => {
           availability={flightInfo?.availability || []}
           iframeRef={{ current: null }}
           handleResetSeat={() =>
-            setSelectedSeats(prev =>
-              prev.filter(s => s.segmentNumber !== currentSegmentNumber)
+            setSelectedSeats((prev) =>
+              prev.filter((s) => String(s.segmentNumber) !== currentSegmentNumber)
             )
           }
-
+      
           handleSave={handleSaveSeatsClick}
-
+      
           handleAutomateSeating={() => {
             if (!flightInfo?.availability) return;
             const newSeats = automateSeats({
@@ -237,12 +263,13 @@ const ReactSeatMapModal: React.FC = () => {
               availableSeats: flightInfo.availability,
               segmentNumber: currentSegmentNumber,
             });
-
-            setSelectedSeats(prev => [
-              ...prev.filter(s => s.segmentNumber !== currentSegmentNumber),
+      
+            setSelectedSeats((prev) => [
+              ...prev.filter((s) => String(s.segmentNumber) !== currentSegmentNumber),
               ...newSeats,
             ]);
           }}
+
           saveDisabled={false}
         />
       }

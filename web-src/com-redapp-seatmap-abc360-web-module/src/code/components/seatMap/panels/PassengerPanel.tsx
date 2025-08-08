@@ -20,8 +20,6 @@ import { t } from '../../../Context';
 import { SelectedSeat } from '../types/types';
 import { PassengerOption } from '../../../utils/parsePnrData';
 import { postSeatMapUpdate } from '../helpers/postSeatMapUpdate';
-import { createPassengerPayload } from '../helpers/createPassengerPayload';
-import { handleReassignSeat } from '../handleReassignSeats';
 
 export interface PassengerPanelProps {
   passengers: PassengerOption[];
@@ -32,12 +30,14 @@ export interface PassengerPanelProps {
   handleSave: () => void;
   handleAutomateSeating: () => void;
   setSelectedSeats: (seats: SelectedSeat[]) => void;
+  handleRemoveSeat?: (passengerId: string) => void;
   saveDisabled: boolean;
   assignedSeats?: {
     passengerId: string;
     seat: string;
     segmentNumber: string;
   }[];
+  currentSegmentNumber?: string;
   config?: any;
   flight?: any;
   availability?: any;
@@ -52,13 +52,13 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
   handleResetSeat,
   handleSave,
   handleAutomateSeating,
-  saveDisabled,
   setSelectedSeats,
-  assignedSeats = [],
   config,
   flight,
   availability,
-  iframeRef
+  iframeRef,
+  currentSegmentNumber,
+  handleRemoveSeat,
 }) => {
   function getPriceForSeat(seatLabel: string): number {
     if (!availability) return 0;
@@ -78,21 +78,31 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
     return acc + (directPrice > 0 ? directPrice : fallbackPrice);
   }, 0);
 
-  const onRemoveSeat = (passengerIdToRemove: string) => {
-    handleReassignSeat({
-      passengerId: passengerIdToRemove,
-      selectedSeats,
-      setSelectedSeats,
-      setSelectedPassengerId
+  const onRemoveSeat = (
+    passengerIdToRemove: string,
+    segmentNumber?: string
+  ) => {
+    const updatedSeats = selectedSeats.filter(s => {
+      if (!segmentNumber) return s.passengerId !== passengerIdToRemove;
+      return !(
+        s.passengerId === passengerIdToRemove &&
+        String(s.segmentNumber) === String(segmentNumber)
+      );
     });
-
+  
+    console.log('❌ Removing seat for pax', passengerIdToRemove);
+    console.log('🔁 Updated selectedSeats after ❌:', updatedSeats);
+  
+    setSelectedSeats(updatedSeats);
+    setSelectedPassengerId(passengerIdToRemove);
+  
     if (iframeRef?.current && config && flight) {
       postSeatMapUpdate({
         config,
         flight,
         availability,
         passengers,
-        selectedSeats: selectedSeats.filter(s => s.passengerId !== passengerIdToRemove),
+        selectedSeats: updatedSeats,
         selectedPassengerId: passengerIdToRemove,
         iframeRef
       });
@@ -155,7 +165,13 @@ export const PassengerPanel: React.FC<PassengerPanelProps> = ({
                         title={t('seatMap.button.cancelSeat')}
                         onClick={(e) => {
                           e.stopPropagation();
-                          onRemoveSeat(paxId);
+
+                          if (handleRemoveSeat) {
+                            handleRemoveSeat(paxId); // 🔹 если пришла кастомная функция — используем её
+                          } else {
+                            onRemoveSeat(paxId, currentSegmentNumber); // 🔹 иначе fallback-внутренняя
+                          }
+
                         }}
                         style={{
                           background: 'none',
