@@ -297,32 +297,34 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
 
   // Save all selected seats to PNR
   const onSaveSeats = async () => {
-    // раньше стояла проверка allSelectedSeats
-    if (!selectedSeats.length) {
+    if (!allSelectedSeats.length) {
       alert('⚠️ No seats selected.');
       return;
     }
-  
-    const seatAssignmentsForPNR = selectedSeats.map(s => ({
+
+    const seatAssignmentsForPNR = allSelectedSeats.map(s => ({
       passengerId: s.passengerId,
       seatLabel: s.seatLabel,
-      segmentNumber: s.segmentNumber,
+      segmentNumber: s.segmentNumber
     }));
-  
-    const seatAssignmentsForParent = selectedSeats.map(s => ({
+
+    const seatAssignmentsForParent = allSelectedSeats.map(s => ({
       passengerId: s.passengerId,
       seat: s.seatLabel,
-      segmentNumber: s.segmentNumber,
+      segmentNumber: s.segmentNumber
     }));
-  
+
     try {
       console.log('♻️ Clearing all seats in PNR before saving new assignments…');
       await handleDeleteSeats();
-  
+
       console.log('💾 Saving all selected seats on all segments:\n', seatAssignmentsForPNR);
       await handleSaveSeats(seatAssignmentsForPNR);
-  
-      onAssignedSeatsChange?.(seatAssignmentsForParent);
+
+      if (onAssignedSeatsChange) {
+        onAssignedSeatsChange(seatAssignmentsForParent);
+      }
+
       console.log('✅ Seats successfully reassigned on all segments.');
     } catch (error) {
       console.error('❌ Error during save seats flow:', error);
