@@ -75,7 +75,7 @@ export function useSeatmapMedia(): UseSeatmapMediaResult {
           setMedia(enrichedMedia);
         } else {
           console.log('ℹ️ No media data in message');
-          setMedia(null);
+          // setMedia(null);
         }
       }
     }

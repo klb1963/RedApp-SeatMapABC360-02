@@ -8,6 +8,7 @@
 
 import * as React from 'react';
 import { t } from '../../../Context';
+import { logger } from '../../../utils/logger';
 
 interface GalleryPanelProps {
   config?: {
@@ -22,6 +23,8 @@ const MESSAGE_TYPES = {
   MEDIA_VIEWER: 'mediaViewer',
 };
 
+const VIEWER_ORIGIN = 'https://panorama.quicket.io';
+
 export const GalleryPanel: React.FC<GalleryPanelProps> = ({ config }) => {
   const iframeRef = React.useRef<HTMLIFrameElement>(null);
 
@@ -31,27 +34,36 @@ export const GalleryPanel: React.FC<GalleryPanelProps> = ({ config }) => {
     const iframe = iframeRef.current;
 
     // 📤 Send configuration to iframe after it loads
-    const handleLoad = () => {
-      const message = {
-        type: MESSAGE_TYPES.MEDIA_VIEWER,
-        config: JSON.stringify(config),
-      };
 
-      iframe.contentWindow?.postMessage(message, iframe.src);
-      console.log('[GalleryPanel] sent config to iframe', message);
+    const handleLoad = () => {
+
+      // Viewer ожидает строку (внутри вызывает .trim()).
+      // Поэтому config отправляем JSON-строкой.
+      let safeConfig = '{}';
+      try {
+        safeConfig = JSON.stringify(config);
+      } catch {
+        logger.warn('GalleryPanel: failed to stringify config');
+      }
+      
+      const message = { type: MESSAGE_TYPES.MEDIA_VIEWER, config: safeConfig };
+
+      iframe.contentWindow?.postMessage(message, VIEWER_ORIGIN);
+      logger.debug('GalleryPanel: config posted', {
+        photos: Array.isArray(config.photoData) ? config.photoData.length : 0,
+        panos: Array.isArray(config.panoData) ? config.panoData.length : 0,
+      });
+
     };
 
     iframe.addEventListener('load', handleLoad);
 
     // 📥 Listen to messages from iframe (e.g. onClose events)
     const messageListener = (event: MessageEvent) => {
-      if (event.data?.type === MESSAGE_TYPES.MEDIA_VIEWER) {
-        console.log('[GalleryPanel] message from iframe', event.data);
-        if (event.data.eventType === 'onClose') {
-          console.log('[GalleryPanel] onClose event received');
-          // Optionally: trigger a callback or update parent state here
-        }
-      }
+      if (event.origin !== VIEWER_ORIGIN) return;
+      const data = event.data;
+      if (data?.type !== MESSAGE_TYPES.MEDIA_VIEWER) return;
+      if (data.eventType === 'onClose') logger.info('GalleryPanel: onClose event received');
     };
 
     window.addEventListener('message', messageListener);
