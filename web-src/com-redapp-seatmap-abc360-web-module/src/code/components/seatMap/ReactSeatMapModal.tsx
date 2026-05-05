@@ -53,7 +53,8 @@ const ReactSeatMapModal: React.FC = () => {
     if (!flightSegment) return;
 
     const seatMapSegment = {
-      bookingClass: cabin,
+      // RBD for EnhancedSeatMapRQ must come from PNR booking class, not selected cabin class.
+      bookingClass: flightSegment.bookingClass || cabin,
       marketingCarrier: flightSegment.marketingCarrier || 'XX',
       marketingFlightNumber: flightSegment.marketingFlightNumber || '000',
       flightNumber: flightSegment.marketingFlightNumber || '000',
@@ -64,7 +65,36 @@ const ReactSeatMapModal: React.FC = () => {
 
     const { seatInfo, layoutLetters, availability } =
       await loadSeatMapFromSabre(seatMapSegment, passengers);
+
+    console.log('🧪 [ReactSeatMapModal] seatInfo first 20:',
+      seatInfo.slice(0, 20).map(s => ({
+        seatNumber: s.seatNumber,
+        status: s.seatStatus,
+        price: s.seatPrice,
+        chars: s.seatCharacteristics,
+        rowTypeCode: s.rowTypeCode,
+        deckId: s.deckId,
+        cabinClass: s.cabinClass,
+      }))
+    );
+
+    console.log('🧪 [ReactSeatMapModal] layoutLetters:', layoutLetters);
+
     const { rows, layoutLength } = convertSeatMapToReactSeatmapFormat(seatInfo, layoutLetters);
+
+
+    console.log('🧪 [ReactSeatMapModal] converted rows first 5:',
+      rows.slice(0, 5).map(r => ({
+        rowNumber: r.rowNumber,
+        seats: r.seats.map(s => ({
+          id: s.id,
+          number: s.number,
+          hidden: s.hidden,
+          type: s.type,
+          chars: s.seatCharacteristics,
+        })),
+      }))
+    );
 
     setRows(rows);
     setLayoutLength(layoutLength);
